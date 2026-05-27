@@ -1,14 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Menu, Search, Flame } from 'lucide-react'
-import { getItem, STORAGE_KEYS } from '../../utils/storage'
+import { Menu, Search, Flame, LogIn, LogOut } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { useProgress } from '../../hooks/useProgress'
 
 export default function Header({ onMenuClick }) {
-  const [streak, setStreak] = useState(0)
-  const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    setStreak(getItem(STORAGE_KEYS.STREAK, 0))
-  }, [])
+  const { user, login, logout } = useAuth()
+  const { streak } = useProgress()
 
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
 
@@ -22,8 +18,6 @@ export default function Header({ onMenuClick }) {
       <div className="flex-1 max-w-md hidden sm:flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5">
         <Search size={14} className="text-gray-500" />
         <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
           placeholder="Search topics, questions…"
           className="flex-1 bg-transparent text-sm text-gray-300 placeholder-gray-600 outline-none"
         />
@@ -37,7 +31,32 @@ export default function Header({ onMenuClick }) {
             <span className="text-xs font-bold text-orange-300">{streak} day streak</span>
           </div>
         )}
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">RK</div>
+
+        {user ? (
+          <div className="flex items-center gap-2">
+            {user.photoURL
+              ? <img src={user.photoURL} alt={user.displayName} className="w-8 h-8 rounded-full" />
+              : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
+                  {user.displayName?.[0] || 'U'}
+                </div>
+            }
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="text-gray-500 hover:text-red-400 transition-colors"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={login}
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <LogIn size={14} />
+            Sign in
+          </button>
+        )}
       </div>
     </header>
   )

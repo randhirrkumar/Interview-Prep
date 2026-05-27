@@ -1,4 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ProgressProvider } from './contexts/ProgressContext'
 import Layout from './components/Layout/Layout'
 import Dashboard from './components/Dashboard/Dashboard'
 import TopicPage from './components/Topics/TopicPage'
@@ -12,6 +14,8 @@ import SystemDesign from './components/SystemDesign/SystemDesign'
 
 export default function App() {
   return (
+    <AuthProvider>
+    <ProgressProvider>
     <HashRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -27,5 +31,7 @@ export default function App() {
         </Route>
       </Routes>
     </HashRouter>
+    </ProgressProvider>
+    </AuthProvider>
   )
 }
