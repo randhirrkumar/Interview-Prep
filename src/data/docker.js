@@ -430,7 +430,7 @@ envFrom:
 # Spring Boot auto-reads env vars
 # DB_URL → spring.datasource.url (Spring converts _ to .)
 # Or explicitly in application.properties:
-spring.datasource.password=${DB_PASSWORD}`,
+spring.datasource.password=\${DB_PASSWORD}`,
     },
     {
       id: 9,
