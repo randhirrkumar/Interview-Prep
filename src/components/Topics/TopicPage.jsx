@@ -16,6 +16,9 @@ import multithreading from '../../data/multithreading'
 import collections from '../../data/collections'
 import hibernate from '../../data/hibernate'
 import security from '../../data/security'
+import designPatterns from '../../data/designPatterns'
+import docker from '../../data/docker'
+import testing from '../../data/testing'
 
 const TOPICS = {
   'java-core': javaCore,
@@ -30,6 +33,9 @@ const TOPICS = {
   'collections': collections,
   'hibernate': hibernate,
   'security': security,
+  'design-patterns': designPatterns,
+  'docker': docker,
+  'testing': testing,
 }
 
 export default function TopicPage() {

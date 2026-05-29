@@ -1,9 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield, FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap, GitBranch, X } from 'lucide-react'
+import { LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield, FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap, GitBranch, X, Terminal, TestTube, Shapes, BarChart2, Star, CalendarClock, FlaskConical } from 'lucide-react'
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
   { label: '30-Day Roadmap', icon: Map, to: '/roadmap' },
+  { label: 'Analytics', icon: BarChart2, to: '/analytics' },
+  { label: 'Revision Scheduler', icon: CalendarClock, to: '/revision' },
   { type: 'heading', label: 'Java Topics' },
   { label: 'Java Core & OOP', icon: Code2, to: '/topics/java-core' },
   { label: 'Java 8 & Streams', icon: Zap, to: '/topics/java8' },
@@ -15,19 +17,26 @@ const NAV = [
   { label: 'Hibernate & JPA', icon: Database, to: '/topics/hibernate' },
   { label: 'Kafka', icon: GitBranch, to: '/topics/kafka' },
   { label: 'SQL & MySQL', icon: Database, to: '/topics/sql' },
+  { type: 'heading', label: 'New Topics' },
+  { label: 'Design Patterns', icon: Shapes, to: '/topics/design-patterns' },
+  { label: 'Docker & Kubernetes', icon: Terminal, to: '/topics/docker' },
+  { label: 'Testing (JUnit & Mockito)', icon: TestTube, to: '/topics/testing' },
   { type: 'heading', label: 'Cloud & Security' },
   { label: 'Azure Basics', icon: Cloud, to: '/topics/azure' },
   { label: 'SSO / SAML', icon: Shield, to: '/topics/sso' },
   { label: 'Spring Security', icon: Shield, to: '/topics/security' },
+  { type: 'heading', label: 'Practice' },
+  { label: 'DSA Problems', icon: FlaskConical, to: '/dsa' },
+  { label: 'STAR Stories', icon: Star, to: '/star' },
+  { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
+  { label: 'System Design', icon: Building2, to: '/system-design' },
+  { label: 'Flash Cards', icon: BookOpen, to: '/flashcards' },
   { type: 'heading', label: 'Projects' },
   { label: 'EPLMS (Adani)', icon: FolderKanban, to: '/projects/eplms' },
   { label: 'MetLife Insurance', icon: FolderKanban, to: '/projects/metlife' },
   { type: 'heading', label: 'Interview' },
-  { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
-  { label: 'System Design', icon: Building2, to: '/system-design' },
   { label: 'HR Questions', icon: HelpCircle, to: '/hr-questions' },
   { label: 'Company Prep', icon: Building2, to: '/company-prep' },
-  { label: 'Flash Cards', icon: BookOpen, to: '/flashcards' },
 ]
 
 export default function Sidebar({ open, onClose }) {

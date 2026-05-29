@@ -11,6 +11,10 @@ import FlashCards from './components/FlashCards/FlashCards'
 import CompanyPrep from './components/Company/CompanyPrep'
 import HRQuestions from './components/HR/HRQuestions'
 import SystemDesign from './components/SystemDesign/SystemDesign'
+import DSAProblems from './components/DSA/DSAProblems'
+import STARBuilder from './components/STAR/STARBuilder'
+import Analytics from './components/Analytics/Analytics'
+import RevisionScheduler from './components/Revision/RevisionScheduler'
 
 export default function App() {
   return (
@@ -28,6 +32,10 @@ export default function App() {
           <Route path="hr-questions" element={<HRQuestions />} />
           <Route path="company-prep" element={<CompanyPrep />} />
           <Route path="flashcards" element={<FlashCards />} />
+          <Route path="dsa" element={<DSAProblems />} />
+          <Route path="star" element={<STARBuilder />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="revision" element={<RevisionScheduler />} />
         </Route>
       </Routes>
     </HashRouter>
