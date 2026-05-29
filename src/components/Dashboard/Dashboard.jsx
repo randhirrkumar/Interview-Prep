@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, Star, AlertTriangle, Zap, ChevronRight } from 'lucide-react'
-import { getItem, STORAGE_KEYS, updateStreak } from '../../utils/storage'
+import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap } from 'lucide-react'
+import { useProgress } from '../../hooks/useProgress'
 
 const TOPIC_ITEMS = [
   { id: 'java-core', label: 'Java Core & OOP', to: '/topics/java-core', color: 'from-blue-600 to-blue-800', icon: '☕', total: 40 },
@@ -39,25 +38,16 @@ const QUICK_WINS = [
   { label: 'System Design', to: '/system-design', emoji: '🏗️' },
 ]
 
-export default function Dashboard() {
-  const [streak, setStreak] = useState(0)
-  const [completed, setCompleted] = useState([])
-  const [daysLeft, setDaysLeft] = useState(30)
-  const [readiness, setReadiness] = useState(0)
+const TOTAL_QUESTIONS = 215
 
-  useEffect(() => {
-    const s = updateStreak()
-    setStreak(s)
-    const c = getItem(STORAGE_KEYS.COMPLETED, [])
-    setCompleted(c)
-    const start = getItem(STORAGE_KEYS.START_DATE)
-    if (start) {
-      const diff = Math.floor((Date.now() - new Date(start).getTime()) / 86400000)
-      setDaysLeft(Math.max(0, 30 - diff))
-    }
-    const total = 215
-    setReadiness(Math.min(100, Math.round((c.length / total) * 100)))
-  }, [])
+export default function Dashboard() {
+  const { streak, completed, startDate } = useProgress()
+
+  const daysLeft = startDate
+    ? Math.max(0, 30 - Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000))
+    : 30
+
+  const readiness = Math.min(100, Math.round((completed.length / TOTAL_QUESTIONS) * 100))
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
