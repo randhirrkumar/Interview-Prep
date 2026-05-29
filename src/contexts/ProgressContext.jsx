@@ -51,7 +51,8 @@ export function ProgressProvider({ children }) {
         const data = await loadFromFirestore(user.uid) || {}
         const lsd = data.lastStudyDate || null
         setLastStudyDate(lsd)
-        setStartDate(data.startDate || null)
+        // Only trust startDate if user has actual study activity; discard legacy data written on visit
+        setStartDate(lsd ? (data.startDate || null) : null)
         setStreak(resolveDisplayStreak(data.streak || 0, lsd))
         setCompleted(data.completed || [])
         setBookmarks(data.bookmarks || [])
@@ -59,7 +60,7 @@ export function ProgressProvider({ children }) {
         const lsd = getItem(STORAGE_KEYS.LAST_STUDY_DATE, null)
         const stored = getItem(STORAGE_KEYS.STREAK, 0)
         setLastStudyDate(lsd)
-        setStartDate(getItem(STORAGE_KEYS.START_DATE, null))
+        setStartDate(lsd ? getItem(STORAGE_KEYS.START_DATE, null) : null)
         setStreak(resolveDisplayStreak(stored, lsd))
         setCompleted(getItem(STORAGE_KEYS.COMPLETED, []))
         setBookmarks(getItem(STORAGE_KEYS.BOOKMARKS, []))
