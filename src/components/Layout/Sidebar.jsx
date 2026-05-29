@@ -1,45 +1,100 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield, FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap, GitBranch, X, Terminal, TestTube, Shapes, BarChart2, Star, CalendarClock, FlaskConical } from 'lucide-react'
+import {
+  LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield,
+  FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap,
+  GitBranch, X, Terminal, TestTube, Shapes, BarChart2, Star, CalendarClock,
+  FlaskConical, ChevronDown
+} from 'lucide-react'
 
-const NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
-  { label: '30-Day Roadmap', icon: Map, to: '/roadmap' },
-  { label: 'Analytics', icon: BarChart2, to: '/analytics' },
-  { label: 'Revision Scheduler', icon: CalendarClock, to: '/revision' },
-  { type: 'heading', label: 'Java Topics' },
-  { label: 'Java Core & OOP', icon: Code2, to: '/topics/java-core' },
-  { label: 'Java 8 & Streams', icon: Zap, to: '/topics/java8' },
-  { label: 'Multithreading', icon: Cpu, to: '/topics/multithreading' },
-  { label: 'Collections & DS', icon: Layers, to: '/topics/collections' },
-  { type: 'heading', label: 'Backend / Spring' },
-  { label: 'Spring Boot', icon: Server, to: '/topics/spring-boot' },
-  { label: 'Microservices', icon: Layers, to: '/topics/microservices' },
-  { label: 'Hibernate & JPA', icon: Database, to: '/topics/hibernate' },
-  { label: 'Kafka', icon: GitBranch, to: '/topics/kafka' },
-  { label: 'SQL & MySQL', icon: Database, to: '/topics/sql' },
-  { type: 'heading', label: 'New Topics' },
-  { label: 'Design Patterns', icon: Shapes, to: '/topics/design-patterns' },
-  { label: 'Docker & Kubernetes', icon: Terminal, to: '/topics/docker' },
-  { label: 'Testing (JUnit & Mockito)', icon: TestTube, to: '/topics/testing' },
-  { type: 'heading', label: 'Cloud & Security' },
-  { label: 'Azure Basics', icon: Cloud, to: '/topics/azure' },
-  { label: 'SSO / SAML', icon: Shield, to: '/topics/sso' },
-  { label: 'Spring Security', icon: Shield, to: '/topics/security' },
-  { type: 'heading', label: 'Practice' },
-  { label: 'DSA Problems', icon: FlaskConical, to: '/dsa' },
-  { label: 'STAR Stories', icon: Star, to: '/star' },
-  { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
-  { label: 'System Design', icon: Building2, to: '/system-design' },
-  { label: 'Flash Cards', icon: BookOpen, to: '/flashcards' },
-  { type: 'heading', label: 'Projects' },
-  { label: 'EPLMS (Adani)', icon: FolderKanban, to: '/projects/eplms' },
-  { label: 'MetLife Insurance', icon: FolderKanban, to: '/projects/metlife' },
-  { type: 'heading', label: 'Interview' },
-  { label: 'HR Questions', icon: HelpCircle, to: '/hr-questions' },
-  { label: 'Company Prep', icon: Building2, to: '/company-prep' },
+const SECTIONS = [
+  {
+    id: 'main',
+    label: null,
+    items: [
+      { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
+      { label: '30-Day Roadmap', icon: Map, to: '/roadmap' },
+      { label: 'Analytics', icon: BarChart2, to: '/analytics' },
+      { label: 'Revision Scheduler', icon: CalendarClock, to: '/revision' },
+    ]
+  },
+  {
+    id: 'java',
+    label: 'Java Topics',
+    items: [
+      { label: 'Java Core & OOP', icon: Code2, to: '/topics/java-core' },
+      { label: 'Java 8 & Streams', icon: Zap, to: '/topics/java8' },
+      { label: 'Multithreading', icon: Cpu, to: '/topics/multithreading' },
+      { label: 'Collections & DS', icon: Layers, to: '/topics/collections' },
+    ]
+  },
+  {
+    id: 'backend',
+    label: 'Backend & Spring',
+    items: [
+      { label: 'Spring Boot', icon: Server, to: '/topics/spring-boot' },
+      { label: 'Microservices', icon: Layers, to: '/topics/microservices' },
+      { label: 'Hibernate & JPA', icon: Database, to: '/topics/hibernate' },
+      { label: 'Kafka', icon: GitBranch, to: '/topics/kafka' },
+      { label: 'SQL & MySQL', icon: Database, to: '/topics/sql' },
+    ]
+  },
+  {
+    id: 'tools',
+    label: 'Dev Tools & Practices',
+    items: [
+      { label: 'Design Patterns', icon: Shapes, to: '/topics/design-patterns' },
+      { label: 'Docker & Kubernetes', icon: Terminal, to: '/topics/docker' },
+      { label: 'Testing (JUnit & Mockito)', icon: TestTube, to: '/topics/testing' },
+    ]
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud & Security',
+    items: [
+      { label: 'Azure Basics', icon: Cloud, to: '/topics/azure' },
+      { label: 'SSO / SAML', icon: Shield, to: '/topics/sso' },
+      { label: 'Spring Security', icon: Shield, to: '/topics/security' },
+    ]
+  },
+  {
+    id: 'practice',
+    label: 'Practice',
+    items: [
+      { label: 'DSA Problems', icon: FlaskConical, to: '/dsa' },
+      { label: 'STAR Stories', icon: Star, to: '/star' },
+      { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
+      { label: 'System Design', icon: Building2, to: '/system-design' },
+      { label: 'Flash Cards', icon: BookOpen, to: '/flashcards' },
+    ]
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    items: [
+      { label: 'EPLMS (Adani)', icon: FolderKanban, to: '/projects/eplms' },
+      { label: 'MetLife Insurance', icon: FolderKanban, to: '/projects/metlife' },
+    ]
+  },
+  {
+    id: 'interview',
+    label: 'Interview',
+    items: [
+      { label: 'HR Questions', icon: HelpCircle, to: '/hr-questions' },
+      { label: 'Company Prep', icon: Building2, to: '/company-prep' },
+    ]
+  },
 ]
 
+const DEFAULT_OPEN = Object.fromEntries(
+  SECTIONS.filter(s => s.label).map(s => [s.id, true])
+)
+
 export default function Sidebar({ open, onClose }) {
+  const [openSections, setOpenSections] = useState(DEFAULT_OPEN)
+
+  const toggle = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))
+
   return (
     <aside className={`
       fixed lg:static inset-y-0 left-0 z-30 w-64 bg-gray-900 border-r border-gray-800 flex flex-col
@@ -62,27 +117,43 @@ export default function Sidebar({ open, onClose }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2">
-        {NAV.map((item, i) => {
-          if (item.type === 'heading') {
-            return (
-              <div key={i} className="px-3 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                {item.label}
+        {SECTIONS.map(section => (
+          <div key={section.id}>
+            {/* Section heading — clickable if it has a label */}
+            {section.label && (
+              <button
+                onClick={() => toggle(section.id)}
+                className="w-full flex items-center justify-between px-3 pt-4 pb-1 group"
+              >
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider group-hover:text-gray-300 transition-colors">
+                  {section.label}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`text-gray-600 group-hover:text-gray-400 transition-all duration-200 ${openSections[section.id] ? 'rotate-0' : '-rotate-90'}`}
+                />
+              </button>
+            )}
+
+            {/* Section items */}
+            {(!section.label || openSections[section.id]) && (
+              <div className={section.label ? 'overflow-hidden' : ''}>
+                {section.items.map(item => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                    onClick={onClose}
+                  >
+                    <item.icon size={16} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
               </div>
-            )
-          }
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={onClose}
-            >
-              <item.icon size={16} />
-              <span>{item.label}</span>
-            </NavLink>
-          )
-        })}
+            )}
+          </div>
+        ))}
       </nav>
 
       {/* Bottom */}
