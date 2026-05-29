@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   STREAK: 'prep_streak',
   LAST_VISIT: 'prep_last_visit',
+  LAST_STUDY_DATE: 'prep_last_study_date',
   COMPLETED: 'prep_completed',
   BOOKMARKS: 'prep_bookmarks',
   NOTES: 'prep_notes',

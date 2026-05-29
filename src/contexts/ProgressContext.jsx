@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from './AuthContext'
-import { getItem, setItem, STORAGE_KEYS, updateStreak, markCompleted, toggleBookmark } from '../utils/storage'
+import { getItem, setItem, STORAGE_KEYS, markCompleted, toggleBookmark } from '../utils/storage'
 
 const ProgressContext = createContext(null)
 
@@ -15,18 +15,29 @@ async function saveToFirestore(uid, data) {
   await setDoc(doc(db, 'users', uid), data, { merge: true })
 }
 
-function computeStreak(existing) {
+// Returns the streak value to DISPLAY given lastStudyDate and stored streak.
+// Streak is 0 if user missed more than 1 day (broken), otherwise shows stored value.
+function resolveDisplayStreak(storedStreak, lastStudyDate) {
+  if (!lastStudyDate) return 0
   const today = new Date().toDateString()
-  if (!existing) return { streak: 1, lastVisit: today, startDate: today }
-  if (existing.lastVisit === today) return existing
   const yesterday = new Date(Date.now() - 86400000).toDateString()
-  const newStreak = existing.lastVisit === yesterday ? (existing.streak || 0) + 1 : 1
-  return { ...existing, streak: newStreak, lastVisit: today, startDate: existing.startDate || today }
+  return (lastStudyDate === today || lastStudyDate === yesterday) ? (storedStreak || 0) : 0
+}
+
+// Computes new streak when user completes an activity today.
+function computeActivityStreak(currentStreak, lastStudyDate) {
+  const today = new Date().toDateString()
+  if (lastStudyDate === today) return { streak: currentStreak, lastStudyDate } // already counted today
+  const yesterday = new Date(Date.now() - 86400000).toDateString()
+  const newStreak = lastStudyDate === yesterday ? (currentStreak || 0) + 1 : 1
+  return { streak: newStreak, lastStudyDate: today }
 }
 
 export function ProgressProvider({ children }) {
   const { user } = useAuth()
   const [streak, setStreak] = useState(0)
+  const [lastStudyDate, setLastStudyDate] = useState(null)
+  const [startDate, setStartDate] = useState(null)
   const [completed, setCompleted] = useState([])
   const [bookmarks, setBookmarks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -37,17 +48,19 @@ export function ProgressProvider({ children }) {
     async function init() {
       setLoading(true)
       if (user) {
-        const data = await loadFromFirestore(user.uid)
-        const updated = computeStreak(data)
-        if (updated !== data) {
-          await saveToFirestore(user.uid, updated)
-        }
-        setStreak(updated.streak || 1)
-        setCompleted(updated.completed || [])
-        setBookmarks(updated.bookmarks || [])
+        const data = await loadFromFirestore(user.uid) || {}
+        const lsd = data.lastStudyDate || null
+        setLastStudyDate(lsd)
+        setStartDate(data.startDate || null)
+        setStreak(resolveDisplayStreak(data.streak || 0, lsd))
+        setCompleted(data.completed || [])
+        setBookmarks(data.bookmarks || [])
       } else {
-        const s = updateStreak()
-        setStreak(s)
+        const lsd = getItem(STORAGE_KEYS.LAST_STUDY_DATE, null)
+        const stored = getItem(STORAGE_KEYS.STREAK, 0)
+        setLastStudyDate(lsd)
+        setStartDate(getItem(STORAGE_KEYS.START_DATE, null))
+        setStreak(resolveDisplayStreak(stored, lsd))
         setCompleted(getItem(STORAGE_KEYS.COMPLETED, []))
         setBookmarks(getItem(STORAGE_KEYS.BOOKMARKS, []))
       }
@@ -58,12 +71,34 @@ export function ProgressProvider({ children }) {
   }, [user])
 
   const complete = async (id) => {
+    if (completed.includes(id)) return
+
+    const newCompleted = [...completed, id]
+    setCompleted(newCompleted)
+
+    // Compute updated streak on first completion of the day
+    const { streak: newStreak, lastStudyDate: newLSD } = computeActivityStreak(streak, lastStudyDate)
+    const today = new Date().toDateString()
+    const newStartDate = startDate || today
+
+    if (lastStudyDate !== today) {
+      setStreak(newStreak)
+      setLastStudyDate(newLSD)
+    }
+    if (!startDate) setStartDate(newStartDate)
+
     if (user) {
-      const newCompleted = completed.includes(id) ? completed : [...completed, id]
-      setCompleted(newCompleted)
-      await saveToFirestore(user.uid, { completed: newCompleted })
+      await saveToFirestore(user.uid, {
+        completed: newCompleted,
+        streak: newStreak,
+        lastStudyDate: newLSD,
+        startDate: newStartDate,
+      })
     } else {
       markCompleted(id)
+      setItem(STORAGE_KEYS.STREAK, newStreak)
+      setItem(STORAGE_KEYS.LAST_STUDY_DATE, newLSD)
+      if (!startDate) setItem(STORAGE_KEYS.START_DATE, newStartDate)
       setCompleted(getItem(STORAGE_KEYS.COMPLETED, []))
     }
   }
@@ -89,7 +124,7 @@ export function ProgressProvider({ children }) {
 
   return (
     <ProgressContext.Provider value={{
-      streak, completed, bookmarks, loading,
+      streak, completed, bookmarks, loading, startDate,
       complete, bookmark,
       isCompleted: (id) => completed.includes(id),
       isBookmarked: (id) => bookmarks.includes(id),
