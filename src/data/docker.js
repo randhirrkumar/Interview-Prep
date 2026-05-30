@@ -608,12 +608,12 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t myapp:${{ github.sha }} .
-          docker push $ECR_REGISTRY/myapp:${{ github.sha }}
+          docker build -t myapp:\${{ github.sha }} .
+          docker push $ECR_REGISTRY/myapp:\${{ github.sha }}
 
       - name: Deploy to Staging
         run: |
-          kubectl set image deployment/myapp myapp=$ECR_REGISTRY/myapp:${{ github.sha }}
+          kubectl set image deployment/myapp myapp=$ECR_REGISTRY/myapp:\${{ github.sha }}
           kubectl rollout status deployment/myapp`,
   },
   {
@@ -672,24 +672,24 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 sh """
-                    docker build -t ${APP_NAME}:${BUILD_NUMBER} .
-                    docker tag ${APP_NAME}:${BUILD_NUMBER} ${ECR_REPO}:${BUILD_NUMBER}
-                    docker push ${ECR_REPO}:${BUILD_NUMBER}
+                    docker build -t \${APP_NAME}:\${BUILD_NUMBER} .
+                    docker tag \${APP_NAME}:\${BUILD_NUMBER} \${ECR_REPO}:\${BUILD_NUMBER}
+                    docker push \${ECR_REPO}:\${BUILD_NUMBER}
                 """
             }
         }
 
         stage('Deploy to K8s') {
             steps {
-                sh "kubectl set image deployment/${APP_NAME} ${APP_NAME}=${ECR_REPO}:${BUILD_NUMBER}"
-                sh "kubectl rollout status deployment/${APP_NAME} --timeout=5m"
+                sh "kubectl set image deployment/\${APP_NAME} \${APP_NAME}=\${ECR_REPO}:\${BUILD_NUMBER}"
+                sh "kubectl rollout status deployment/\${APP_NAME} --timeout=5m"
             }
         }
     }
 
     post {
-        success { slackSend message: "✅ ${APP_NAME} deployed: ${BUILD_NUMBER}" }
-        failure { slackSend message: "❌ ${APP_NAME} build failed: ${BUILD_NUMBER}" }
+        success { slackSend message: "✅ \${APP_NAME} deployed: \${BUILD_NUMBER}" }
+        failure { slackSend message: "❌ \${APP_NAME} build failed: \${BUILD_NUMBER}" }
     }
 }`,
   },
