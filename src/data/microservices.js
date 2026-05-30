@@ -429,6 +429,443 @@ public class OrderSagaOrchestrator {
       ],
       tip: 'The Outbox Pattern: save the event to a local DB table in the same transaction as the business data. A separate process reads from the outbox and publishes to Kafka. Ensures no lost messages.',
     },
+    {
+      id: 6,
+      question: 'How do microservices communicate? Synchronous vs Asynchronous — when to use which?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Microservices', 'Communication', 'Kafka', 'REST'],
+      answer: `Two communication styles:
+
+Synchronous (REST / gRPC):
+- Caller waits for response before continuing
+- Use when: you need an immediate result (e.g., validating a user's JWT before serving a request)
+- Tools: Spring RestTemplate, WebClient, Feign Client
+- Risk: tight coupling — if Service B is down, Service A fails too
+
+Asynchronous (Message Queue — Kafka, RabbitMQ):
+- Caller publishes a message and continues. Consumer processes it independently.
+- Use when: response is not needed immediately (e.g., sending an email after order placement)
+- Benefit: loose coupling, resilience — if consumer is down, messages queue up
+- Risk: eventual consistency — you can't immediately query the result
+
+My rule of thumb:
+- User-facing, needs instant response → REST (synchronous)
+- Background processing, notifications, event pipelines → Kafka (asynchronous)
+
+In EPLMS: vehicle check-in REST call is synchronous (operator needs instant confirmation). But event processing (billing, notifications) flows through Kafka asynchronously.`,
+      code: `// Synchronous — Feign Client
+@FeignClient(name = "vehicle-service", url = "http://vehicle-service")
+public interface VehicleClient {
+    @GetMapping("/vehicles/{id}")
+    VehicleDto getVehicle(@PathVariable Long id);
+}
+
+// Asynchronous — Kafka Producer
+@Autowired
+private KafkaTemplate<String, VehicleEvent> kafkaTemplate;
+
+public void publishEvent(VehicleEvent event) {
+    kafkaTemplate.send("vehicle-events", event.getVehicleId(), event);
+    // returns immediately — doesn't wait for consumer to process
+}`,
+    },
+    {
+      id: 7,
+      question: 'What is a Load Balancer? How does it work in microservices?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Load Balancer', 'Microservices', 'Scalability'],
+      answer: `A Load Balancer distributes incoming traffic across multiple instances of a service so no single instance is overwhelmed.
+
+Types:
+1. Server-side Load Balancer (e.g., AWS ALB, Nginx): sits in front of services, traffic hits LB first, LB routes to one instance. Client doesn't know about individual instances.
+
+2. Client-side Load Balancer (e.g., Spring Cloud LoadBalancer, Ribbon): client fetches the list of service instances from Service Registry (Eureka) and decides which instance to call. Logic is in the client.
+
+Algorithms:
+- Round Robin: requests go to instances in rotation (1→2→3→1→2→3...)
+- Least Connections: route to instance with fewest active connections
+- IP Hash: same client IP always goes to same instance (useful for session affinity)
+- Weighted Round Robin: send more traffic to more powerful instances
+
+In microservices: Spring Cloud LoadBalancer (replaces deprecated Ribbon) does client-side load balancing. Feign Client + Eureka automatically load-balances across all registered instances.`,
+      code: `// Spring Cloud LoadBalancer — automatic with Feign + Eureka
+// Just register services in Eureka and use service name instead of IP
+@FeignClient(name = "vehicle-service")  // Spring resolves this to one of many instances
+public interface VehicleClient {
+    @GetMapping("/vehicles/{id}")
+    VehicleDto getVehicle(@PathVariable Long id);
+}
+
+// application.yml
+spring:
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false  # use Spring Cloud LoadBalancer
+
+// Manual use of LoadBalancerClient
+@Autowired
+private LoadBalancerClient loadBalancer;
+
+ServiceInstance instance = loadBalancer.choose("vehicle-service");
+String url = instance.getUri() + "/vehicles/" + id;`,
+    },
+    {
+      id: 8,
+      question: 'What is CORS? How do you handle it in Spring Boot microservices?',
+      difficulty: 'beginner',
+      asked: false,
+      tags: ['CORS', 'Spring Boot', 'Security'],
+      answer: `CORS (Cross-Origin Resource Sharing) is a browser security feature that blocks HTTP requests made from a different origin (domain/port/protocol) than the server.
+
+Example: Your React frontend at http://localhost:3000 calls your Spring Boot API at http://localhost:8080. The browser blocks this by default — different ports = different origins.
+
+The server must include CORS headers in its response to tell the browser: "This origin is allowed to call me."
+
+Key headers:
+- Access-Control-Allow-Origin: which origins are allowed
+- Access-Control-Allow-Methods: which HTTP methods (GET, POST, etc.)
+- Access-Control-Allow-Headers: which request headers are allowed
+
+In microservices: handle CORS at the API Gateway level — one place, not in every service. Spring Cloud Gateway has built-in CORS configuration.`,
+      code: `// Option 1: Global CORS config in Spring Boot
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+            .allowedOrigins("https://yourfrontend.com", "http://localhost:3000")
+            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowedHeaders("*")
+            .allowCredentials(true)
+            .maxAge(3600);
+    }
+}
+
+// Option 2: @CrossOrigin on controller
+@RestController
+@CrossOrigin(origins = "http://localhost:3000")
+public class VehicleController { ... }
+
+// Option 3: API Gateway CORS (recommended for microservices)
+// application.yml (Spring Cloud Gateway)
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: "*"
+            allowedHeaders: "*"`,
+    },
+    {
+      id: 9,
+      question: 'How do you approach migrating a Monolith to Microservices?',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Microservices', 'Migration', 'Architecture'],
+      answer: `Don't rewrite everything at once — use the Strangler Fig Pattern: gradually replace pieces of the monolith with microservices, routing traffic to the new service while the monolith still handles the rest.
+
+Step-by-step approach:
+1. Identify boundaries: Find natural seams in the monolith — which modules are independently deployable? Use Domain-Driven Design to identify bounded contexts.
+
+2. Extract the least dependent service first: Pick a module with minimal dependencies on the rest of the monolith (e.g., Notification Service).
+
+3. Set up API Gateway: Route traffic — new microservice handles some routes, monolith handles the rest.
+
+4. Database decomposition (hardest part): Start with separate schemas within the same DB (logical separation), then move to separate databases. Never share a database between microservice and monolith long-term.
+
+5. Introduce async communication: Replace direct method calls with events (Kafka) between the extracted service and the monolith.
+
+6. Repeat for next service.
+
+Common mistake: extracting services too granularly too early. Start with coarse-grained services, split further only when needed.`,
+      code: `// Strangler Fig Pattern flow:
+/*
+Phase 1 (Monolith handles everything):
+  Client → Monolith
+
+Phase 2 (API Gateway added, Notification extracted):
+  Client → API Gateway → /notifications/** → Notification Microservice
+                       → everything else  → Monolith
+
+Phase 3 (more services extracted):
+  Client → API Gateway → /vehicles/**  → Vehicle Microservice
+                       → /tracking/**  → Tracking Microservice
+                       → /billing/**   → Billing Microservice
+                       → (nothing left in monolith)
+*/
+
+// Database: start with schema-per-service in same DB
+// vehicle_service_db.vehicles
+// billing_service_db.invoices
+// Later: move to separate database servers`,
+    },
+    {
+      id: 10,
+      question: 'How do you handle service downtime during inter-service communication?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Resilience', 'Circuit Breaker', 'Retry', 'Fallback'],
+      answer: `Several patterns to handle service downtime:
+
+1. Circuit Breaker (Resilience4j):
+After N failures, circuit "opens" — further calls immediately fail without hitting the down service. After a timeout, circuit goes half-open to test if the service recovered.
+
+2. Retry with Backoff:
+Retry failed calls with exponential backoff (wait 1s, 2s, 4s...). Add jitter to avoid thundering herd.
+
+3. Fallback:
+When service is unavailable, return a default response (cached data, empty list, etc.) instead of propagating the failure.
+
+4. Timeout:
+Always set a timeout. Without it, slow responses hold threads indefinitely and cascade into a full outage.
+
+5. Bulkhead:
+Limit concurrent calls to a service so one slow service can't exhaust all threads.
+
+In EPLMS: if the vehicle registration authority API (external) was down, we used a Circuit Breaker + fallback — we'd process the event with available data and queue the enrichment for retry instead of blocking the entire pipeline.`,
+      code: `@Service
+public class VehicleRegistryService {
+
+    // Circuit Breaker: open after 5 failures in 10 calls, half-open after 10s
+    @CircuitBreaker(name = "vehicleRegistry", fallbackMethod = "fallbackVehicleInfo")
+    @Retry(name = "vehicleRegistry")  // retry 3 times before opening circuit
+    @TimeLimiter(name = "vehicleRegistry")  // timeout after 2 seconds
+    public VehicleInfo fetchVehicleInfo(String regNo) {
+        return registryClient.get(regNo);
+    }
+
+    // Fallback: called when circuit is open or all retries exhausted
+    public VehicleInfo fallbackVehicleInfo(String regNo, Exception ex) {
+        log.warn("Registry unavailable for {}, using cached data", regNo);
+        return cache.getOrDefault(regNo, VehicleInfo.unknown(regNo));
+    }
+}
+
+# application.yml
+resilience4j:
+  circuitbreaker:
+    instances:
+      vehicleRegistry:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s`,
+    },
+    {
+      id: 11,
+      question: 'How is authentication handled in an API Gateway?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['API Gateway', 'Authentication', 'JWT', 'Security'],
+      answer: `The API Gateway is the best place to centralize authentication — validate the token once at the gateway, pass the user identity to downstream services. Downstream services trust the gateway and don't re-validate tokens.
+
+Flow:
+1. Client sends request with JWT in Authorization header
+2. API Gateway intercepts every request via a Global Filter
+3. Gateway validates JWT (checks signature, expiry, issuer)
+4. If invalid → return 401 immediately, don't forward to downstream
+5. If valid → extract user info (userId, roles) and add as request headers
+6. Forward request to downstream service with headers: X-User-Id, X-User-Roles
+7. Downstream service reads headers — no need to validate JWT again
+
+Benefits of centralizing at gateway:
+- Single place to update auth logic
+- Downstream services are simpler (no security code)
+- Easy to add new services without repeating auth
+
+In MetLife: JWT for external users (mobile/web), SAML SSO for enterprise users. Both validated at gateway.`,
+      code: `// Spring Cloud Gateway — Global JWT Filter
+@Component
+public class AuthFilter implements GlobalFilter, Ordered {
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            Claims claims = jwtUtil.validateAndExtract(token);
+
+            // Add user info as headers for downstream services
+            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                .header("X-User-Id", claims.getSubject())
+                .header("X-User-Roles", claims.get("roles", String.class))
+                .build();
+
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+
+        } catch (JwtException e) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+    }
+
+    @Override
+    public int getOrder() { return -1; }  // run before other filters
+}`,
+    },
+    {
+      id: 12,
+      question: 'How do you implement Rate Limiting in an API Gateway?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Gateway', 'Rate Limiting', 'Redis'],
+      answer: `Rate limiting controls how many requests a client can make in a time window. Protects backend services from abuse and DoS attacks.
+
+Common algorithms:
+1. Fixed Window: count requests in a fixed time window (e.g., 100 req/minute). Simple but allows burst at window boundary.
+2. Sliding Window: more accurate — tracks requests in a rolling window.
+3. Token Bucket: bucket holds N tokens, each request consumes 1 token, tokens refill at a rate. Allows short bursts up to bucket size.
+4. Leaky Bucket: requests processed at a fixed rate, excess queued or dropped.
+
+Spring Cloud Gateway has built-in Redis-based rate limiting using Token Bucket algorithm.
+
+Rate limiting can be per:
+- IP address: prevent single IP from flooding
+- User ID: each authenticated user has a quota
+- API key: different quotas for different plans (free vs paid)
+
+In production: store counters in Redis (distributed, survives restarts). Never in-memory (doesn't work with multiple gateway instances).`,
+      code: `// Spring Cloud Gateway Rate Limiter (Redis-based)
+// build.gradle: spring-boot-starter-data-redis-reactive
+
+@Bean
+public KeyResolver userKeyResolver() {
+    // Rate limit per user ID from JWT header
+    return exchange -> Mono.justOrEmpty(
+        exchange.getRequest().getHeaders().getFirst("X-User-Id")
+    ).defaultIfEmpty("anonymous");
+}
+
+// application.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: vehicle-service
+          uri: lb://vehicle-service
+          predicates:
+            - Path=/api/vehicles/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10   # tokens added per second
+                redis-rate-limiter.burstCapacity: 20   # max burst size
+                redis-rate-limiter.requestedTokens: 1  # tokens per request
+                key-resolver: "#{@userKeyResolver}"
+
+// Response headers tell client their quota:
+// X-RateLimit-Remaining: 9
+// X-RateLimit-Replenish-Rate: 10`,
+    },
+    {
+      id: 13,
+      question: 'Kafka vs RabbitMQ — when do you use which?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Kafka', 'RabbitMQ', 'Messaging'],
+      answer: `Both are message brokers but designed for different use cases.
+
+Kafka:
+- Log-based, append-only. Messages are retained for a configurable period (e.g., 7 days), not deleted after consumption.
+- Pull-based: consumers pull messages at their own pace
+- Consumer groups + offsets: each consumer group tracks its own position in the log
+- Extremely high throughput (millions of msgs/sec)
+- Messages are ordered within a partition
+- Great for: event sourcing, audit logs, stream processing, event-driven microservices, replaying events
+
+RabbitMQ:
+- Traditional message queue. Messages deleted after acknowledged.
+- Push-based: broker pushes to consumer
+- Better for: task queues, RPC-style messaging, complex routing (exchange/binding rules)
+- Lower throughput but lower latency for small messages
+- Better for: job queues (image processing, email sending), request-reply patterns
+
+When I use Kafka:
+- Event-driven microservices (EPLMS: vehicle events)
+- Any time I need replay/reprocessing capability
+- High throughput pipelines
+- When multiple consumers need the same event (fan-out)
+
+When I'd use RabbitMQ:
+- Simple job/task queues
+- Need complex routing logic
+- Request-reply patterns`,
+      code: `// Key difference: message retention
+
+// Kafka — messages retained, can be replayed
+// Consumer A reads at offset 0, Consumer B reads at offset 0 independently
+// If Consumer B was down, it picks up from last committed offset
+
+// RabbitMQ — message deleted after acknowledgement
+// Once consumed and ACK'd, gone forever
+
+// Kafka partition key = message ordering guarantee
+kafkaTemplate.send("vehicle-events",
+    vehicleId,    // partition key — same vehicle always goes to same partition
+    event
+);
+
+// RabbitMQ routing — flexible exchange types
+// Direct exchange: route by exact routing key
+// Topic exchange: route by pattern (vehicles.#, *.entry)
+// Fanout exchange: broadcast to all queues`,
+    },
+    {
+      id: 14,
+      question: 'How do you handle the same request being processed by multiple service instances?',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Idempotency', 'Distributed Systems', 'Microservices'],
+      answer: `This is the idempotency problem in distributed systems. When a request might be processed by any of N instances, you need to ensure:
+1. Exactly one instance processes it (for operations that must run once)
+2. Processing is idempotent (running it twice gives the same result)
+
+Solutions:
+
+1. Idempotency Keys: Client sends a unique request ID. Server stores processed IDs in a shared store (Redis). Before processing, check if ID already exists. If yes, return cached response. All instances share the same Redis — guaranteed deduplication.
+
+2. Database Unique Constraints: Store requestId with a UNIQUE constraint. Only the first insert succeeds. Others get a duplicate key exception → return the existing result.
+
+3. Distributed Lock (Redisson): Use Redis distributed lock with the request ID as the key. Only one instance acquires the lock and processes the request.
+
+4. Kafka Partitioning: If using Kafka, use a business key (e.g., orderId) as the partition key. Kafka guarantees one consumer per partition in a consumer group — same order always processed by same consumer instance.
+
+In EPLMS: vehicle check-in events use vehicleId as Kafka partition key — same vehicle's events always go to the same consumer instance, maintaining order and preventing duplicate processing.`,
+      code: `// Idempotency Key pattern
+@PostMapping("/orders")
+public ResponseEntity<OrderResponse> createOrder(
+    @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+    @RequestBody OrderRequest request) {
+
+    // Check if already processed (shared Redis)
+    String cached = redisTemplate.opsForValue().get("idem:" + idempotencyKey);
+    if (cached != null) {
+        return ResponseEntity.ok(deserialize(cached));  // return same result
+    }
+
+    // Process (only one instance will win the race — DB unique constraint protects)
+    OrderResponse response = orderService.createOrder(request);
+
+    // Store result with TTL
+    redisTemplate.opsForValue().set("idem:" + idempotencyKey,
+        serialize(response), Duration.ofHours(24));
+
+    return ResponseEntity.ok(response);
+}`,
+    },
   ],
 }
 

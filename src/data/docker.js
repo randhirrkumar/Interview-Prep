@@ -557,7 +557,380 @@ kubectl rollout resume deployment/my-app
 # 3. Switch Service selector to point to new pods
 kubectl patch service my-svc -p '{"spec":{"selector":{"version":"v2"}}}'`,
     },
-  ]
+  // ─── AWS & CI/CD ────────────────────────────────────────────────────────────
+  {
+    id: 11,
+    question: 'What is CI/CD? How does a typical pipeline work?',
+    difficulty: 'beginner',
+    asked: true,
+    tags: ['CI/CD', 'DevOps', 'Jenkins'],
+    answer: `CI (Continuous Integration): Developers frequently merge code to a shared branch. On every push/merge, an automated pipeline runs: compile → unit tests → code quality checks. Goal: catch integration bugs early, keep the main branch always buildable.
+
+CD (Continuous Delivery): After CI passes, the artifact is automatically built and deployed to a staging/UAT environment. A human approves before production deployment.
+
+CD (Continuous Deployment): Every successful CI pipeline automatically deploys to production — no human approval needed. Requires very high test coverage and confidence.
+
+Typical CI/CD pipeline stages:
+1. Source: developer pushes code / merges PR
+2. Build: compile code, resolve dependencies (Maven/Gradle)
+3. Unit Tests: run JUnit tests
+4. Code Analysis: SonarQube (code quality, coverage, security hotspots)
+5. Docker Build: build Docker image, tag with commit hash
+6. Push: push image to container registry (ECR, Docker Hub)
+7. Deploy to Staging: update Kubernetes deployment with new image
+8. Integration Tests / Smoke Tests: run against staging
+9. Approve: manual gate (or automatic for full CD)
+10. Deploy to Production: rolling deployment with zero downtime`,
+    code: `# GitHub Actions pipeline example
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with: { java-version: '17', distribution: 'temurin' }
+
+      - name: Build and Test
+        run: mvn clean verify  # compile + unit tests + coverage
+
+      - name: SonarQube Analysis
+        run: mvn sonar:sonar -Dsonar.host.url=$SONAR_URL
+
+      - name: Build Docker Image
+        run: |
+          docker build -t myapp:${{ github.sha }} .
+          docker push $ECR_REGISTRY/myapp:${{ github.sha }}
+
+      - name: Deploy to Staging
+        run: |
+          kubectl set image deployment/myapp myapp=$ECR_REGISTRY/myapp:${{ github.sha }}
+          kubectl rollout status deployment/myapp`,
+  },
+  {
+    id: 12,
+    question: 'How does Jenkins deploy applications? Explain the internal working.',
+    difficulty: 'intermediate',
+    asked: true,
+    tags: ['Jenkins', 'CI/CD', 'Pipeline'],
+    answer: `Jenkins is an open-source automation server. It executes pipelines defined as code (Jenkinsfile) stored in the repository.
+
+Internal working:
+
+1. SCM Polling / Webhook: Jenkins detects code changes via webhook (GitHub/GitLab pushes trigger Jenkins) or periodic polling.
+
+2. Pipeline execution: Jenkins reads the Jenkinsfile from the repo root. Pipelines have stages (Build, Test, Deploy), each running shell/Groovy commands.
+
+3. Agents: Jenkins Master orchestrates. Build jobs run on Agent nodes (separate machines or containers). This offloads work from the master.
+
+4. Build:
+   - Checkout code from git
+   - Run Maven/Gradle: mvn clean package -DskipTests=false
+   - Build Docker image: docker build -t appname:$BUILD_NUMBER .
+
+5. Push: push Docker image to registry (ECR, Nexus).
+
+6. Deploy:
+   - SSH into server and docker pull + restart, OR
+   - kubectl set image to update Kubernetes deployment, OR
+   - Trigger AWS CodeDeploy, ECS service update
+
+7. Post: send Slack/email notification on success/failure.
+
+Jenkinsfile as code (Pipeline-as-Code) means the pipeline is versioned alongside the application code.`,
+    code: `// Jenkinsfile (Declarative Pipeline)
+pipeline {
+    agent any  // or: agent { docker { image 'maven:3.9-eclipse-temurin-17' } }
+
+    environment {
+        APP_NAME = 'vehicle-service'
+        ECR_REPO = '123456789.dkr.ecr.ap-south-1.amazonaws.com/vehicle-service'
+        KUBECONFIG = credentials('kubeconfig-prod')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh 'mvn clean package'
+                junit 'target/surefire-reports/*.xml'  // publish test results
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                sh """
+                    docker build -t ${APP_NAME}:${BUILD_NUMBER} .
+                    docker tag ${APP_NAME}:${BUILD_NUMBER} ${ECR_REPO}:${BUILD_NUMBER}
+                    docker push ${ECR_REPO}:${BUILD_NUMBER}
+                """
+            }
+        }
+
+        stage('Deploy to K8s') {
+            steps {
+                sh "kubectl set image deployment/${APP_NAME} ${APP_NAME}=${ECR_REPO}:${BUILD_NUMBER}"
+                sh "kubectl rollout status deployment/${APP_NAME} --timeout=5m"
+            }
+        }
+    }
+
+    post {
+        success { slackSend message: "✅ ${APP_NAME} deployed: ${BUILD_NUMBER}" }
+        failure { slackSend message: "❌ ${APP_NAME} build failed: ${BUILD_NUMBER}" }
+    }
+}`,
+  },
+  {
+    id: 13,
+    question: 'What AWS services are commonly used in Java backend projects?',
+    difficulty: 'beginner',
+    asked: true,
+    tags: ['AWS', 'Cloud'],
+    answer: `Core AWS services for Java backend:
+
+Compute:
+- EC2 (Elastic Compute Cloud): virtual machines. You manage the OS, install Java, deploy JAR. Full control but more ops overhead.
+- ECS (Elastic Container Service): managed Docker containers. You provide a Dockerfile + task definition. AWS runs and scales containers. Less ops overhead than EC2.
+- EKS (Elastic Kubernetes Service): managed Kubernetes. Best for complex microservices.
+- Lambda: serverless functions. No server management. Pay per invocation. Good for event-driven, short-lived tasks (file processing, notifications).
+
+Storage:
+- S3 (Simple Storage Service): object storage for files, images, backups, static assets.
+- RDS: managed relational DB (MySQL, PostgreSQL). Handles backups, failover, patches.
+- ElastiCache: managed Redis/Memcached. Use for caching, sessions, rate limiting.
+- SQS (Simple Queue Service): managed message queue. Use when you don't need Kafka's log retention.
+
+Networking:
+- VPC: private network. Your services run in private subnets, only ALB is public.
+- ALB (Application Load Balancer): routes HTTP traffic to EC2/ECS/Lambda.
+- Route 53: DNS management.
+
+Monitoring:
+- CloudWatch: logs, metrics, alarms. The default AWS monitoring tool.
+- X-Ray: distributed tracing for microservices.`,
+    code: `// Common Spring Boot + AWS integrations
+
+// S3 — file upload/download (AWS SDK v2)
+S3Client s3 = S3Client.builder().region(Region.AP_SOUTH_1).build();
+
+// Upload
+s3.putObject(PutObjectRequest.builder()
+    .bucket("my-bucket")
+    .key("invoices/" + invoiceId + ".pdf")
+    .build(), RequestBody.fromBytes(pdfBytes));
+
+// Download
+ResponseBytes<GetObjectResponse> obj = s3.getObjectAsBytes(
+    GetObjectRequest.builder().bucket("my-bucket").key(key).build()
+);
+byte[] bytes = obj.asByteArray();
+
+// SQS — send message (simpler than Kafka for basic queues)
+SqsClient sqs = SqsClient.create();
+sqs.sendMessage(SendMessageRequest.builder()
+    .queueUrl("https://sqs.ap-south-1.amazonaws.com/123/my-queue")
+    .messageBody(json.writeValueAsString(event))
+    .build());
+
+// Spring Cloud AWS (simplifies integration)
+// application.yml:
+// cloud.aws.region.static=ap-south-1
+// cloud.aws.credentials.instance-profile=true`,
+  },
+  {
+    id: 14,
+    question: 'EC2 vs ECS — when do you use which?',
+    difficulty: 'intermediate',
+    asked: true,
+    tags: ['AWS', 'EC2', 'ECS', 'Containers'],
+    answer: `EC2 (Elastic Compute Cloud):
+- You get a raw virtual machine with an OS
+- You install Java, configure the server, deploy your JAR/WAR
+- You manage: OS patches, JVM upgrades, disk space, scaling scripts
+- Full control over the environment
+- Use when: legacy apps that can't be containerized, very specific OS/hardware requirements, need persistent local storage
+
+ECS (Elastic Container Service):
+- AWS manages the underlying infrastructure (Fargate mode = fully serverless containers)
+- You provide a Docker image + task definition (CPU, memory, env vars, ports)
+- AWS handles: running containers, health checks, auto-scaling, load balancing integration
+- Deploy new version = update task definition with new image → rolling deployment
+- Use when: containerized applications, microservices, want less ops overhead
+
+ECS Fargate vs EC2 Launch Type:
+- Fargate: fully managed, pay per second. No servers to manage. More expensive.
+- EC2 launch type: you provision EC2 instances, ECS schedules containers on them. More control, cheaper at scale.
+
+For most new Spring Boot microservices: ECS Fargate is the right choice — minimal ops, easy auto-scaling, integrates natively with ALB, ECR, CloudWatch.`,
+    code: `# ECS Task Definition (simplified) — defines how to run your container
+{
+  "family": "vehicle-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",      # 0.5 vCPU
+  "memory": "1024",  # 1 GB RAM
+  "containerDefinitions": [{
+    "name": "vehicle-service",
+    "image": "123456789.dkr.ecr.ap-south-1.amazonaws.com/vehicle-service:v1.2.3",
+    "portMappings": [{"containerPort": 8080}],
+    "environment": [
+      {"name": "SPRING_PROFILES_ACTIVE", "value": "prod"},
+      {"name": "DB_URL", "value": "jdbc:mysql://rds-endpoint:3306/mydb"}
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/vehicle-service",
+        "awslogs-region": "ap-south-1"
+      }
+    },
+    "healthCheck": {
+      "command": ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"],
+      "interval": 30,
+      "timeout": 5,
+      "retries": 3
+    }
+  }]
+}`,
+  },
+  {
+    id: 15,
+    question: 'What is AWS CloudWatch? How do you use it with Spring Boot?',
+    difficulty: 'beginner',
+    asked: false,
+    tags: ['AWS', 'CloudWatch', 'Monitoring', 'Logging'],
+    answer: `CloudWatch is AWS's monitoring and observability service. It collects:
+- Logs: application logs, access logs, system logs
+- Metrics: CPU usage, memory, request count, latency
+- Events: scheduled triggers, AWS service events
+- Alarms: trigger actions when a metric crosses a threshold
+
+For Spring Boot on ECS/EC2:
+
+Logging: configure the CloudWatch Logs driver in ECS task definition. Your System.out / SLF4J logs automatically go to CloudWatch Log Groups. You can search logs with CloudWatch Logs Insights (SQL-like query language).
+
+Metrics: use Micrometer (Spring Boot Actuator) + AWS CloudWatch Metrics publisher. Custom metrics (order count, payment failures) automatically flow to CloudWatch.
+
+Alarms: create alarm on CPU > 80% → scale out ECS service. Or: error_rate > 5% in 5 min → PagerDuty alert.
+
+CloudWatch Dashboard: visualize metrics with graphs. Create custom dashboards per service.
+
+Practical tip: always use structured JSON logging in production (not plain text). CloudWatch Logs Insights can query JSON fields directly. Logstash/Logback with JSON encoder + CloudWatch = powerful log analytics.`,
+    code: `# application.yml — Spring Boot Actuator + CloudWatch metrics
+management:
+  metrics:
+    export:
+      cloudwatch:
+        namespace: VehicleService
+        step: PT1M  # push metrics every 1 minute
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+// Custom metric — count vehicle events processed
+@Component
+public class EventMetrics {
+
+    private final Counter eventsProcessed;
+
+    public EventMetrics(MeterRegistry registry) {
+        eventsProcessed = Counter.builder("vehicle.events.processed")
+            .description("Total vehicle events processed")
+            .tag("service", "vehicle-service")
+            .register(registry);
+    }
+
+    public void recordEvent(String eventType) {
+        eventsProcessed.increment();
+    }
+}
+
+# Logback JSON config (structured logging for CloudWatch Insights)
+# logback-spring.xml
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+</appender>
+
+# CloudWatch Insights query example:
+# fields @timestamp, level, message, requestId
+# | filter level = "ERROR"
+# | sort @timestamp desc`,
+  },
+  {
+    id: 16,
+    question: 'What are AWS Lambda Triggers? When would you use Lambda in a Java backend?',
+    difficulty: 'intermediate',
+    asked: false,
+    tags: ['AWS', 'Lambda', 'Serverless', 'Event-driven'],
+    answer: `AWS Lambda is a serverless compute service. You upload code (function), define a trigger, AWS runs it on demand. No servers to manage, pay only for execution time (per 100ms).
+
+Lambda Triggers — events that invoke a Lambda function:
+- API Gateway: HTTP request → Lambda (fully serverless REST API)
+- S3: file uploaded to bucket → Lambda processes it (resize image, parse CSV)
+- SQS: message in queue → Lambda processes it (event handler)
+- SNS: notification published → Lambda fans out
+- DynamoDB Streams: record changed → Lambda reacts
+- EventBridge (CloudWatch Events): scheduled trigger (cron) → Lambda (scheduled job)
+- Kinesis: stream records → Lambda processes in batch
+
+When to use Lambda for Java backends:
+✓ Event-driven processing: invoice PDF generation after payment, image resizing after upload
+✓ Scheduled jobs: nightly data cleanup, report generation
+✓ Lightweight webhooks: process incoming webhook from payment gateway
+✗ NOT ideal for: long-running processes (15 min max), stateful services, high-traffic APIs with consistent load (cold start latency)
+
+Cold start issue: first invocation after idle period takes longer (JVM startup). Mitigate with:
+- Provisioned concurrency (pre-warm instances — costs more)
+- GraalVM native image (faster JVM startup)
+- Use Spring Cloud Function for portable Lambda handlers`,
+    code: `// Spring Boot Lambda handler with Spring Cloud Function
+// pom.xml: spring-cloud-function-adapter-aws
+
+@SpringBootApplication
+public class LambdaApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(LambdaApplication.class, args);
+    }
+
+    // S3 trigger — process uploaded file
+    @Bean
+    public Function<S3Event, String> processInvoice() {
+        return s3Event -> {
+            String bucket = s3Event.getRecords().get(0).getS3().getBucket().getName();
+            String key = s3Event.getRecords().get(0).getS3().getObject().getKey();
+            log.info("Processing invoice: {}/{}", bucket, key);
+            invoiceService.process(bucket, key);
+            return "OK";
+        };
+    }
+}
+
+// Handler class for Lambda deployment
+public class InvoiceHandler extends SpringBootRequestHandler<S3Event, String> { }
+
+# Scheduled Lambda via EventBridge (cron)
+# In CloudFormation/SAM:
+# Events:
+#   NightlyCleanup:
+#     Type: Schedule
+#     Properties:
+#       Schedule: cron(0 1 * * ? *)   # 1 AM UTC daily`,
+  },
+  ],
 }
 
 export default docker

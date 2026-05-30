@@ -492,6 +492,329 @@ public class BatchService {
       ],
       tip: '@Transactional only rolls back on RuntimeException by default. If your method throws a checked exception and you don\'t specify rollbackFor, the transaction COMMITS even if an exception is thrown!',
     },
+    {
+      id: 7,
+      question: 'What is @SpringBootApplication? Explain @EnableAutoConfiguration and SpringApplication.run() internals.',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Spring Boot', 'Auto-configuration', 'Internals'],
+      answer: `@SpringBootApplication is a convenience annotation combining three annotations:
+- @Configuration: marks this as a source of bean definitions
+- @EnableAutoConfiguration: tells Spring Boot to auto-configure based on classpath
+- @ComponentScan: scans current package and sub-packages for Spring components
+
+@EnableAutoConfiguration internals:
+Spring Boot ships with a list of auto-configuration classes in META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports. On startup, Spring loads these but only activates them based on @Conditional annotations.
+
+Example: DataSourceAutoConfiguration activates ONLY if:
+- spring-jdbc is on classpath (@ConditionalOnClass)
+- No DataSource bean already defined (@ConditionalOnMissingBean)
+- spring.datasource.url is set (@ConditionalOnProperty)
+
+SpringApplication.run() sequence:
+1. Determine app type (Servlet/Reactive/None)
+2. Load ApplicationContext initializers
+3. Prepare Environment (load application.properties)
+4. Create and refresh ApplicationContext
+5. Trigger auto-configuration, register all beans
+6. Run @PostConstruct methods
+7. Run CommandLineRunner/ApplicationRunner beans
+8. Fire ApplicationReadyEvent — app ready to serve traffic`,
+      code: `// @SpringBootApplication expands to:
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan
+public class MyApp {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApp.class, args);
+    }
+}
+
+// Debug auto-configuration (shows what was applied and why)
+// application.properties: debug=true
+
+// Exclude unwanted auto-config
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })`,
+    },
+    {
+      id: 8,
+      question: '@Bean vs @Component vs @Qualifier — what is the difference?',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['Spring Boot', 'Beans', 'DI'],
+      answer: `@Component — annotation on a CLASS you own. Spring auto-detects via component scan.
+@Bean — annotation on a METHOD inside @Configuration. Use when you don't own the class (third-party) or need custom construction logic.
+
+Rule: own the class → @Component. Don't own it (RestTemplate, ObjectMapper, DataSource) → @Bean.
+
+@Qualifier — when multiple beans of same type exist, Spring throws NoUniqueBeanDefinitionException. @Qualifier specifies which bean to inject by name. @Primary marks a default; @Qualifier overrides @Primary.`,
+      code: `// @Component — your own class
+@Service
+public class VehicleService { }  // Spring creates via component scan
+
+// @Bean — third-party class or needs custom config
+@Configuration
+public class AppConfig {
+    @Bean("fastClient")
+    public RestTemplate fastRestTemplate() {
+        RestTemplate rt = new RestTemplate();
+        rt.setReadTimeout(1000);
+        return rt;
+    }
+
+    @Bean("slowClient")
+    public RestTemplate slowRestTemplate() {
+        RestTemplate rt = new RestTemplate();
+        rt.setReadTimeout(30000);
+        return rt;
+    }
+}
+
+// @Qualifier — pick which bean
+@Service
+public class RegistryService {
+    @Autowired
+    @Qualifier("fastClient")
+    private RestTemplate restTemplate;
+}`,
+    },
+    {
+      id: 9,
+      question: 'What is the IOC Container? Explain Bean scopes.',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['Spring', 'IOC', 'Bean Scopes'],
+      answer: `IoC (Inversion of Control) Container is Spring's core. Instead of your code creating objects (new Service()), you declare dependencies and Spring creates and wires them. You invert the control of object creation to the framework.
+
+ApplicationContext is the IoC container. It manages bean creation, dependency injection, and lifecycle.
+
+Bean Scopes:
+- Singleton (default): ONE instance per Spring container. Same bean returned every time. Best for stateless services/DAOs.
+- Prototype: NEW instance every time the bean is requested. Use for stateful beans.
+- Request: ONE instance per HTTP request. New for each incoming request.
+- Session: ONE instance per HTTP session.
+
+Most production beans are Singleton. Don't inject Prototype beans into Singleton beans directly — use ObjectFactory or @Lookup to get a fresh prototype each time.`,
+      code: `@Component
+@Scope("singleton")  // default — can omit
+public class VehicleService { }
+
+@Component
+@Scope("prototype")
+public class ReportGenerator {
+    // New instance every time — safe to have mutable state
+    private List<String> buffer = new ArrayList<>();
+}
+
+@Component
+@Scope(value = WebApplicationContext.SCOPE_REQUEST,
+       proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class RequestContext {
+    private String requestId = UUID.randomUUID().toString();
+}`,
+    },
+    {
+      id: 10,
+      question: '@PathVariable vs @RequestParam — what is the difference?',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['Spring Boot', 'REST', 'Annotations'],
+      answer: `@PathVariable extracts a value from the URL path itself.
+@RequestParam extracts a value from the query string (after ?).
+
+URL: GET /vehicles/123        → @PathVariable: id = 123
+URL: GET /vehicles?status=ACTIVE → @RequestParam: status = "ACTIVE"
+
+Use @PathVariable for resource identifiers (IDs that make the URL unique).
+Use @RequestParam for optional filters, pagination, search parameters.
+
+Key: @PathVariable values are mandatory (they're part of the URL pattern). @RequestParam can be optional with a defaultValue.`,
+      code: `// @PathVariable — mandatory, part of URL path
+@GetMapping("/vehicles/{id}")
+public VehicleDto getVehicle(@PathVariable Long id) { ... }
+// GET /vehicles/42 → id = 42
+
+// @RequestParam — optional query parameters
+@GetMapping("/vehicles")
+public Page<VehicleDto> list(
+    @RequestParam(required = false, defaultValue = "ACTIVE") String status,
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "20") int size
+) { ... }
+// GET /vehicles                    → status=ACTIVE, page=0, size=20
+// GET /vehicles?status=INACTIVE    → status=INACTIVE`,
+    },
+    {
+      id: 11,
+      question: 'What is DispatcherServlet? How does a Spring MVC request flow work?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Spring MVC', 'DispatcherServlet'],
+      answer: `DispatcherServlet is the Front Controller in Spring MVC. Every HTTP request goes through it.
+
+Request flow:
+1. HTTP request → Tomcat → DispatcherServlet
+2. HandlerMapping: finds which @Controller method maps to this URL
+3. Pre-processing: Interceptors' preHandle() runs
+4. HandlerAdapter: executes the controller method
+5. Controller returns ModelAndView or ResponseEntity
+6. Interceptors' postHandle() runs
+7. For REST (@ResponseBody): HttpMessageConverter serializes return value to JSON
+8. Response sent to client
+9. Interceptors' afterCompletion() runs
+
+For REST APIs (most common), view resolution is skipped — @ResponseBody directs the return value straight to Jackson → JSON.`,
+      code: `// What happens for GET /vehicles/42:
+// 1. DispatcherServlet receives request
+// 2. HandlerMapping → finds VehicleController.getVehicle(@PathVariable Long id)
+// 3. LoggingInterceptor.preHandle() runs
+// 4. VehicleController.getVehicle(42) executes → returns VehicleDto
+// 5. Jackson converts VehicleDto → JSON string
+// 6. 200 OK response sent
+
+// Custom Interceptor
+@Component
+public class LoggingInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
+        log.info("{} {}", req.getMethod(), req.getRequestURI());
+        return true;  // false = abort request
+    }
+}`,
+    },
+    {
+      id: 12,
+      question: 'Filters vs Interceptors — what is the difference and when to use each?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Spring Boot', 'Filter', 'Interceptor'],
+      answer: `Filter (Servlet spec) — runs OUTSIDE Spring, before DispatcherServlet.
+Interceptor (Spring MVC) — runs INSIDE Spring, after DispatcherServlet picks a handler.
+
+Filter:
+- Can't access Spring beans directly (unless obtained via WebApplicationContext)
+- Applied to all requests including static resources
+- Use for: raw request/response modification, authentication, CORS, request logging, gzip compression
+
+Interceptor:
+- Full access to Spring beans
+- Only for requests handled by controllers
+- Knows which controller method will be invoked (handler object)
+- Use for: audit logging (you know which endpoint), role-based checks per endpoint, adding response metadata
+
+Rule: modifying raw HTTP or need it before Spring? → Filter. Need Spring context or per-endpoint logic? → Interceptor.`,
+      code: `// Filter — runs before DispatcherServlet
+@Component
+public class RequestIdFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
+                                    FilterChain chain) throws IOException, ServletException {
+        res.setHeader("X-Request-Id", UUID.randomUUID().toString());
+        chain.doFilter(req, res);
+    }
+}
+
+// Interceptor — runs after handler is identified
+@Component
+public class AuditInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
+        if (handler instanceof HandlerMethod m) {
+            log.info("Entering {}.{}", m.getBeanType().getSimpleName(), m.getMethod().getName());
+        }
+        return true;
+    }
+}`,
+    },
+    {
+      id: 13,
+      question: 'How do you optimize slow APIs in Spring Boot?',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Performance', 'Optimization', 'Spring Boot'],
+      answer: `Measure first — use Actuator metrics, APM tools, or @Timed. Know exactly where time is spent.
+
+Common causes and fixes:
+
+1. Database (most common):
+   - N+1 queries → JOIN FETCH or @EntityGraph
+   - Missing indexes → EXPLAIN the slow query, add composite indexes
+   - Selecting all columns → DTO projections
+   - No pagination → add Pageable
+
+2. External API calls:
+   - Serial calls → parallel with CompletableFuture.allOf()
+   - No caching → add Redis cache for stable data
+
+3. Caching: @Cacheable for read-heavy data that rarely changes
+
+4. Async: @Async for fire-and-forget (email, audit logging)
+
+5. Connection pools: ensure HikariCP pool size is tuned for concurrency
+
+In MetLife: report API took 8s due to N+1 (fetching claims one-by-one for each policy). JOIN FETCH reduced it to 150ms — 95% improvement.`,
+      code: `// N+1 fix — JOIN FETCH
+@Query("SELECT p FROM Policy p LEFT JOIN FETCH p.claims WHERE p.customerId = :id")
+List<Policy> findWithClaims(@Param("id") Long id);
+
+// DTO projection — only needed columns
+@Query("SELECT new com.app.PolicySummary(p.id, p.policyNo, p.status) FROM Policy p")
+List<PolicySummary> findSummaries();
+
+// Parallel external calls
+CompletableFuture<VehicleInfo> v = CompletableFuture.supplyAsync(() -> vehicleClient.get(id));
+CompletableFuture<DriverInfo> d = CompletableFuture.supplyAsync(() -> driverClient.get(driverId));
+CompletableFuture.allOf(v, d).join(); // both run in parallel
+
+// Caching
+@Cacheable(value = "vehicleCache", key = "#id")
+public VehicleDto getVehicle(Long id) {
+    return vehicleRepo.findById(id).map(mapper::toDto).orElseThrow();
+}`,
+    },
+    {
+      id: 14,
+      question: 'What is Idempotency? How do you implement it in REST APIs?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['REST', 'Idempotency', 'API Design'],
+      answer: `An operation is idempotent if calling it multiple times produces the same result as calling it once.
+
+HTTP spec: GET, PUT, DELETE are idempotent. POST is NOT (calling POST /orders twice creates two orders).
+
+Why it matters: networks fail, clients retry. Without idempotency, retries cause duplicate orders, double charges, duplicate records.
+
+Implementation — Idempotency Key:
+Client generates a UUID and sends it as X-Idempotency-Key header. Server stores the result of the first successful processing in Redis. On retry, server finds the key → returns stored result without reprocessing.
+
+Critical: the check-and-process must be atomic (use Redis SETNX + Lua script, or database unique constraint) to handle concurrent duplicate requests.`,
+      code: `@PostMapping("/orders")
+public ResponseEntity<OrderResponse> createOrder(
+    @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+    @RequestBody OrderRequest request) {
+
+    // Check if already processed
+    String cached = redis.opsForValue().get("idem:" + idempotencyKey);
+    if (cached != null) {
+        return ResponseEntity.ok(json.readValue(cached, OrderResponse.class));
+    }
+
+    // Process
+    OrderResponse response = orderService.createOrder(request);
+
+    // Store with 24h TTL
+    redis.opsForValue().set("idem:" + idempotencyKey,
+        json.writeValueAsString(response), Duration.ofHours(24));
+
+    return ResponseEntity.status(201).body(response);
+}
+
+// HTTP idempotency quick reference:
+// GET    /orders     → safe + idempotent
+// PUT    /orders/1   → idempotent (same PUT = same state)
+// DELETE /orders/1   → idempotent (second delete = still deleted)
+// POST   /orders     → NOT idempotent → add idempotency key`,
+    },
   ],
 }
 

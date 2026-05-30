@@ -131,6 +131,299 @@ logging.level.org.hibernate.type.descriptor.sql=TRACE`,
       ],
       tip: 'Open Session in View pattern keeps Hibernate session open during the entire HTTP request. Avoids LazyInitializationException but causes N+1 hidden in the view layer. Disable with spring.jpa.open-in-view=false in production.',
     },
+    {
+      id: 3,
+      question: 'What is Criteria Builder in JPA? When do you use it over JPQL?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['JPA', 'Criteria Builder', 'Dynamic Queries'],
+      answer: `Criteria Builder is a programmatic, type-safe API to build JPA queries dynamically at runtime, without writing query strings.
+
+When to use Criteria Builder:
+- Dynamic queries: search forms where the user may or may not filter by name, status, date — you don't know at compile time which criteria will be applied
+- Type safety: compile-time checking of field names (less risk of typos than JPQL strings)
+- Complex predicates: AND/OR combinations built programmatically
+
+When to use JPQL instead:
+- Fixed queries that don't change at runtime → JPQL is much more readable
+- Simple filtering → use Spring Data JPA derived query methods (findByStatusAndCity)
+
+Criteria Builder is verbose. For simpler dynamic queries, Querydsl or Spring Data Specifications are cleaner alternatives.`,
+      code: `// Dynamic search — filter by status (optional) and city (optional)
+public List<Vehicle> search(String status, String city) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Vehicle> query = cb.createQuery(Vehicle.class);
+    Root<Vehicle> root = query.from(Vehicle.class);
+
+    List<Predicate> predicates = new ArrayList<>();
+
+    if (status != null) {
+        predicates.add(cb.equal(root.get("status"), status));
+    }
+    if (city != null) {
+        predicates.add(cb.like(root.get("city"), "%" + city + "%"));
+    }
+
+    query.where(cb.and(predicates.toArray(new Predicate[0])));
+    query.orderBy(cb.desc(root.get("createdAt")));
+
+    return entityManager.createQuery(query)
+        .setMaxResults(100)
+        .getResultList();
+}
+
+// Spring Data Specification (cleaner alternative to Criteria Builder)
+public interface VehicleRepository extends JpaRepository<Vehicle, Long>,
+    JpaSpecificationExecutor<Vehicle> { }
+
+Specification<Vehicle> spec = (root, query, cb) -> {
+    List<Predicate> predicates = new ArrayList<>();
+    if (status != null) predicates.add(cb.equal(root.get("status"), status));
+    return cb.and(predicates.toArray(new Predicate[0]));
+};
+vehicleRepo.findAll(spec, PageRequest.of(0, 20));`,
+    },
+    {
+      id: 4,
+      question: 'What is @EntityGraph in JPA? How does it solve performance problems?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['JPA', 'EntityGraph', 'Performance', 'N+1'],
+      answer: `@EntityGraph specifies which associations should be eagerly fetched for a specific query, without changing the global FetchType on the entity.
+
+Problem it solves:
+- FetchType.LAZY (default): associations loaded only when accessed → N+1 problem
+- FetchType.EAGER (global): always loads associations → slow for queries that don't need them
+- @EntityGraph: per-query control — eager only where you need it
+
+Two ways to define:
+1. @NamedEntityGraph on the entity class + @EntityGraph on the repository method
+2. Dynamic/ad-hoc EntityGraph with attributePaths in the repository method
+
+The resulting SQL uses a JOIN FETCH — loads the parent and children in ONE query instead of N+1.
+
+When to use:
+- You have a query that ALWAYS needs the association → use EntityGraph
+- You sometimes need it → use EntityGraph on specific repository methods
+- You always need it everywhere → EAGER (but think carefully)`,
+      code: `// Entity with named entity graph
+@Entity
+@NamedEntityGraph(
+    name = "Policy.withClaims",
+    attributeNodes = @NamedAttributeNode("claims")  // fetch claims eagerly
+)
+public class Policy {
+    @Id
+    private Long id;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "policy")
+    private List<Claim> claims;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Customer customer;
+}
+
+// Repository — use EntityGraph for specific queries
+public interface PolicyRepository extends JpaRepository<Policy, Long> {
+
+    // Uses named entity graph — fetches claims with JOIN
+    @EntityGraph("Policy.withClaims")
+    List<Policy> findByCustomerId(Long customerId);
+
+    // Ad-hoc EntityGraph — fetch both claims AND customer
+    @EntityGraph(attributePaths = {"claims", "customer"})
+    Optional<Policy> findWithDetailById(Long id);
+
+    // Without EntityGraph — lazy (fine for simple lookups)
+    Optional<Policy> findById(Long id);
+}
+
+// Result: findByCustomerId generates:
+// SELECT p.*, c.* FROM policy p LEFT JOIN claim c ON c.policy_id = p.id
+// (one query vs N+1)`,
+    },
+    {
+      id: 5,
+      question: 'What is HikariCP? How do you configure a connection pool in Spring Boot?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Database', 'HikariCP', 'Connection Pool', 'Performance'],
+      answer: `HikariCP is the default connection pool in Spring Boot (since 2.0). It's the fastest Java connection pool.
+
+Why connection pooling matters:
+Creating a database connection is expensive (network handshake, authentication, thread allocation — 20-100ms). Without pooling, every request creates + destroys a connection. With pooling, connections are pre-created and reused.
+
+Key HikariCP parameters:
+- maximumPoolSize: max connections in pool. Rule of thumb for PostgreSQL/MySQL: connections = (CPU cores * 2) + effective_spindle_count. For most apps: 10-20.
+- minimumIdle: min connections kept alive. Set equal to maximumPoolSize for best performance (avoid pool resizing overhead).
+- connectionTimeout: how long to wait for a free connection (default 30s). If exceeded → exception.
+- idleTimeout: how long idle connections are kept (default 10 min).
+- maxLifetime: max lifetime of a connection (default 30 min). Forces rotation before DB closes them.
+- connectionTestQuery: validation query (SELECT 1). Detects stale connections.
+
+Too many connections is worse than too few — DB server gets overwhelmed. Start with 10, tune from there.`,
+      code: `# application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/mydb
+spring.datasource.username=app_user
+spring.datasource.password=secret
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# HikariCP tuning
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=10
+spring.datasource.hikari.connection-timeout=30000      # 30s max wait for connection
+spring.datasource.hikari.idle-timeout=600000           # 10min idle before closed
+spring.datasource.hikari.max-lifetime=1800000          # 30min max connection life
+spring.datasource.hikari.pool-name=VehicleServicePool
+
+// Programmatic configuration
+@Bean
+public DataSource dataSource() {
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl("jdbc:mysql://localhost:3306/mydb");
+    config.setUsername("app_user");
+    config.setPassword("secret");
+    config.setMaximumPoolSize(10);
+    config.setConnectionTestQuery("SELECT 1");
+    return new HikariDataSource(config);
+}
+
+// Monitor pool via Actuator
+// GET /actuator/metrics/hikaricp.connections.active
+// GET /actuator/metrics/hikaricp.connections.pending`,
+    },
+    {
+      id: 6,
+      question: 'How do you handle database replica synchronization and read/write splitting?',
+      difficulty: 'advanced',
+      asked: false,
+      tags: ['Database', 'Replication', 'Read Replica', 'Scaling'],
+      answer: `Database replication: one PRIMARY (write) + one or more REPLICAS (read-only). Primary syncs changes to replicas asynchronously.
+
+Why read/write splitting:
+- Reads are 80-90% of most app traffic
+- Send reads to replicas, writes to primary
+- Primary handles only writes → less load
+- Replicas can be scaled independently
+
+Replication lag: replicas lag behind primary by milliseconds to seconds. After a write, immediately reading from a replica might return stale data. For consistency-critical reads after writes, read from primary.
+
+Spring Boot implementation options:
+
+1. Two separate DataSources with @Transactional(readOnly=true) routing:
+   - readOnly=true → route to replica DataSource
+   - readOnly=false → route to primary DataSource
+   - Use AbstractRoutingDataSource to switch
+
+2. AWS RDS Proxy / PgBouncer: handles routing transparently at infrastructure level (preferred).
+
+3. Spring Data with read replicas: configure multiple datasources in application.yml.`,
+      code: `// AbstractRoutingDataSource — routes based on readOnly flag
+public class RoutingDataSource extends AbstractRoutingDataSource {
+    @Override
+    protected Object determineCurrentLookupKey() {
+        return TransactionSynchronizationManager.isCurrentTransactionReadOnly()
+            ? "replica"
+            : "primary";
+    }
+}
+
+@Configuration
+public class DataSourceConfig {
+
+    @Bean
+    public DataSource dataSource(
+        @Qualifier("primaryDs") DataSource primary,
+        @Qualifier("replicaDs") DataSource replica) {
+
+        RoutingDataSource routing = new RoutingDataSource();
+        routing.setTargetDataSources(Map.of("primary", primary, "replica", replica));
+        routing.setDefaultTargetDataSource(primary);
+        return routing;
+    }
+}
+
+// Usage — @Transactional(readOnly=true) routes to replica
+@Service
+public class ReportService {
+
+    @Transactional(readOnly = true)   // → replica
+    public List<PolicySummary> getMonthlyReport(YearMonth month) { ... }
+
+    @Transactional                    // → primary
+    public Policy createPolicy(PolicyRequest req) { ... }
+}
+
+// application.yml — two data sources
+app.datasource.primary.url=jdbc:mysql://primary-db:3306/mydb
+app.datasource.replica.url=jdbc:mysql://replica-db:3306/mydb`,
+    },
+    {
+      id: 7,
+      question: 'How do you optimize slow database queries in a Spring Boot application?',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Database', 'Performance', 'Query Optimization', 'Indexes'],
+      answer: `Step 1: Find the slow queries.
+- Enable Spring Boot slow query logging (Hibernate show_sql)
+- Use database slow query log (MySQL: slow_query_log, threshold = 1s)
+- Production: APM tool (Datadog, New Relic) shows p99 query times
+
+Step 2: EXPLAIN the query.
+EXPLAIN ANALYZE your slow query. Look for: Sequential Scan on large tables (needs index), Nested Loop with large row counts (may need JOIN optimization).
+
+Common fixes:
+
+1. Missing index:
+Add indexes on columns used in WHERE, JOIN, and ORDER BY.
+Composite index: column order matters — most selective first.
+
+2. Selecting too many columns (SELECT *):
+Use DTO projections — only select needed columns.
+
+3. N+1 query: JOIN FETCH or @EntityGraph.
+
+4. Large result set: add pagination (Pageable).
+
+5. Inefficient LIKE queries: LIKE '%search%' can't use indexes. Use full-text search (MySQL FULLTEXT, Elasticsearch).
+
+6. Locks: long transactions hold locks. Keep transactions short.
+
+7. Connection pool: ensure pool size matches concurrency needs.`,
+      code: `-- Step 1: Find slow queries
+-- MySQL slow query log
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 1;
+
+-- Step 2: EXPLAIN
+EXPLAIN ANALYZE
+SELECT p.id, p.policy_no, c.claim_no
+FROM policy p
+JOIN claim c ON c.policy_id = p.id
+WHERE p.customer_id = 1001 AND p.status = 'ACTIVE';
+
+-- Look for: "Seq Scan" on large table → needs index
+
+-- Step 3: Add composite index
+CREATE INDEX idx_policy_customer_status ON policy(customer_id, status);
+
+// Spring Boot: DTO projection (avoid SELECT *)
+public interface PolicySummaryProjection {
+    Long getId();
+    String getPolicyNo();
+    String getStatus();
+}
+
+@Query("SELECT p.id, p.policyNo, p.status FROM Policy p WHERE p.customerId = :id")
+List<PolicySummaryProjection> findSummaries(@Param("id") Long id);
+
+// Pagination — never load unbounded result sets
+@GetMapping("/policies")
+public Page<PolicyDto> list(Pageable pageable) {
+    return policyRepo.findAll(pageable).map(mapper::toDto);
+}
+// GET /policies?page=0&size=20&sort=createdAt,desc`,
+    },
   ],
 }
 

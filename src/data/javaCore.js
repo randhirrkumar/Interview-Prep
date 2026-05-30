@@ -571,6 +571,387 @@ VehicleEvent event = VehicleEvent.builder()
       ],
       tip: 'In Spring context — all @Bean methods are Factory pattern. @Component beans are Singleton. This real-world connection impresses interviewers.',
     },
+    {
+      id: 11,
+      question: 'What are Generics in Java? Why are they used?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java', 'Generics', 'Type Safety'],
+      answer: `Generics allow you to write classes, interfaces, and methods that work with any type while providing compile-time type safety. Without generics, you'd use Object and cast manually — risky (ClassCastException at runtime).
+
+Key benefits:
+1. Type safety: compiler catches type errors at compile time, not runtime
+2. No casting needed
+3. Code reuse: one List<T> implementation works for List<String>, List<Integer>, etc.
+
+Type erasure: generics are a compile-time feature. At runtime, the JVM removes type information — List<String> and List<Integer> are both just List. This means you can't do new T() or get the type of T at runtime without extra work.
+
+Bounded type parameters:
+- <T extends Comparable<T>>: T must implement Comparable
+- <? super Integer>: any type that is Integer or a superclass (lower bound)
+- <? extends Number>: any type that is Number or a subclass (upper bound — for reading)`,
+      code: `// Generic class
+public class ApiResponse<T> {
+    private T data;
+    private String message;
+    private int status;
+
+    public ApiResponse(T data, String message, int status) {
+        this.data = data;
+        this.message = message;
+        this.status = status;
+    }
+}
+
+// Usage — type-safe, no casting
+ApiResponse<VehicleDto> vehicleResponse = new ApiResponse<>(vehicle, "OK", 200);
+ApiResponse<List<OrderDto>> ordersResponse = new ApiResponse<>(orders, "OK", 200);
+
+// Generic method
+public <T extends Comparable<T>> T findMax(List<T> list) {
+    return list.stream().max(Comparator.naturalOrder()).orElseThrow();
+}
+
+// Wildcards
+public void printList(List<? extends Number> list) {  // read: any Number subtype
+    list.forEach(System.out::println);
+}
+
+public void addNumbers(List<? super Integer> list) {  // write: Integer or parent
+    list.add(42);
+}`,
+    },
+    {
+      id: 12,
+      question: 'What is Reflection API in Java? When would you use it?',
+      difficulty: 'advanced',
+      asked: false,
+      tags: ['Java', 'Reflection', 'Internals'],
+      answer: `Reflection API lets you inspect and manipulate classes, methods, fields, and constructors at runtime — even private ones — without knowing them at compile time.
+
+What you can do:
+- Get class info: Class.forName("com.app.Vehicle")
+- Inspect methods/fields: clazz.getDeclaredMethods()
+- Invoke methods: method.invoke(object, args)
+- Access private fields: field.setAccessible(true); field.get(object)
+- Create instances: clazz.getDeclaredConstructor().newInstance()
+
+When frameworks use it:
+- Spring: uses reflection to inject dependencies, invoke @PostConstruct methods, process annotations
+- Jackson: uses reflection to serialize/deserialize objects to/from JSON
+- JUnit: discovers @Test methods via reflection and invokes them
+- Hibernate: reads @Column, @Table annotations at runtime
+
+When you should use it:
+- Building frameworks/libraries
+- Testing private methods (though better to test via public API)
+- Plugins that load classes by name at runtime
+
+Downsides: slow (bypasses JIT optimizations), breaks encapsulation, fails at compile-time errors only visible at runtime.`,
+      code: `// Basic reflection
+Class<?> clazz = Class.forName("com.app.VehicleService");
+
+// Get all methods (including private)
+Method[] methods = clazz.getDeclaredMethods();
+for (Method m : methods) {
+    System.out.println(m.getName() + " - " + m.getReturnType());
+}
+
+// Invoke a private method (for testing — not production use)
+Method privateMethod = clazz.getDeclaredMethod("calculateFare", double.class);
+privateMethod.setAccessible(true);  // bypass private access
+Object result = privateMethod.invoke(serviceInstance, 10.5);
+
+// Read a private field
+Field field = clazz.getDeclaredField("baseRate");
+field.setAccessible(true);
+double rate = (double) field.get(serviceInstance);
+
+// Create instance without knowing class at compile time
+Object instance = clazz.getDeclaredConstructor().newInstance();
+
+// How Spring uses it (simplified):
+// @Autowired on a field? Spring does:
+// field.setAccessible(true);
+// field.set(beanInstance, injectedDependency);`,
+    },
+    {
+      id: 13,
+      question: 'Aggregation vs Composition — what is the difference?',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['OOP', 'Java', 'Design'],
+      answer: `Both are "has-a" relationships (one object contains another), but they differ in the lifecycle dependency.
+
+Composition — STRONG ownership:
+- The contained object CANNOT exist without the container.
+- When the container is destroyed, the contained object is too.
+- Example: House has Rooms. If the House is demolished, the Rooms cease to exist.
+- In code: the contained object is created inside the parent's constructor/class.
+
+Aggregation — WEAK ownership:
+- The contained object CAN exist independently of the container.
+- Container and contained have independent lifecycles.
+- Example: Department has Employees. If the Department is closed, the Employees still exist.
+- In code: the contained object is passed in from outside (constructor injection).
+
+Rule of thumb: if the child makes no sense without the parent → Composition. If the child can live on its own → Aggregation.
+
+In Spring: Dependency Injection is technically Aggregation — the injected service can exist independently.`,
+      code: `// Composition — Room cannot exist without House
+class House {
+    private List<Room> rooms;
+
+    public House(int numRooms) {
+        // House CREATES its rooms — owns their lifecycle
+        rooms = new ArrayList<>();
+        for (int i = 0; i < numRooms; i++) {
+            rooms.add(new Room("Room-" + i));  // Room created here
+        }
+    }
+}
+// House destroyed → Rooms are garbage collected
+
+// Aggregation — Employee exists independently of Department
+class Department {
+    private List<Employee> employees;
+
+    public Department(List<Employee> employees) {
+        // Department RECEIVES employees — doesn't own their lifecycle
+        this.employees = employees;  // employees created externally
+    }
+}
+// Department deleted, but Employee objects still referenced elsewhere
+
+// Spring DI = Aggregation:
+@Service
+public class OrderService {
+    private final PaymentService paymentService;  // injected from outside
+
+    @Autowired
+    public OrderService(PaymentService paymentService) {
+        this.paymentService = paymentService;  // not created here
+    }
+}`,
+    },
+    {
+      id: 14,
+      question: 'Explain the internal working of HashMap — before and after Java 8.',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Java', 'HashMap', 'Collections', 'Internals'],
+      answer: `HashMap stores key-value pairs in an array of buckets. The bucket index is determined by: index = hash(key) % capacity.
+
+Before Java 8:
+- Each bucket was a singly-linked list
+- Collision: multiple keys with same bucket index → linked list grows
+- Worst case (many collisions): O(n) for get/put
+- Critical issue: in concurrent resize (rehashing), linked list could form a cycle → infinite loop (not thread-safe)
+
+After Java 8 (improved):
+- Buckets are still linked lists, BUT when a bucket's list length exceeds TREEIFY_THRESHOLD (8), it converts to a Red-Black Tree
+- After treeification: get/put is O(log n) even in worst case for that bucket
+- When elements reduce below UNTREEIFY_THRESHOLD (6), converts back to linked list
+
+Key details:
+- Default initial capacity: 16
+- Load factor: 0.75 (resize when 75% full)
+- On resize: capacity doubles, all entries rehashed
+- hashCode() + equals() must be consistent: objects that are equal must have same hashCode
+
+HashMap is NOT thread-safe. Use ConcurrentHashMap for concurrent access.`,
+      code: `// HashMap internal structure (simplified)
+// Node<K,V>[] table — array of buckets
+// Each bucket: LinkedList<Node> (before Java 8) or TreeNode (after Java 8 when many collisions)
+
+// How put() works:
+// map.put("vehicle-001", vehicleDto)
+// 1. key.hashCode() → hash → bucket index
+// 2. If bucket empty → create new Node, place it
+// 3. If bucket has nodes → check each for key equality (equals())
+//    - Key found: update value
+//    - Key not found: add to list (Java 8: add to tree if bucket size >= 8)
+// 4. If size > capacity * loadFactor (0.75) → resize (double capacity, rehash all)
+
+HashMap<String, Integer> map = new HashMap<>(16, 0.75f); // default
+
+// hashCode + equals contract (always override both)
+@Override
+public int hashCode() {
+    return Objects.hash(vehicleId, registrationNo);
+}
+
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Vehicle v)) return false;
+    return Objects.equals(vehicleId, v.vehicleId) &&
+           Objects.equals(registrationNo, v.registrationNo);
+}`,
+    },
+    {
+      id: 15,
+      question: 'HashMap vs ConcurrentHashMap vs LinkedHashMap vs TreeMap',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java', 'Collections', 'Thread Safety'],
+      answer: `HashMap:
+- Not thread-safe. Fast O(1) get/put average.
+- No ordering guarantee.
+- Allows one null key, multiple null values.
+- Use in single-threaded contexts.
+
+ConcurrentHashMap:
+- Thread-safe without synchronizing the entire map.
+- In Java 8+: uses CAS (Compare-And-Swap) and synchronized per-bucket instead of locking the whole map.
+- Does NOT allow null keys or null values (throws NullPointerException).
+- Use for concurrent access from multiple threads.
+
+LinkedHashMap:
+- Maintains INSERTION ORDER (by default) or ACCESS ORDER (LRU cache).
+- Slightly slower than HashMap due to extra linked list maintenance.
+- Use when you need predictable iteration order.
+- Classic use: LRU Cache (access-order LinkedHashMap with removeEldestEntry override).
+
+TreeMap:
+- Maintains keys in SORTED ORDER (natural ordering or custom Comparator).
+- O(log n) for get/put (Red-Black Tree underneath).
+- Use when you need sorted keys or range queries (subMap, headMap, tailMap).`,
+      code: `// HashMap — fastest, no ordering
+Map<String, VehicleDto> map = new HashMap<>();
+
+// ConcurrentHashMap — thread-safe, no null keys
+ConcurrentHashMap<String, VehicleDto> concurrentMap = new ConcurrentHashMap<>();
+concurrentMap.computeIfAbsent("vehicle-001", k -> loadFromDb(k));  // atomic
+
+// LinkedHashMap — preserves insertion order
+Map<String, Integer> orderedMap = new LinkedHashMap<>();
+
+// LRU Cache using access-order LinkedHashMap
+Map<String, VehicleDto> lruCache = new LinkedHashMap<>(100, 0.75f, true) {
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<String, VehicleDto> eldest) {
+        return size() > 100;  // evict oldest access when > 100 entries
+    }
+};
+
+// TreeMap — sorted by key
+Map<String, VehicleDto> sortedMap = new TreeMap<>();  // alphabetical order
+Map<String, VehicleDto> reverseMap = new TreeMap<>(Comparator.reverseOrder());
+
+// Range query — all keys between "A" and "M"
+SortedMap<String, VehicleDto> range = ((TreeMap<String, VehicleDto>) sortedMap)
+    .subMap("A", "M");`,
+    },
+    {
+      id: 16,
+      question: 'What is the String Pool in Java? How does String interning work?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java', 'String', 'Memory'],
+      answer: `String Pool (String Intern Pool) is a special area in the heap (part of metaspace since Java 8) where Java stores string literals to avoid creating duplicate String objects.
+
+When you write String s = "hello", Java:
+1. Checks if "hello" already exists in the pool
+2. If yes → returns reference to existing object
+3. If no → creates new String in pool, returns reference
+
+So two string literals with same value share the same object:
+String a = "hello";  // creates in pool
+String b = "hello";  // returns SAME object from pool
+a == b → TRUE (same reference)
+
+new String("hello") BYPASSES the pool — always creates a new object on the heap.
+a == new String("hello") → FALSE (different object, same content)
+
+String.intern() forces a string to use the pool:
+String c = new String("hello").intern(); // now uses pool object
+a == c → TRUE
+
+Why strings are immutable:
+- Security (passwords, file paths can't be modified after passing)
+- Thread safety (immutable = safe to share between threads)
+- Caching hashCode (computed once, reused — important since String is common Map key)
+- Enables String Pool (mutable strings couldn't be safely shared)`,
+      code: `String a = "hello";        // pool
+String b = "hello";        // same pool object
+String c = new String("hello");  // new heap object, NOT pool
+
+System.out.println(a == b);          // true  — same reference
+System.out.println(a == c);          // false — different object
+System.out.println(a.equals(c));     // true  — same content
+System.out.println(a == c.intern()); // true  — intern() puts c in pool
+
+// String concatenation with + creates new objects
+String s1 = "Hello";
+String s2 = "World";
+String s3 = s1 + s2;  // new object on heap (not pooled)
+
+// BUT compile-time constants are pooled:
+String s4 = "Hello" + "World";  // compiler resolves to "HelloWorld" → pooled
+
+// StringBuilder is better for repeated concatenation in loops
+StringBuilder sb = new StringBuilder();
+for (String item : items) {
+    sb.append(item).append(",");  // no new String per iteration
+}
+String result = sb.toString();`,
+    },
+    {
+      id: 17,
+      question: 'How do you make a class immutable in Java?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java', 'Immutability', 'Thread Safety'],
+      answer: `An immutable class is one whose state cannot be changed after construction. All instances are effectively final. Examples in JDK: String, Integer, LocalDate.
+
+Rules to make a class immutable:
+1. Declare class as final (prevents subclassing that could override methods and break immutability)
+2. All fields must be private and final
+3. No setters
+4. Initialize all fields via constructor
+5. Defensive copying for mutable fields:
+   - In constructor: copy incoming mutable objects (don't store reference directly)
+   - In getters: return copies of mutable fields (don't expose internal reference)
+
+Why immutability is valuable:
+- Thread safety: immutable objects can be shared freely between threads without synchronization
+- Safe as HashMap keys: hashCode never changes
+- Predictable behavior: no side effects`,
+      code: `// Immutable Vehicle class
+public final class Vehicle {  // 1. final class
+
+    private final String regNo;       // 2. private final fields
+    private final String owner;
+    private final List<String> documents;  // mutable field — needs defensive copy
+
+    public Vehicle(String regNo, String owner, List<String> documents) {
+        this.regNo = regNo;
+        this.owner = owner;
+        // 5a. Defensive copy in constructor (don't store the caller's reference)
+        this.documents = List.copyOf(documents);  // unmodifiable copy
+    }
+
+    // 3. No setters
+
+    // 4. Getters only
+    public String getRegNo() { return regNo; }
+    public String getOwner() { return owner; }
+
+    // 5b. Defensive copy in getter (don't expose internal mutable reference)
+    public List<String> getDocuments() {
+        return List.copyOf(documents);  // caller can't modify our list
+    }
+}
+
+// Java 16+ Record — automatically immutable
+public record VehicleRecord(String regNo, String owner, List<String> documents) {
+    // Compact constructor for validation
+    public VehicleRecord {
+        documents = List.copyOf(documents);  // defensive copy
+    }
+}`,
+    },
   ],
 }
 
