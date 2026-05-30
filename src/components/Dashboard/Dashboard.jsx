@@ -61,7 +61,7 @@ export default function Dashboard() {
         <div className="relative z-10">
           <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">Good {getGreeting()}, {firstName}</div>
           <h1 className="text-2xl font-bold text-white mb-1">Your Interview Prep Dashboard</h1>
-          <p className="text-gray-400 text-sm max-w-xl">Java Backend Engineer · 4+ Years · Targeting Product & Service Companies · Let's crack it in 30 days 🚀</p>
+          <p className="text-gray-400 text-sm max-w-xl">Java Backend Engineer · Targeting Product & Service Companies · Let's crack it in 30 days 🚀</p>
         </div>
       </div>
 
