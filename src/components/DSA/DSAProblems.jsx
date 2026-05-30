@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, CheckCircle, Code2 } from 'lucide-react'
 import dsaProblems from '../../data/dsaProblems'
 import { useProgress } from '../../hooks/useProgress'
 
-const CATEGORIES = ['All', 'Arrays', 'Linked List', 'Stack', 'Trees', 'Strings', 'Dynamic Programming', 'Binary Search']
+const CATEGORIES = ['All', 'Arrays & Hashing', 'Arrays', 'Linked List', 'Stack', 'Trees', 'Strings', 'Dynamic Programming', 'Binary Search']
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard']
 
 const DIFF_COLOR = {

@@ -506,6 +506,244 @@ public int lcsOptimized(String text1, String text2) {
 }`,
     complexity: { time: 'O(m*n)', space: 'O(m*n)' },
   },
+  // ─── Week 1: Arrays & Hashing ────────────────────────────────────────────────
+  {
+    id: 13,
+    title: 'Contains Duplicate',
+    difficulty: 'Easy',
+    category: 'Arrays & Hashing',
+    tags: ['HashSet', 'Arrays'],
+    description: 'Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct. (LC #217)',
+    examples: [
+      { input: 'nums = [1,2,3,1]', output: 'true' },
+      { input: 'nums = [1,2,3,4]', output: 'false' },
+    ],
+    approach: `To the interviewer:
+"My first instinct is a brute force — compare every pair, O(n²). But a better way is to use a HashSet. As I iterate, I try to add each number to the set. HashSet.add() returns false if the element is already there, so the moment it returns false I know I found a duplicate. This gives me O(n) time and O(n) space."`,
+    solution: `// What I say: "I'll use a HashSet — add() returns false if element already exists"
+public boolean containsDuplicate(int[] nums) {
+    Set<Integer> seen = new HashSet<>();
+
+    for (int num : nums) {
+        if (!seen.add(num)) {
+            return true;  // add() returned false → duplicate found
+        }
+    }
+
+    return false;  // all elements were unique
+}
+
+// Brute force I started with (O(n²) — mention this then improve it):
+// for (int i = 0; i < nums.length; i++)
+//     for (int j = i+1; j < nums.length; j++)
+//         if (nums[i] == nums[j]) return true;`,
+    complexity: { time: 'O(n)', space: 'O(n)' },
+  },
+  {
+    id: 14,
+    title: 'Valid Anagram',
+    difficulty: 'Easy',
+    category: 'Arrays & Hashing',
+    tags: ['HashMap', 'Sorting', 'Strings'],
+    description: 'Given two strings s and t, return true if t is an anagram of s, and false otherwise. An anagram uses all characters of the original string exactly once. (LC #242)',
+    examples: [
+      { input: 's = "anagram", t = "nagaram"', output: 'true' },
+      { input: 's = "rat", t = "car"', output: 'false' },
+    ],
+    approach: `To the interviewer:
+"First I check lengths — if they differ, it can't be an anagram. Then I have two approaches:
+Approach 1 (Sort): Sort both strings, if they are equal they are anagrams — O(n log n).
+Approach 2 (Count array — optimal): Use an int[26] array indexed by character. Increment for each char in s, decrement for each char in t. If all counts are zero at the end, they are anagrams — O(n) time, O(1) space since the array is fixed size 26."`,
+    solution: `// Optimal: character count array — O(n) time, O(1) space
+public boolean isAnagram(String s, String t) {
+    if (s.length() != t.length()) return false;
+
+    int[] count = new int[26]; // index 0 = 'a', 25 = 'z'
+
+    for (int i = 0; i < s.length(); i++) {
+        count[s.charAt(i) - 'a']++;  // count up for s
+        count[t.charAt(i) - 'a']--;  // count down for t
+    }
+
+    // If anagram, every frequency cancels out to 0
+    for (int c : count) {
+        if (c != 0) return false;
+    }
+    return true;
+}
+
+// Sorting approach — O(n log n), also correct and easy to explain:
+public boolean isAnagramSort(String s, String t) {
+    if (s.length() != t.length()) return false;
+    char[] a = s.toCharArray();
+    char[] b = t.toCharArray();
+    Arrays.sort(a);
+    Arrays.sort(b);
+    return Arrays.equals(a, b); // anagrams have same sorted form
+}`,
+    complexity: { time: 'O(n)', space: 'O(1)' },
+  },
+  {
+    id: 15,
+    title: 'Top K Frequent Elements',
+    difficulty: 'Medium',
+    category: 'Arrays & Hashing',
+    tags: ['HashMap', 'PriorityQueue', 'Bucket Sort'],
+    description: 'Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order. (LC #347)',
+    examples: [
+      { input: 'nums = [1,1,1,2,2,3], k = 2', output: '[1,2]' },
+      { input: 'nums = [1], k = 1', output: '[1]' },
+    ],
+    approach: `To the interviewer:
+"Step 1 is clear — build a frequency map with a HashMap.
+Step 2 has two options:
+Option A (Min-Heap, O(n log k)): Keep a min-heap of size k. For each element in the map, push it. If the heap grows past k, remove the minimum. What remains are the k most frequent.
+Option B (Bucket Sort, O(n)): Create an array of lists where index = frequency. Since frequency can be at most n, the array size is n+1. Fill it, then read from the end to get top k. This is O(n) and the most impressive answer in an interview."`,
+    solution: `// Approach 1: Min-Heap — O(n log k) time
+public int[] topKFrequent(int[] nums, int k) {
+    // Step 1: count frequencies
+    Map<Integer, Integer> freq = new HashMap<>();
+    for (int num : nums) {
+        freq.put(num, freq.getOrDefault(num, 0) + 1);
+    }
+
+    // Step 2: min-heap ordered by frequency, keep only k elements
+    PriorityQueue<Integer> heap = new PriorityQueue<>(
+        (a, b) -> freq.get(a) - freq.get(b)  // min-heap by frequency
+    );
+
+    for (int num : freq.keySet()) {
+        heap.offer(num);
+        if (heap.size() > k) heap.poll(); // drop least frequent
+    }
+
+    // Step 3: collect result
+    int[] result = new int[k];
+    for (int i = 0; i < k; i++) result[i] = heap.poll();
+    return result;
+}
+
+// Approach 2: Bucket Sort — O(n) time (best for interviews)
+public int[] topKFrequentBucket(int[] nums, int k) {
+    Map<Integer, Integer> freq = new HashMap<>();
+    for (int num : nums) freq.put(num, freq.getOrDefault(num, 0) + 1);
+
+    // bucket[i] holds all numbers that appear exactly i times
+    List<Integer>[] bucket = new List[nums.length + 1];
+    for (int num : freq.keySet()) {
+        int f = freq.get(num);
+        if (bucket[f] == null) bucket[f] = new ArrayList<>();
+        bucket[f].add(num);
+    }
+
+    // Read from highest frequency downward
+    int[] result = new int[k];
+    int idx = 0;
+    for (int i = bucket.length - 1; i >= 0 && idx < k; i--) {
+        if (bucket[i] != null) {
+            for (int num : bucket[i]) {
+                result[idx++] = num;
+                if (idx == k) return result;
+            }
+        }
+    }
+    return result;
+}`,
+    complexity: { time: 'O(n)', space: 'O(n)' },
+  },
+  {
+    id: 16,
+    title: 'Product of Array Except Self',
+    difficulty: 'Medium',
+    category: 'Arrays & Hashing',
+    tags: ['Arrays', 'Prefix Product'],
+    description: 'Given an integer array nums, return an array answer such that answer[i] is equal to the product of all elements of nums except nums[i]. Solve it in O(n) without using the division operator. (LC #238)',
+    examples: [
+      { input: 'nums = [1,2,3,4]', output: '[24,12,8,6]' },
+      { input: 'nums = [-1,1,0,-3,3]', output: '[0,0,9,0,0]' },
+    ],
+    approach: `To the interviewer:
+"Without division, the key insight is: for each index i, the answer is (product of everything LEFT of i) × (product of everything RIGHT of i).
+I do two passes:
+Pass 1 (left to right): result[i] = product of all elements before i.
+Pass 2 (right to left): I keep a running right-product and multiply it into result[i].
+After both passes, result[i] has exactly the product of all elements except itself. This is O(n) time and O(1) extra space."`,
+    solution: `// O(n) time, O(1) extra space — two pass prefix × suffix product
+public int[] productExceptSelf(int[] nums) {
+    int n = nums.length;
+    int[] result = new int[n];
+
+    // Pass 1 (left to right): result[i] = product of nums[0..i-1]
+    result[0] = 1; // nothing to the left of index 0
+    for (int i = 1; i < n; i++) {
+        result[i] = result[i - 1] * nums[i - 1];
+    }
+    // For [1,2,3,4]: result = [1, 1, 2, 6]
+
+    // Pass 2 (right to left): multiply in the right-side product
+    int right = 1; // nothing to the right of last index
+    for (int i = n - 1; i >= 0; i--) {
+        result[i] *= right;   // multiply left-product × right-product
+        right *= nums[i];     // extend right product for next iteration
+    }
+    // For [1,2,3,4]: result = [24, 12, 8, 6] ✓
+
+    return result;
+}`,
+    complexity: { time: 'O(n)', space: 'O(1)' },
+  },
+  {
+    id: 17,
+    title: 'Longest Consecutive Sequence',
+    difficulty: 'Hard',
+    category: 'Arrays & Hashing',
+    tags: ['HashSet', 'Arrays'],
+    description: 'Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence. You must write an algorithm that runs in O(n) time. (LC #128)',
+    examples: [
+      { input: 'nums = [100,4,200,1,3,2]', output: '4', explanation: 'Sequence [1,2,3,4]' },
+      { input: 'nums = [0,3,7,2,5,8,4,6,0,1]', output: '9' },
+    ],
+    approach: `To the interviewer:
+"Sorting would be O(n log n) — can we do O(n)? Yes, using a HashSet.
+The trick: we only START counting a sequence from its smallest number. How do I know if a number is the start? If (num - 1) is NOT in the set.
+Once I find a start, I count upward while (num + 1) exists in the set.
+Putting all numbers in a HashSet first lets me do each lookup in O(1). Each number is visited at most twice total — once in the outer loop, once in the inner while. So it's O(n) overall."`,
+    solution: `// O(n) time, O(n) space — HashSet with sequence-start trick
+public int longestConsecutive(int[] nums) {
+    // Step 1: put everything in a set for O(1) lookup
+    Set<Integer> set = new HashSet<>();
+    for (int num : nums) set.add(num);
+
+    int maxLen = 0;
+
+    for (int num : set) {
+        // Only start counting if this is the beginning of a sequence
+        // (i.e., no smaller neighbour exists)
+        if (!set.contains(num - 1)) {
+            int current = num;
+            int length = 1;
+
+            // Extend the sequence as far as possible
+            while (set.contains(current + 1)) {
+                current++;
+                length++;
+            }
+
+            maxLen = Math.max(maxLen, length);
+        }
+    }
+
+    return maxLen;
+}
+
+// Trace for [100, 4, 200, 1, 3, 2]:
+// num=1  → start (0 not in set) → 1,2,3,4 → length=4 ✓
+// num=4  → skip (3 is in set, not a start)
+// num=100 → start (99 not in set) → length=1
+// num=200 → start (199 not in set) → length=1
+// maxLen = 4`,
+    complexity: { time: 'O(n)', space: 'O(n)' },
+  },
 ]
 
 export default dsaProblems
