@@ -26,7 +26,13 @@ The key players:
 - Identity Provider (IdP): Centralized authentication server (Azure AD, Okta, AD FS)
 - Protocol: SAML 2.0 or OAuth2/OIDC
 
-I implemented SAML-based SSO in my MetLife project — their enterprise users authenticated through their corporate Active Directory via SAML, not through username/password in our database.`,
+I implemented SAML-based SSO in my MetLife project — their enterprise users authenticated through their corporate Active Directory via SAML, not through username/password in our database.
+
+**SSO vs OAuth2:** SSO is a user experience concept — "log in once, access many apps." OAuth2 is an authorization protocol — "grant this app permission to access your resources." SSO is typically implemented USING OAuth2+OIDC or SAML. When you click "Login with Google," that's OAuth2/OIDC providing SSO-like experience. They're related but different: SSO describes the goal; OAuth2/OIDC/SAML describes the mechanism.
+
+**Authentication vs Authorization:** Authentication (AuthN): "Who are you?" Verifying identity — login with credentials, JWT validation. Authorization (AuthZ): "What can you do?" Verifying permissions — checking if a user has ADMIN role to delete records. Always authenticate first, then authorize. In Spring Security: @EnableWebSecurity handles authentication; @PreAuthorize or .hasRole() handles authorization.
+
+**Risks of SSO:** Single point of failure — if the IdP goes down, NO app can authenticate. Mitigate with IdP redundancy (Azure AD is highly available). Blast radius of compromise — if an attacker gets into the IdP account, they access ALL connected applications. Mitigate with MFA. Session management complexity — SSO sessions span multiple apps; configuring appropriate session length and logout propagation (SLO) is complex.`,
       code: `// SSO Flow Diagram:
 /*
   User → App (SP)                   IdP (Azure AD / Okta)
@@ -79,7 +85,13 @@ User accesses SP → SP redirects to IdP with SAMLRequest → User authenticates
 IdP-initiated flow:
 User goes directly to IdP → Authenticates → IdP sends SAMLResponse to SP. No SAMLRequest — the SP must accept assertions without a prior request. Slightly less secure.
 
-In my MetLife project, we had SP-initiated flow where users started from the MetLife portal and got redirected to the corporate IdP (Azure AD).`,
+In my MetLife project, we had SP-initiated flow where users started from the MetLife portal and got redirected to the corporate IdP (Azure AD).
+
+**SAML replay attack prevention:** Two mechanisms: (1) InResponseTo attribute: the SAMLResponse includes the ID of the original SAMLRequest. SP validates that the response matches a request it actually sent — prevents an attacker from replaying a captured response. (2) Short validity window: NotBefore and NotOnOrAfter timestamps (typically 5-minute window). SP rejects assertions outside this window. SP should also track used assertion IDs to prevent the same assertion from being used twice.
+
+**Assertion Consumer Service (ACS) URL:** The ACS URL is the endpoint on the SP that receives the SAMLResponse POST from the IdP after successful authentication. Example: https://myapp.com/login/saml2/sso/azure-ad. It must be registered in both the SP configuration AND the IdP application settings. Mismatch causes authentication failure. The AssertionConsumerServiceURL in the SAMLRequest must exactly match what's configured in the IdP — any difference (http vs https, trailing slash) will fail.
+
+**SAML metadata:** An XML document that describes an entity (SP or IdP). SP metadata contains: entityID (unique identifier), ACS URL (where IdP posts assertions), SP signing certificate (public key IdP uses to verify assertions are from this SP), supported SAML bindings. IdP metadata contains: entityID, SSO endpoint URL (where SP redirects for auth), IdP signing certificate (SP uses to verify responses are from this IdP). You typically download IdP metadata from Azure AD portal and configure it in your Spring Boot app.`,
       code: `<!-- SAMLRequest (encoded) sent from SP to IdP -->
 <samlp:AuthnRequest
   xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -141,7 +153,13 @@ The implementation steps:
 
 Key configuration: RelyingPartyRegistration defines the relationship between SP and IdP. You need the IdP metadata (usually downloaded from Azure AD or Okta portal).
 
-In MetLife, the IdP was Azure AD. I registered our application in Azure AD, downloaded the Federation Metadata XML, and configured it in our Spring Boot app. Users could then log in with their corporate Microsoft account.`,
+In MetLife, the IdP was Azure AD. I registered our application in Azure AD, downloaded the Federation Metadata XML, and configured it in our Spring Boot app. Users could then log in with their corporate Microsoft account.
+
+**Single Logout (SLO) in SAML:** SLO is the SAML protocol for propagating logout across all SPs when a user logs out from ANY SP or the IdP. Flow: user logs out from App A → App A sends LogoutRequest to IdP → IdP sends LogoutRequest to all other SPs (App B, App C) → each SP invalidates its session → IdP sends LogoutResponse back to App A. Spring Security SAML2 supports SLO via .saml2Logout(). Without SLO, logging out from one app doesn't log out from others — the IdP session still exists.
+
+**SAML token expiry handling:** SAML assertions have a short validity window (typically 5 minutes). Once the SAML assertion expires, the SP session (HTTP session/cookie) is still valid — the user doesn't get logged out. The SP session has its own timeout (typically 30 minutes to hours). When the session expires, the user is redirected to IdP again. If the IdP session is still active, the user gets a new assertion WITHOUT entering credentials (that's SSO). To force re-authentication, set ForceAuthn=true in the SAMLRequest.
+
+**SAML 2.0 vs OAuth2+OIDC — when to choose:** SAML: enterprise, legacy systems, AD FS, when you must integrate with existing corporate SSO infrastructure. XML-based, verbose but mature. OAuth2+OIDC: modern apps, mobile clients (native app flows), REST APIs, when flexibility and simplicity matter. JSON/JWT-based, lightweight. If starting fresh or building APIs, use OIDC. If the enterprise already has SAML-based IdP (AD FS) and you must integrate, use SAML.`,
       code: `<!-- pom.xml dependency -->
 <dependency>
     <groupId>org.springframework.security</groupId>
@@ -252,7 +270,13 @@ When to use which:
 - SAML: legacy enterprise systems, AD FS, when IdP is older
 - OAuth2 + OIDC: modern apps, mobile, API-to-API, when using Azure AD/Okta/Google in new projects
 
-In new projects I'd always recommend OIDC over SAML — simpler, better mobile support, and all major IdPs support it.`,
+In new projects I'd always recommend OIDC over SAML — simpler, better mobile support, and all major IdPs support it.
+
+**JWT structure:** Three parts separated by dots: Header.Payload.Signature. Header (base64): algorithm and token type — {"alg":"RS256","typ":"JWT"}. Payload (base64): claims — {"sub":"user123","exp":1234567890,"roles":["ADMIN"]}. Signature: HMAC/RSA of header+payload using the secret/private key — prevents tampering. Anyone can decode the header and payload (base64, not encrypted), but cannot forge the signature without the key. Use HTTPS to prevent interception.
+
+**Access token vs ID token:** Access token: intended for APIs — "use this to call the API on behalf of the user." Should be opaque to the client (just pass it to the API). ID token: intended for the CLIENT application — "here is who the user is." Contains user profile information (sub, email, name, roles). The client reads the ID token to know who logged in. Access token scopes grant API access; ID token claims describe identity.
+
+**PKCE flow for mobile apps:** PKCE (Proof Key for Code Exchange) is an extension to OAuth2 Authorization Code flow for public clients (mobile apps, SPAs) that cannot securely store a client_secret. Instead: client generates a code_verifier (random string) and code_challenge (SHA-256 of verifier). Sends code_challenge with authorization request. When exchanging code for token, sends the original code_verifier — server verifies hash matches. This prevents authorization code interception attacks. All mobile OAuth2 flows should use PKCE.`,
       code: `// OAuth2 Authorization Code Flow (most common, web apps)
 /*
   1. User clicks "Login with Google/Azure AD"
@@ -335,7 +359,11 @@ spring.security.oauth2.client.provider.azure.issuer-uri=\\
 
 4. ACS URL mismatch: The AssertionConsumerServiceURL in the request didn't match what's registered in the IdP. IdP rejects the request. Fix: match exactly including http vs https.
 
-5. Large assertions: Some IdPs include all group memberships in the assertion. For users with hundreds of groups, the assertion is huge and HTTP headers are too large. Fixed by filtering to only relevant groups.`,
+5. Large assertions: Some IdPs include all group memberships in the assertion. For users with hundreds of groups, the assertion is huge and HTTP headers are too large. Fixed by filtering to only relevant groups.
+
+**Testing SAML in local development:** Use a mock/test IdP running locally. Options: (1) Keycloak in Docker (docker run quay.io/keycloak/keycloak start-dev) — configure a realm with a SAML client, create test users, point your SP to Keycloak. Full SAML flow in minutes. (2) SimpleSAMLphp — PHP-based IdP, lightweight for pure SAML testing. (3) Spring Security provides a test-mode with MockSaml2AuthenticationRequestContext for unit tests. For integration tests, wire Keycloak container via Testcontainers. Also use SAML Tracer browser extension to capture and inspect the assertion XML during every test flow.
+
+**Certificate rotation in SAML without downtime:** SAML certificates are used to sign assertions (IdP) and encrypt assertions (SP). Rotating them requires coordination between IdP and SP. Zero-downtime rotation: (1) Add the NEW certificate to your SP metadata ALONGSIDE the old one (most SAML implementations support multiple certificates in metadata). (2) The IdP sees both certificates — it can still validate with the old one for in-flight sessions. (3) The IdP gradually starts using the new certificate for new assertions. (4) Once you confirm all sessions are using the new cert, remove the old certificate from metadata. This dual-cert window ensures no user is interrupted mid-session. For SP-side encryption, same approach in reverse.`,
       code: `// Debugging SAML issues:
 
 // 1. Enable SAML debug logging

@@ -25,7 +25,13 @@ Challenges:
 - Data consistency: distributed transactions are hard
 - Operational overhead: need to manage many services, containers, health checks
 
-In my EPLMS project, we had separate services for Vehicle Management, Event Processing, Tracking, Billing, and Notifications. Each could be deployed and scaled independently.`,
+In my EPLMS project, we had separate services for Vehicle Management, Event Processing, Tracking, Billing, and Notifications. Each could be deployed and scaled independently.
+
+**Distributed transactions / Saga pattern:** Traditional ACID transactions don't span multiple services/databases. The Saga pattern solves this by breaking a distributed transaction into local transactions. Each step publishes an event or calls the next service. If a step fails, compensating transactions undo previous steps (e.g., cancel order, release inventory, refund payment). Two types: Choreography (event-driven, no coordinator) and Orchestration (central coordinator directs steps). See the dedicated Saga question for full detail.
+
+**CAP Theorem:** In a distributed system, you can guarantee at most 2 of 3: Consistency (every read gets the latest write), Availability (every request gets a response, though it may be stale), Partition tolerance (system keeps working even if network partitions occur). Since network partitions always happen in real distributed systems, you must choose between CP (consistent, may reject requests during partition) or AP (available, may return stale data). Kafka-based event systems are AP: highly available, eventually consistent.
+
+**Eventual consistency:** The system guarantees that all replicas/services will EVENTUALLY converge to the same state if no new updates are made. There's a window where different services see different states. Example: after creating an order, the billing service might take 100ms to process the event — during that time, order status is PENDING in billing. This is acceptable for non-critical reads. For critical consistency (bank balance), read from the primary source of truth, not from eventually-consistent replicas.`,
       code: `// Microservices communication patterns in EPLMS:
 /*
   ┌─────────────────────────────────────────────┐
@@ -74,7 +80,13 @@ What API Gateway does:
 - Request/response transformation
 - Circuit breaking: stops routing to unhealthy services
 
-In my EPLMS project, we had an API Gateway (using Spring Cloud Gateway) that handled auth token validation. Backend services didn't need to implement auth — they trusted that the gateway already validated it. This kept backend code simpler.`,
+In my EPLMS project, we had an API Gateway (using Spring Cloud Gateway) that handled auth token validation. Backend services didn't need to implement auth — they trusted that the gateway already validated it. This kept backend code simpler.
+
+**API Gateway vs Load Balancer:** Load Balancer operates at layer 4 (TCP/transport) or layer 7 (HTTP) and distributes traffic across instances. It doesn't understand business logic. API Gateway operates at layer 7 and handles application-level concerns: routing based on URL patterns, authentication, rate limiting, request transformation, circuit breaking. They often work together: Load Balancer in front of multiple API Gateway instances.
+
+**BFF (Backend for Frontend) pattern:** Instead of one API Gateway, you have multiple gateways — one per client type (mobile app, web app, third-party). Each BFF is optimized for its specific client: mobile BFF returns smaller payloads, web BFF returns more data. Benefits: reduces over-fetching, client-specific auth flows, independently deployable. Used when different clients have very different data needs.
+
+**Auth in microservices without API Gateway:** Each service validates the JWT token independently. This means: every service needs the JWT secret/public key, security code is duplicated across services, and if you change the auth mechanism, you update every service. API Gateway centralizes this — much cleaner. For internal service-to-service calls, use service accounts or mutual TLS (mTLS).`,
       code: `// Spring Cloud Gateway Configuration
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -170,7 +182,13 @@ Two types:
 - Client-side discovery: service asks registry, then calls directly (Eureka + Ribbon/LoadBalancer)
 - Server-side discovery: route through a server that does the lookup (API Gateway)
 
-In cloud deployments (Kubernetes), you don't need Eureka — Kubernetes has built-in service discovery via DNS. I used Eureka in on-premise deployments and K8s service discovery in containerized environments.`,
+In cloud deployments (Kubernetes), you don't need Eureka — Kubernetes has built-in service discovery via DNS. I used Eureka in on-premise deployments and K8s service discovery in containerized environments.
+
+**Feign Client vs RestTemplate:** RestTemplate is imperative — you build URLs, handle responses, deserialize manually. Feign Client is declarative — you define an interface with @FeignClient and Spring generates the HTTP client implementation. Much less boilerplate. Feign integrates with Ribbon (load balancing), Hystrix/Resilience4j (circuit breaking), and Eureka (service discovery) automatically. The downside: less control over low-level details.
+
+**If Eureka Server goes down:** Eureka clients cache the registry locally. For a configurable period (default 90s), they continue using the cached instance list. New services can't register and registry changes aren't visible, but existing service-to-service calls continue working. This is by design — Eureka is AP (available, eventually consistent) not CP.
+
+**Kubernetes service discovery vs Eureka:** In K8s, each service gets a DNS name (serviceName.namespace.svc.cluster.local). When you call http://vehicle-service:8080, K8s DNS resolves it and kube-proxy routes to healthy pods. No Eureka needed. K8s also handles health checks and removes unhealthy pods automatically. For K8s deployments, use Spring Cloud Kubernetes instead of Eureka.`,
       code: `// Eureka Server
 @SpringBootApplication
 @EnableEurekaServer
@@ -262,7 +280,13 @@ Without circuit breaker: if Payment Service is down, Order Service keeps trying,
 
 With circuit breaker: after 5 failures, circuit opens. Order Service immediately returns cached data or error message. System stays responsive. After a wait, circuit tries again.
 
-In my EPLMS project, we had a circuit breaker on external third-party API calls (vehicle registration verification). If the external API was down, we'd fail gracefully and allow the operation with manual review flag.`,
+In my EPLMS project, we had a circuit breaker on external third-party API calls (vehicle registration verification). If the external API was down, we'd fail gracefully and allow the operation with manual review flag.
+
+**Circuit Breaker vs Retry pattern:** Retry pattern retries a failed operation N times with backoff, hoping for a transient failure. Circuit Breaker STOPS retrying after a threshold — it "opens" and fails fast without hitting the downstream service. They complement each other: Retry handles transient blips; Circuit Breaker handles sustained outages. In Resilience4j, combine both: @Retry + @CircuitBreaker on the same method.
+
+**Bulkhead pattern:** Isolates thread pools for different downstream services so one slow service can't exhaust ALL threads. Example: if Vehicle Registry Service is slow and using a shared thread pool, it could consume all threads and block unrelated services. With bulkhead: Vehicle Registry gets a dedicated pool of 10 threads; if all 10 are busy, requests fail fast — the main service thread pool is unaffected.
+
+**Monitoring circuit breaker state:** Resilience4j integrates with Micrometer → Spring Boot Actuator. Metrics: resilience4j.circuitbreaker.state, .calls, .failed.calls. Add Prometheus + Grafana to visualize. Spring Cloud Gateway also exposes circuit breaker metrics. Set up alerts when circuit opens in production.`,
       code: `<!-- pom.xml -->
 <dependency>
     <groupId>io.github.resilience4j</groupId>
@@ -352,7 +376,13 @@ Example: Order placement flow:
 
 If Payment fails: run compensating transactions — release inventory, cancel order.
 
-In MetLife, our policy creation had a saga: create policy → calculate premium → set up payment schedule → activate policy. If payment setup failed, we'd mark policy as PENDING with notification to customer.`,
+In MetLife, our policy creation had a saga: create policy → calculate premium → set up payment schedule → activate policy. If payment setup failed, we'd mark policy as PENDING with notification to customer.
+
+**Outbox Pattern:** The core problem: after a local DB write, publishing to Kafka can fail — you have inconsistent state (DB updated but no event published). The Outbox pattern: write the event to an "outbox" table IN THE SAME DB TRANSACTION as the business data. A separate "outbox processor" reads from the outbox table and publishes to Kafka. If the processor fails, it retries — the event was already safely in the DB. Guarantees at-least-once delivery with no lost events.
+
+**Saga vs 2PC (Two-Phase Commit):** 2PC is the traditional distributed transaction protocol: Phase 1 (Prepare) — coordinator asks all participants to prepare. Phase 2 (Commit/Abort) — if all say OK, commit; else abort all. Problem: blocking protocol — participants hold locks during the entire process. If coordinator crashes, participants are stuck (blocking). Doesn't scale well. Saga is non-blocking — each local transaction commits independently. Better scalability, but only eventual consistency and requires compensating transactions.
+
+**Idempotency in Saga:** Each saga step must be idempotent — if retried, same result. Use unique event IDs and check for duplicates before processing. Store processed event IDs in DB. Each compensating transaction must also be idempotent — calling "release inventory" twice should not release it twice.`,
       code: `// Choreography-based Saga (event-driven)
 // Each service publishes domain events, others react
 

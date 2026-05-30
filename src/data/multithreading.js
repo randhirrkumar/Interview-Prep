@@ -15,7 +15,13 @@ Extending Thread is limiting because Java has single inheritance — if your cla
 
 But in modern Java (8+), the best way is using ExecutorService or CompletableFuture. Creating raw threads is generally not recommended in production — thread creation is expensive. Thread pools reuse threads.
 
-In my Spring Boot services, I use @Async with a configured ThreadPoolTaskExecutor, or CompletableFuture for parallel API calls.`,
+In my Spring Boot services, I use @Async with a configured ThreadPoolTaskExecutor, or CompletableFuture for parallel API calls.
+
+**start() vs run():** start() creates a NEW thread and calls run() on it — actual parallelism. run() just calls the method on the CURRENT thread — no new thread created, no parallelism. This is a classic trap: calling thread.run() looks like it works but runs synchronously.
+
+**ExecutorService thread pool types:** newFixedThreadPool(n) — fixed number of threads, others queue. newCachedThreadPool() — grows as needed, idle threads removed after 60s (good for short bursts). newSingleThreadExecutor() — one thread, tasks run in order. newScheduledThreadPool(n) — for scheduling tasks with delay/periodic.
+
+**Runnable vs Callable:** Runnable.run() returns void and cannot throw checked exceptions. Callable.call() returns a value of type V and CAN throw checked exceptions. ExecutorService.submit(Callable) returns a Future<V> — call future.get() to retrieve the result (blocks until done).`,
       code: `// 1. Extending Thread
 class MyThread extends Thread {
     @Override
@@ -94,7 +100,13 @@ synchronized ensures only one thread at a time can execute the synchronized bloc
 
 synchronized can be on: method (locks "this"), static method (locks class), or specific block with a lock object (more granular).
 
-In my Spring Boot services, I use ConcurrentHashMap, AtomicInteger etc. instead of synchronized where possible — they're more efficient and less error-prone.`,
+In my Spring Boot services, I use ConcurrentHashMap, AtomicInteger etc. instead of synchronized where possible — they're more efficient and less error-prone.
+
+**synchronized vs ReentrantLock:** synchronized is simpler — compiler handles lock/unlock. ReentrantLock gives more control: tryLock(timeout) to avoid deadlocks, lockInterruptibly() to let threads respond to interruption, fair mode (threads acquire lock in order they requested it), multiple Condition objects (for complex wait/notify). Always unlock ReentrantLock in a finally block. Use synchronized for simple cases; ReentrantLock for more complex scenarios.
+
+**Deadlock example and prevention:** Deadlock: Thread A holds Lock 1, waits for Lock 2. Thread B holds Lock 2, waits for Lock 1. Neither can proceed. Prevention: (1) Always acquire locks in the same order (e.g., always lock the lower ID first). (2) Use tryLock() with a timeout — if can't acquire, release held locks and retry. (3) Avoid holding multiple locks simultaneously. (4) Use higher-level concurrency utilities instead of raw locks.
+
+**volatile keyword:** volatile guarantees VISIBILITY — every read of a volatile variable gets the latest value written by any thread (no CPU cache stale reads). But volatile does NOT guarantee ATOMICITY — volatile int count++  is still NOT thread-safe (it's still read-modify-write). Use volatile for: boolean flags (volatile boolean running = true), singleton double-checked locking pattern.`,
       code: `// Race condition example
 class Counter {
     private int count = 0;

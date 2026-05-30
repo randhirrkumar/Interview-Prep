@@ -18,7 +18,13 @@ In my project, we deployed our Spring Boot microservices to Azure App Service. T
 
 The service handles OS patching, scaling, load balancing, SSL certificates — we just deploy code. That's the key benefit.
 
-For environment variables, we used App Service Configuration instead of hardcoding. For secrets like DB passwords, we used Azure Key Vault references.`,
+For environment variables, we used App Service Configuration instead of hardcoding. For secrets like DB passwords, we used Azure Key Vault references.
+
+**App Service vs Azure VMs:** App Service (PaaS): Microsoft manages OS, runtime, patching, load balancing, auto-scaling. You just deploy code. Faster to set up, less operational overhead. Limited control (can't install arbitrary OS packages). Azure VMs (IaaS): you manage everything — OS patches, Java installation, load balancer config, scaling. Full control but higher operational burden. Use App Service for most web apps; use VMs when you need custom OS-level configuration or specific software not supported by App Service.
+
+**App Service Plan and pricing tiers:** The App Service Plan defines the underlying compute resources (CPU, memory, number of instances). Multiple apps can share one plan. Tiers: Free/Shared (for dev/testing, shared compute), Basic (dedicated VMs, no auto-scale), Standard (auto-scaling up to 10 instances, staging slots, custom domains), Premium (more instances, VNet integration, 60-day backup), Isolated (dedicated environment, highest security, AKS-level isolation).
+
+**Auto-scaling on App Service:** Go to App Service → Scale out → Custom autoscale. Define rules: scale out when CPU > 70% for 5 minutes (add 1 instance), scale in when CPU < 30% for 5 minutes (remove 1 instance). Set min/max instance count. Also supports schedule-based scaling (e.g., add instances every weekday at 8am). Standard tier or higher required.`,
       code: `# Method 1: Deploy via Azure CLI
 az webapp create \\
   --resource-group myResourceGroup \\
@@ -83,7 +89,13 @@ az webapp config set \\
 
 3. Azure Key Vault — for sensitive secrets like passwords, connection strings, API keys. App Service has managed identity support, so the app can access Key Vault without storing credentials anywhere.
 
-In my project, the config hierarchy was: App Configuration → Key Vault for secrets → App Service settings for app-specific overrides.`,
+In my project, the config hierarchy was: App Configuration → Key Vault for secrets → App Service settings for app-specific overrides.
+
+**Managed Identity:** Instead of storing connection strings or client secrets to access Azure services (Key Vault, Storage, SQL), Managed Identity lets the App Service authenticate AS ITSELF using its Azure AD identity. No credentials needed anywhere — Azure handles token issuance transparently. System-assigned MI: tied to the App Service lifecycle (deleted when app is deleted). User-assigned MI: an independent Azure resource that can be assigned to multiple services. Managed Identity is the Azure-recommended way to access Key Vault and other Azure services — no secrets in code or config.
+
+**App Configuration vs Key Vault:** App Configuration is for non-sensitive settings that multiple services share (feature flags, common URLs, environment-specific values). Key Vault is for sensitive secrets (passwords, connection strings, certificates, API keys). They work together: App Configuration stores regular config and references to Key Vault secrets. Key Vault references in App Configuration are resolved at runtime — the actual secret value is fetched from Key Vault, never stored in App Configuration.
+
+**Secret rotation without downtime:** Enable Key Vault soft delete and purge protection. Generate the new secret version in Key Vault while keeping the old version active. Update the app to read from the new version (or reference the "latest" version — App Configuration Key Vault reference can point to latest). Graceful rollover: new requests get new secret, in-flight requests with old connections complete normally. After verification, disable/expire the old secret version.`,
       code: `# Setting App Service environment variables
 az webapp config appsettings set \\
   --name my-spring-boot-app \\
@@ -139,7 +151,13 @@ For HTTPS:
 
 To enforce HTTPS only (redirect HTTP → HTTPS), we enable HTTPS Only in the App Service settings. Your app doesn't need to manage SSL at all.
 
-The X-Forwarded-Proto header tells your app that the original request was HTTPS even though it received HTTP. Spring Boot's server.forward-headers-strategy=FRAMEWORK handles this.`,
+The X-Forwarded-Proto header tells your app that the original request was HTTPS even though it received HTTP. Spring Boot's server.forward-headers-strategy=FRAMEWORK handles this.
+
+**SSL offloading/termination at load balancer:** SSL termination at the load balancer means: the LB handles the expensive SSL handshake and decryption. Traffic between LB and your app instances is plain HTTP (internal network, trusted). Benefits: SSL cert management in one place (not on each app instance), less CPU overhead on app servers (SSL is CPU-intensive), faster connection setup. For apps requiring end-to-end encryption (compliance requirements), use SSL passthrough or re-encrypt at the backend.
+
+**HTTP/1.1 vs HTTP/2:** HTTP/1.1: one request per TCP connection (or limited pipelining). Multiple requests = multiple connections (browsers open 6 parallel). HTTP/2: multiplexing — multiple requests/responses over ONE connection simultaneously. Header compression (HPACK). Server push (server can proactively send resources). Binary protocol (more efficient than text). HTTP/2 is 2-3x faster for web pages with many resources. Azure App Service supports HTTP/2 — enable in configuration. Spring Boot supports HTTP/2 with embedded Tomcat/Jetty.
+
+**CORS in Azure-deployed APIs:** Handle CORS at the API Gateway (Spring Cloud Gateway) or Azure API Management level for microservices — centralized, no need to configure each service. For simple single-service deployments, add @CrossOrigin on the controller or configure WebMvcConfigurer. In Azure App Service, you can configure CORS in the portal under App Service → CORS (for simple cases, though programmatic Spring config gives more control).`,
       code: `# Enable HTTPS Only (redirect all HTTP to HTTPS)
 az webapp update \\
   --name my-spring-boot-app \\
@@ -199,7 +217,13 @@ Application Insights gives us:
 
 In my EPLMS project, we integrated Application Insights into our Spring Boot microservices. Every API call was automatically tracked — latency, success rate, dependencies. When our Kafka consumer lag increased, the latency charts showed it immediately.
 
-We also used it to trace a specific vehicle event across 3 microservices — from the REST API all the way to the database write — using the correlation ID.`,
+We also used it to trace a specific vehicle event across 3 microservices — from the REST API all the way to the database write — using the correlation ID.
+
+**Distributed tracing across microservices:** When Service A calls Service B, Application Insights propagates a correlation ID (operation_Id) via HTTP headers (traceparent in W3C format). Each service records its spans with the same operation_Id. In Application Insights, you can open "End-to-End Transaction Details" for one request and see the entire call graph: API → Service A (5ms) → Service B (30ms) → Database (10ms). This is invaluable for debugging microservice latency issues — you can pinpoint which service is slow.
+
+**Logs vs Metrics vs Traces:** Logs: timestamped text records of events — "Order 123 created by user 456." Best for debugging. Metrics: numerical measurements over time — "200 requests/sec, CPU 65%, error rate 0.1%." Best for dashboards and alerts. Traces (distributed tracing): records of requests flowing through multiple services — "Request started in API, went to Order Service (20ms), then Payment Service (50ms)." Best for understanding system behavior. All three are needed: metrics for alerting, logs for debugging, traces for distributed system analysis.
+
+**Azure Monitor alerts:** Go to Azure Monitor → Alerts → New Alert Rule. Choose a signal: metric (CPU > 80%), log query (error count > 10 in 5min), or resource health. Define action group (email, SMS, webhook, ITSM). Configure alert logic: threshold, evaluation period, frequency. For Spring Boot: Micrometer + Prometheus → Azure Monitor Custom Metrics → Alert on custom_metric > threshold.`,
       code: `<!-- Add Application Insights to pom.xml -->
 <dependency>
     <groupId>com.microsoft.azure</groupId>
@@ -265,7 +289,13 @@ public class VehicleEventService {
 
 4. Azure VM: Traditional approach — SSH into VM, install Java, run JAR with nohup or systemd. Full control but you manage everything.
 
-In my projects we used App Service for web services and AKS for microservices that needed independent scaling. Our Kafka consumers ran as separate deployments in AKS.`,
+In my projects we used App Service for web services and AKS for microservices that needed independent scaling. Our Kafka consumers ran as separate deployments in AKS.
+
+**App Service vs AKS for microservices:** App Service is simpler — each microservice is one App Service. Good for smaller deployments (2-10 services). Limited service discovery — services call each other by URL. AKS gives full Kubernetes: service discovery via DNS, rolling deployments, pod auto-scaling (HPA), health checks, sidecar containers (Istio for service mesh). AKS has more overhead to operate but much more control. Use App Service for simpler microservice setups; AKS when you need full orchestration, heavy microservices architecture, or already have K8s expertise.
+
+**JVM flags for Azure production:** -Xms512m -Xmx1g (set equal to avoid GC pressure from heap growth). -XX:+UseG1GC (G1 is default in Java 9+). -XX:MaxGCPauseMillis=200. -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof (crucial for debugging OOM). -Dfile.encoding=UTF-8. -XX:+ExitOnOutOfMemoryError (let container restart rather than run in degraded state). For containers: set -Xmx to 75-80% of container memory limit.
+
+**Zero-downtime deployments on App Service:** Use Deployment Slots: create a "staging" slot alongside production. Deploy new version to staging → run smoke tests → swap slots (production and staging swap). Swap is instant (just DNS rerouting). If something goes wrong, swap back. Staging slot warms up the JVM before production traffic. Available on Standard tier and above.`,
       code: `# Option 1: Azure App Service (easiest)
 az webapp deploy \\
   --name my-app \\
@@ -331,7 +361,13 @@ In my EPLMS project, we used Azure DevOps for the complete pipeline:
 - Manual approval gate for production
 - Deploy to production
 
-The key thing is separating CI (build + test) from CD (deploy). CI runs on every PR. CD runs on main branch merges.`,
+The key thing is separating CI (build + test) from CD (deploy). CI runs on every PR. CD runs on main branch merges.
+
+**Azure Pipelines vs GitHub Actions:** Both are YAML-based CI/CD pipelines. Azure Pipelines: tightly integrated with Azure services, mature enterprise features, approval gates, deployment environments, artifact management. Works with any Git provider. GitHub Actions: tightly integrated with GitHub (PRs, issues, events), huge marketplace of community actions, simpler for open-source projects. Both support self-hosted runners. For enterprise Azure deployments, Azure Pipelines has more mature deployment control. For GitHub-hosted projects, GitHub Actions has better GitHub integration.
+
+**Deployment environments and approval gates:** In Azure DevOps, an "Environment" represents a deployment target (staging, production). You can configure approval gates on environments: one or more people must approve before deployment proceeds. Also supports automated checks: run smoke tests, check monitoring metrics. This creates a human safety net before production deployments — critical for enterprise deployments.
+
+**Rolling back a deployment:** Blue-Green with slots: swap back staging and production slots (instant rollback). For container-based: update the AKS deployment to use the previous image tag (kubectl set image or helm rollback). For App Service: redeploy the previous JAR/image version via pipeline (keep last N artifacts in Azure Artifacts). Best practice: never overwrite container tags — always use immutable tags (git SHA) so you can always reference any previous version.`,
       code: `# azure-pipelines.yml — Complete CI/CD for Spring Boot
 
 trigger:
@@ -434,7 +470,11 @@ The key difference from self-managed Kafka:
 - Event Hubs uses SASL/SSL authentication (not plain like local dev Kafka)
 - Partitions = consumer parallelism (same concept)
 - Consumer groups work the same way
-- Message retention is configurable (default 1-7 days)`,
+- Message retention is configurable (default 1-7 days)
+
+**Azure Event Hubs vs Azure Service Bus:** Event Hubs is designed for high-throughput event streaming — millions of events per second, multiple consumers, event retention for replay. Think Kafka-style: log-based, consumer groups track their own offsets. Service Bus is a traditional enterprise message broker — reliable message delivery, ordered queues, dead-letter queues, message sessions, transactions. Better for command/control messaging patterns, task distribution, and scenarios requiring guaranteed delivery with acknowledgment. Rule of thumb: event streaming (telemetry, logs, IoT) → Event Hubs. Task queues, command dispatch, integration between systems → Service Bus.
+
+**Kafka consumer lag monitoring on Azure:** For Azure Event Hubs (Kafka-compatible), use Azure Monitor → Event Hubs metrics: "Incoming Messages" and "Consumer Group Offset Lag." Set alerts when lag exceeds threshold. For self-managed Kafka on Azure VMs: use kafka-consumer-groups.sh tool, or expose lag metrics via JMX → Prometheus → Azure Monitor custom metrics. In Spring Boot: spring-kafka exports lag via Actuator/Micrometer.`,
       code: `# application.properties for Azure Event Hubs (Kafka protocol)
 spring.kafka.bootstrap-servers=\${EVENT_HUB_NAMESPACE}.servicebus.windows.net:9093
 
