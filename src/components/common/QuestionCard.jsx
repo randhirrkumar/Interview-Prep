@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Bookmark, BookmarkCheck, CheckCircle2, Code2, MessageSquare, AlertCircle } from 'lucide-react'
-import { markCompleted, isCompleted, toggleBookmark, isBookmarked } from '../../utils/storage'
+import { useProgress } from '../../contexts/ProgressContext'
 
 function FollowUpItem({ index, item }) {
   const [open, setOpen] = useState(false)
@@ -33,20 +33,19 @@ function FollowUpItem({ index, item }) {
 export default function QuestionCard({ q, topicId }) {
   const id = `${topicId}_${q.id}`
   const [open, setOpen] = useState(false)
-  const [done, setDone] = useState(() => isCompleted(id))
-  const [saved, setSaved] = useState(() => isBookmarked(id))
   const [tab, setTab] = useState('answer')
+  const { isCompleted, isBookmarked, complete, bookmark } = useProgress()
+  const done = isCompleted(id)
+  const saved = isBookmarked(id)
 
   const toggleDone = (e) => {
     e.stopPropagation()
-    markCompleted(id)
-    setDone(true)
+    complete(id)
   }
 
   const toggleSave = (e) => {
     e.stopPropagation()
-    toggleBookmark(id)
-    setSaved(!saved)
+    bookmark(id)
   }
 
   return (
