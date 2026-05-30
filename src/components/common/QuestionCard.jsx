@@ -6,23 +6,29 @@ function FollowUpItem({ index, item }) {
   const [open, setOpen] = useState(false)
   const isObj = typeof item === 'object' && item !== null
   const question = isObj ? item.question : item
-  const answer = isObj ? item.answer : null
+  const answer   = isObj ? item.answer   : null
 
   return (
-    <div className="bg-gray-800/50 rounded-lg overflow-hidden">
+    <div className="rounded-xl overflow-hidden"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
       <button
-        className={`w-full flex items-start gap-2 p-2.5 text-left transition-colors ${answer ? 'hover:bg-gray-800 cursor-pointer' : 'cursor-default'}`}
+        className="w-full flex items-start gap-3 p-3 text-left transition-colors"
+        style={{ cursor: answer ? 'pointer' : 'default' }}
         onClick={() => answer && setOpen(!open)}
       >
-        <span className="text-blue-400 font-bold text-xs mt-0.5 flex-shrink-0">Q{index + 1}</span>
-        <span className="text-sm text-gray-300 flex-1">{question}</span>
+        <span className="text-xs font-bold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+          style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc' }}>
+          Q{index + 1}
+        </span>
+        <span className="text-sm flex-1" style={{ color: '#cbd5e1' }}>{question}</span>
         {answer && (open
-          ? <ChevronUp size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
-          : <ChevronDown size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
+          ? <ChevronUp size={14} style={{ color: '#475569', flexShrink: 0, marginTop: 2 }} />
+          : <ChevronDown size={14} style={{ color: '#475569', flexShrink: 0, marginTop: 2 }} />
         )}
       </button>
       {open && answer && (
-        <div className="px-4 pb-3 pt-2 text-sm text-gray-400 leading-relaxed border-t border-gray-700/50 whitespace-pre-wrap">
+        <div className="px-4 pb-3 pt-2 text-sm leading-relaxed whitespace-pre-wrap"
+          style={{ color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           {answer}
         </div>
       )}
@@ -31,69 +37,98 @@ function FollowUpItem({ index, item }) {
 }
 
 export default function QuestionCard({ q, topicId }) {
-  const id = `${topicId}_${q.id}`
+  const id   = `${topicId}_${q.id}`
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState('answer')
+  const [tab,  setTab]  = useState('answer')
   const { isCompleted, isBookmarked, complete, bookmark } = useProgress()
-  const done = isCompleted(id)
+  const done  = isCompleted(id)
   const saved = isBookmarked(id)
 
-  const toggleDone = (e) => {
-    e.stopPropagation()
-    complete(id)
-  }
+  const tabs = [
+    { key: 'answer',   label: 'Answer',     icon: MessageSquare },
+    ...(q.code     ? [{ key: 'code',     label: 'Code',       icon: Code2        }] : []),
+    ...(q.followUp ? [{ key: 'followup', label: 'Follow-ups', icon: AlertCircle  }] : []),
+  ]
 
-  const toggleSave = (e) => {
-    e.stopPropagation()
-    bookmark(id)
-  }
+  const diffBorderColor = {
+    beginner:     'rgba(16,185,129,0.35)',
+    intermediate: 'rgba(245,158,11,0.35)',
+    advanced:     'rgba(239,68,68,0.35)',
+  }[q.difficulty] ?? 'rgba(255,255,255,0.07)'
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-all ${done ? 'border-green-800/50 bg-green-950/10' : 'border-gray-800 bg-gray-900'}`}>
-      {/* Header */}
-      <div className="flex items-start gap-3 p-4 cursor-pointer hover:bg-gray-800/40 transition-colors" onClick={() => setOpen(!open)}>
+    <div
+      className="overflow-hidden transition-all duration-200"
+      style={{
+        background: done ? 'rgba(16,185,129,0.04)' : 'rgba(255,255,255,0.025)',
+        border: `1px solid ${done ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.07)'}`,
+        borderRadius: '14px',
+        borderLeft: `3px solid ${done ? '#22c55e' : diffBorderColor}`,
+      }}
+    >
+      {/* ── Header ── */}
+      <div
+        className="flex items-start gap-3 p-4 cursor-pointer select-none"
+        style={{ transition: 'background 0.15s' }}
+        onClick={() => setOpen(!open)}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        {/* Done indicator */}
         <div className="flex-shrink-0 mt-0.5">
           {done
-            ? <CheckCircle2 size={18} className="text-green-500" />
-            : <div className="w-[18px] h-[18px] border-2 border-gray-600 rounded-full" />
+            ? <CheckCircle2 size={17} style={{ color: '#22c55e' }} />
+            : <div style={{ width: 17, height: 17, borderRadius: '50%', border: '2px solid #334155' }} />
           }
         </div>
+
+        {/* Question text + badges */}
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            {q.difficulty && (
-              <span className={`diff-badge diff-${q.difficulty}`}>{q.difficulty}</span>
-            )}
-            {q.tags?.map(tag => (
-              <span key={tag} className="tag bg-gray-800 text-gray-400">{tag}</span>
-            ))}
+          <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+            {q.difficulty && <span className={`diff-badge diff-${q.difficulty}`}>{q.difficulty}</span>}
+            {q.tags?.map(tag => <span key={tag} className="tag">{tag}</span>)}
             {q.asked && (
-              <span className="tag bg-red-900/40 text-red-300">🔥 Frequently Asked</span>
+              <span className="tag" style={{ background: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.2)' }}>
+                🔥 Frequently Asked
+              </span>
             )}
           </div>
-          <p className="text-sm font-medium text-gray-200">{q.question}</p>
+          <p className="text-sm font-medium leading-snug" style={{ color: '#e2e8f0' }}>{q.question}</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={toggleSave} className="text-gray-600 hover:text-yellow-400 transition-colors">
-            {saved ? <BookmarkCheck size={16} className="text-yellow-400" /> : <Bookmark size={16} />}
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0 ml-1">
+          <button
+            onClick={e => { e.stopPropagation(); bookmark(id) }}
+            className="p-1 rounded transition-colors"
+            style={{ color: saved ? '#fbbf24' : '#334155' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#fbbf24'}
+            onMouseLeave={e => e.currentTarget.style.color = saved ? '#fbbf24' : '#334155'}
+          >
+            {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
           </button>
-          {open ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
+          <span style={{ color: '#334155' }}>
+            {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </span>
         </div>
       </div>
 
-      {/* Expanded content */}
+      {/* ── Expanded body ── */}
       {open && (
-        <div className="border-t border-gray-800 animate-fade-in">
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="animate-fade-in">
           {/* Tabs */}
           <div className="flex gap-1 px-4 pt-3">
-            {[
-              { key: 'answer', label: 'Answer', icon: MessageSquare },
-              ...(q.code ? [{ key: 'code', label: 'Code', icon: Code2 }] : []),
-              ...(q.followUp ? [{ key: 'followup', label: 'Follow-ups', icon: AlertCircle }] : []),
-            ].map(t => (
+            {tabs.map(t => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors ${tab === t.key ? 'bg-blue-900/50 text-blue-300' : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'}`}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                style={tab === t.key
+                  ? { background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }
+                  : { background: 'transparent', color: '#475569', border: '1px solid transparent' }
+                }
+                onMouseEnter={e => { if (tab !== t.key) e.currentTarget.style.color = '#94a3b8' }}
+                onMouseLeave={e => { if (tab !== t.key) e.currentTarget.style.color = '#475569' }}
               >
                 <t.icon size={12} />
                 {t.label}
@@ -101,37 +136,47 @@ export default function QuestionCard({ q, topicId }) {
             ))}
           </div>
 
+          {/* Content */}
           <div className="p-4">
             {tab === 'answer' && (
-              <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{q.answer}</div>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#94a3b8', lineHeight: '1.75' }}>
+                {q.answer}
+              </div>
             )}
             {tab === 'code' && q.code && (
               <pre className="code-block text-sm overflow-x-auto">{q.code}</pre>
             )}
             {tab === 'followup' && q.followUp && (
               <div className="space-y-2">
-                {q.followUp.map((f, i) => (
-                  <FollowUpItem key={i} index={i} item={f} />
-                ))}
+                {q.followUp.map((f, i) => <FollowUpItem key={i} index={i} item={f} />)}
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 pb-3 pt-1 border-t border-gray-800/50">
-            {q.tip && (
-              <div className="flex items-start gap-2 text-xs text-yellow-600/80">
-                <span>💡</span>
+          <div className="flex items-center justify-between px-4 pb-4 pt-1"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            {q.tip ? (
+              <div className="flex items-start gap-2 text-xs max-w-xs" style={{ color: '#6b7280' }}>
+                <span className="flex-shrink-0">💡</span>
                 <span>{q.tip}</span>
               </div>
-            )}
-            {!done && (
-              <button onClick={toggleDone} className="ml-auto flex items-center gap-1.5 text-xs btn-primary py-1.5">
+            ) : <div />}
+
+            {done ? (
+              <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#4ade80' }}>
+                <CheckCircle2 size={13} /> Completed
+              </span>
+            ) : (
+              <button
+                onClick={e => { e.stopPropagation(); complete(id) }}
+                className="btn-primary"
+                style={{ padding: '6px 14px', fontSize: '0.75rem' }}
+              >
                 <CheckCircle2 size={12} />
                 Mark Done
               </button>
             )}
-            {done && <span className="ml-auto text-xs text-green-500">Completed ✓</span>}
           </div>
         </div>
       )}

@@ -7,17 +7,36 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-950">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#080b14' }}>
+
+      {/* Ambient decorative blobs — fixed, pointer-events-none */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+        <div className="absolute animate-pulse-glow"
+          style={{ top: '-120px', left: '-80px', width: '480px', height: '480px',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 65%)' }} />
+        <div className="absolute animate-pulse-glow"
+          style={{ top: '40%', right: '-100px', width: '420px', height: '420px',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%)',
+            animationDelay: '1.2s' }} />
+        <div className="absolute"
+          style={{ bottom: '-60px', left: '35%', width: '360px', height: '360px',
+            background: 'radial-gradient(circle, rgba(20,184,166,0.07) 0%, transparent 65%)' }} />
+      </div>
+
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-20 lg:hidden"
+          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ position: 'relative', zIndex: 1 }}>
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 animate-fade-in">
           <Outlet />

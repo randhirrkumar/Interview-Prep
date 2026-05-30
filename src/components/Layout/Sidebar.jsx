@@ -5,93 +5,84 @@ import {
   LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield,
   FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap,
   GitBranch, X, Terminal, TestTube, Shapes, BarChart2, Star, CalendarClock,
-  FlaskConical, ChevronDown
+  FlaskConical, ChevronDown, Rocket
 } from 'lucide-react'
 
 const SECTIONS = [
   {
-    id: 'main',
-    label: null,
+    id: 'main', label: null,
     items: [
-      { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
-      { label: '30-Day Roadmap', icon: Map, to: '/roadmap' },
-      { label: 'Analytics', icon: BarChart2, to: '/analytics' },
-      { label: 'Revision Scheduler', icon: CalendarClock, to: '/revision' },
+      { label: 'Dashboard',          icon: LayoutDashboard, to: '/' },
+      { label: '30-Day Roadmap',     icon: Map,             to: '/roadmap' },
+      { label: 'Analytics',          icon: BarChart2,       to: '/analytics' },
+      { label: 'Revision Scheduler', icon: CalendarClock,   to: '/revision' },
     ]
   },
   {
-    id: 'java',
-    label: 'Java Topics',
+    id: 'java', label: 'Java Topics',
     items: [
-      { label: 'Java Core & OOP', icon: Code2, to: '/topics/java-core' },
-      { label: 'Java 8 & Streams', icon: Zap, to: '/topics/java8' },
-      { label: 'Multithreading', icon: Cpu, to: '/topics/multithreading' },
-      { label: 'Collections & DS', icon: Layers, to: '/topics/collections' },
+      { label: 'Java Core & OOP',   icon: Code2,  to: '/topics/java-core' },
+      { label: 'Java 8 & Streams',  icon: Zap,    to: '/topics/java8' },
+      { label: 'Multithreading',    icon: Cpu,    to: '/topics/multithreading' },
+      { label: 'Collections & DS',  icon: Layers, to: '/topics/collections' },
     ]
   },
   {
-    id: 'backend',
-    label: 'Backend & Spring',
+    id: 'backend', label: 'Backend & Spring',
     items: [
-      { label: 'Spring Boot', icon: Server, to: '/topics/spring-boot' },
-      { label: 'Microservices', icon: Layers, to: '/topics/microservices' },
-      { label: 'Hibernate & JPA', icon: Database, to: '/topics/hibernate' },
-      { label: 'Kafka', icon: GitBranch, to: '/topics/kafka' },
-      { label: 'SQL & MySQL', icon: Database, to: '/topics/sql' },
+      { label: 'Spring Boot',      icon: Server,    to: '/topics/spring-boot' },
+      { label: 'Microservices',    icon: Layers,    to: '/topics/microservices' },
+      { label: 'Hibernate & JPA',  icon: Database,  to: '/topics/hibernate' },
+      { label: 'Kafka',            icon: GitBranch, to: '/topics/kafka' },
+      { label: 'SQL & MySQL',      icon: Database,  to: '/topics/sql' },
     ]
   },
   {
-    id: 'tools',
-    label: 'Dev Tools & Practices',
+    id: 'tools', label: 'Dev Tools & Practices',
     items: [
-      { label: 'Design Patterns', icon: Shapes, to: '/topics/design-patterns' },
-      { label: 'Docker & Kubernetes', icon: Terminal, to: '/topics/docker' },
-      { label: 'Testing (JUnit & Mockito)', icon: TestTube, to: '/topics/testing' },
+      { label: 'Design Patterns',          icon: Shapes,   to: '/topics/design-patterns' },
+      { label: 'Docker & Kubernetes',      icon: Terminal, to: '/topics/docker' },
+      { label: 'Testing (JUnit & Mockito)',icon: TestTube, to: '/topics/testing' },
     ]
   },
   {
-    id: 'cloud',
-    label: 'Cloud & Security',
+    id: 'cloud', label: 'Cloud & Security',
     items: [
-      { label: 'Azure Basics', icon: Cloud, to: '/topics/azure' },
-      { label: 'SSO / SAML', icon: Shield, to: '/topics/sso' },
-      { label: 'Spring Security', icon: Shield, to: '/topics/security' },
+      { label: 'Azure Basics',     icon: Cloud,   to: '/topics/azure' },
+      { label: 'SSO / SAML',      icon: Shield,  to: '/topics/sso' },
+      { label: 'Spring Security',  icon: Shield,  to: '/topics/security' },
     ]
   },
   {
-    id: 'practice',
-    label: 'Practice',
+    id: 'practice', label: 'Practice',
     items: [
-      { label: 'DSA Problems', icon: FlaskConical, to: '/dsa' },
-      { label: 'STAR Stories', icon: Star, to: '/star' },
+      { label: 'DSA Problems',   icon: FlaskConical,  to: '/dsa' },
+      { label: 'STAR Stories',   icon: Star,          to: '/star' },
       { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
-      { label: 'System Design', icon: Building2, to: '/system-design' },
-      { label: 'Flash Cards', icon: BookOpen, to: '/flashcards' },
+      { label: 'System Design',  icon: Building2,     to: '/system-design' },
+      { label: 'Flash Cards',    icon: BookOpen,      to: '/flashcards' },
     ]
   },
   {
-    id: 'projects',
-    label: 'My Projects',
+    id: 'projects', label: 'My Projects',
     items: [
-      { label: 'EPLMS (Adani)', icon: FolderKanban, to: '/projects/eplms' },
-      { label: 'MetLife Insurance', icon: FolderKanban, to: '/projects/metlife' },
+      { label: 'EPLMS (Adani)',      icon: FolderKanban, to: '/projects/eplms' },
+      { label: 'MetLife Insurance',  icon: FolderKanban, to: '/projects/metlife' },
     ]
   },
   {
-    id: 'sample-projects',
-    label: 'Sample Projects',
+    id: 'sample-projects', label: 'Sample Projects',
     items: [
       { label: 'E-Commerce Platform', icon: FolderKanban, to: '/projects/ecommerce' },
-      { label: 'URL Shortener', icon: FolderKanban, to: '/projects/urlshortener' },
-      { label: 'Banking System', icon: FolderKanban, to: '/projects/banking' },
+      { label: 'URL Shortener',       icon: FolderKanban, to: '/projects/urlshortener' },
+      { label: 'Banking System',      icon: FolderKanban, to: '/projects/banking' },
     ]
   },
   {
-    id: 'interview',
-    label: 'Interview',
+    id: 'interview', label: 'Interview',
     items: [
-      { label: 'HR Questions', icon: HelpCircle, to: '/hr-questions' },
-      { label: 'Company Prep', icon: Building2, to: '/company-prep' },
+      { label: 'HR Questions',  icon: HelpCircle, to: '/hr-questions' },
+      { label: 'Company Prep',  icon: Building2,  to: '/company-prep' },
     ]
   },
 ]
@@ -108,48 +99,70 @@ export default function Sidebar({ open, onClose }) {
   const toggle = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))
 
   return (
-    <aside className={`
-      fixed lg:static inset-y-0 left-0 z-30 w-64 bg-gray-900 border-r border-gray-800 flex flex-col
-      transform transition-transform duration-300 ease-in-out
-      ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
-    `}>
-      {/* Logo */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">R</div>
+    <aside
+      className={`
+        fixed lg:static inset-y-0 left-0 z-30 w-64 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+      `}
+      style={{
+        background: 'rgba(5, 7, 16, 0.96)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {/* Logo / Brand */}
+      <div className="flex items-center justify-between px-4 py-4"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center gap-3">
+          {/* Gradient avatar orb */}
+          <div className="relative">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)' }}>
+              {firstName?.[0] ?? 'R'}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
+              style={{ background: '#22c55e', borderColor: '#050710' }} />
+          </div>
           <div>
-            <div className="text-sm font-bold text-white">{firstName ? `${firstName}'s Prep` : 'Interview Prep'}</div>
-            <div className="text-xs text-gray-500">Java Backend 2026</div>
+            <div className="text-sm font-semibold text-slate-100 leading-tight">
+              {firstName ? `${firstName}'s Prep` : 'Interview Prep'}
+            </div>
+            <div className="text-xs" style={{ color: '#475569' }}>Java Backend 2026</div>
           </div>
         </div>
-        <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
-          <X size={18} />
+        <button onClick={onClose} className="lg:hidden text-slate-600 hover:text-slate-300 transition-colors">
+          <X size={17} />
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
         {SECTIONS.map(section => (
           <div key={section.id}>
-            {/* Section heading — clickable if it has a label */}
             {section.label && (
               <button
                 onClick={() => toggle(section.id)}
-                className="w-full flex items-center justify-between px-3 pt-4 pb-1 group"
+                className="w-full flex items-center justify-between px-3 pt-5 pb-1.5 group"
               >
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider group-hover:text-gray-300 transition-colors">
+                <span className="text-[10px] font-semibold uppercase tracking-widest"
+                  style={{ color: '#374151', letterSpacing: '0.1em' }}>
                   {section.label}
                 </span>
                 <ChevronDown
-                  size={13}
-                  className={`text-gray-600 group-hover:text-gray-400 transition-all duration-200 ${openSections[section.id] ? 'rotate-0' : '-rotate-90'}`}
+                  size={12}
+                  className="transition-transform duration-200"
+                  style={{
+                    color: '#374151',
+                    transform: openSections[section.id] ? 'rotate(0deg)' : 'rotate(-90deg)'
+                  }}
                 />
               </button>
             )}
 
-            {/* Section items */}
             {(!section.label || openSections[section.id]) && (
-              <div className={section.label ? 'overflow-hidden' : ''}>
+              <div>
                 {section.items.map(item => (
                   <NavLink
                     key={item.to}
@@ -158,8 +171,8 @@ export default function Sidebar({ open, onClose }) {
                     className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
                     onClick={onClose}
                   >
-                    <item.icon size={16} />
-                    <span>{item.label}</span>
+                    <item.icon size={15} style={{ flexShrink: 0 }} />
+                    <span className="truncate">{item.label}</span>
                   </NavLink>
                 ))}
               </div>
@@ -168,13 +181,19 @@ export default function Sidebar({ open, onClose }) {
         ))}
       </nav>
 
-      {/* Bottom */}
-      <div className="p-3 border-t border-gray-800">
-        <div className="flex items-center gap-2 bg-blue-900/30 border border-blue-800/50 rounded-lg p-2.5">
-          <div className="text-lg">🎯</div>
+      {/* Bottom motivation card */}
+      <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="rounded-xl p-3 flex items-center gap-3"
+          style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.08) 100%)',
+            border: '1px solid rgba(99,102,241,0.2)',
+          }}>
+          <div className="text-xl animate-float" style={{ lineHeight: 1 }}>
+            <Rocket size={20} style={{ color: '#818cf8' }} />
+          </div>
           <div>
-            <div className="text-xs font-semibold text-blue-300">Target: Crack in 30 days</div>
-            <div className="text-xs text-gray-500">Stay consistent. You got this!</div>
+            <div className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Crack it in 30 days</div>
+            <div className="text-xs" style={{ color: '#475569' }}>Stay consistent 💪</div>
           </div>
         </div>
       </div>

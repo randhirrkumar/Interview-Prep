@@ -1,17 +1,25 @@
 import { Link } from 'react-router-dom'
-import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap } from 'lucide-react'
+import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap, ArrowRight } from 'lucide-react'
 import { useProgress } from '../../hooks/useProgress'
 import { useAuth } from '../../contexts/AuthContext'
 
 const TOPIC_ITEMS = [
-  { id: 'java-core', label: 'Java Core & OOP', to: '/topics/java-core', color: 'from-blue-600 to-blue-800', icon: '☕', total: 40 },
-  { id: 'java8', label: 'Java 8 & Streams', to: '/topics/java8', color: 'from-green-600 to-green-800', icon: '🌊', total: 30 },
-  { id: 'spring-boot', label: 'Spring Boot', to: '/topics/spring-boot', color: 'from-purple-600 to-purple-800', icon: '🌱', total: 35 },
-  { id: 'microservices', label: 'Microservices', to: '/topics/microservices', color: 'from-pink-600 to-pink-800', icon: '🔗', total: 30 },
-  { id: 'kafka', label: 'Apache Kafka', to: '/topics/kafka', color: 'from-orange-600 to-orange-800', icon: '📨', total: 20 },
-  { id: 'sql', label: 'SQL & MySQL', to: '/topics/sql', color: 'from-cyan-600 to-cyan-800', icon: '🗄️', total: 25 },
-  { id: 'azure', label: 'Azure Basics', to: '/topics/azure', color: 'from-sky-600 to-sky-800', icon: '☁️', total: 20 },
-  { id: 'sso', label: 'SSO / SAML', to: '/topics/sso', color: 'from-red-600 to-red-800', icon: '🔐', total: 15 },
+  { id: 'java-core',    label: 'Java Core & OOP',  to: '/topics/java-core',    icon: '☕', total: 40,
+    gradient: 'linear-gradient(135deg,#f59e0b,#ea580c)', glow: 'rgba(245,158,11,0.25)', prog: 'linear-gradient(90deg,#f59e0b,#ea580c)' },
+  { id: 'java8',        label: 'Java 8 & Streams',  to: '/topics/java8',        icon: '🌊', total: 30,
+    gradient: 'linear-gradient(135deg,#10b981,#059669)', glow: 'rgba(16,185,129,0.25)', prog: 'linear-gradient(90deg,#10b981,#059669)' },
+  { id: 'spring-boot',  label: 'Spring Boot',        to: '/topics/spring-boot',  icon: '🌱', total: 35,
+    gradient: 'linear-gradient(135deg,#22c55e,#14b8a6)', glow: 'rgba(34,197,94,0.25)',  prog: 'linear-gradient(90deg,#22c55e,#14b8a6)' },
+  { id: 'microservices',label: 'Microservices',      to: '/topics/microservices',icon: '🔗', total: 30,
+    gradient: 'linear-gradient(135deg,#3b82f6,#6366f1)', glow: 'rgba(99,102,241,0.25)', prog: 'linear-gradient(90deg,#3b82f6,#6366f1)' },
+  { id: 'kafka',        label: 'Apache Kafka',        to: '/topics/kafka',        icon: '📨', total: 20,
+    gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)', glow: 'rgba(168,85,247,0.25)', prog: 'linear-gradient(90deg,#a855f7,#7c3aed)' },
+  { id: 'sql',          label: 'SQL & MySQL',         to: '/topics/sql',          icon: '🗄️', total: 25,
+    gradient: 'linear-gradient(135deg,#38bdf8,#0284c7)', glow: 'rgba(56,189,248,0.25)', prog: 'linear-gradient(90deg,#38bdf8,#0284c7)' },
+  { id: 'azure',        label: 'Azure Basics',        to: '/topics/azure',        icon: '☁️', total: 20,
+    gradient: 'linear-gradient(135deg,#22d3ee,#0891b2)', glow: 'rgba(34,211,238,0.25)', prog: 'linear-gradient(90deg,#22d3ee,#0891b2)' },
+  { id: 'sso',          label: 'SSO / SAML',          to: '/topics/sso',          icon: '🔐', total: 15,
+    gradient: 'linear-gradient(135deg,#fb7185,#e11d48)', glow: 'rgba(251,113,133,0.25)',prog: 'linear-gradient(90deg,#fb7185,#e11d48)' },
 ]
 
 const WEAK_AREAS = [
@@ -23,23 +31,38 @@ const WEAK_AREAS = [
 ]
 
 const TODAY_FOCUS = [
-  { task: 'Java 8 Streams — 30 Q&A', type: 'study' },
+  { task: 'Java 8 Streams — 30 Q&A',                          type: 'study' },
   { task: 'EPLMS project deep dive — architecture explanation', type: 'project' },
-  { task: 'Mock Interview — 15 min timed', type: 'mock' },
-  { task: 'HR: "Tell me about yourself" practice', type: 'hr' },
-  { task: 'Revision: Spring Boot auto-configuration', type: 'revision' },
+  { task: 'Mock Interview — 15 min timed',                     type: 'mock' },
+  { task: 'HR: "Tell me about yourself" practice',             type: 'hr' },
+  { task: 'Revision: Spring Boot auto-configuration',          type: 'revision' },
 ]
 
 const QUICK_WINS = [
-  { label: 'Java 8 Streams', to: '/topics/java8', emoji: '🌊' },
-  { label: 'EPLMS Project', to: '/projects/eplms', emoji: '🚛' },
-  { label: 'HR Questions', to: '/hr-questions', emoji: '🤝' },
-  { label: 'Flash Cards', to: '/flashcards', emoji: '🃏' },
-  { label: 'Mock Interview', to: '/mock-interview', emoji: '🎤' },
-  { label: 'System Design', to: '/system-design', emoji: '🏗️' },
+  { label: 'Java 8 Streams', to: '/topics/java8',      emoji: '🌊' },
+  { label: 'EPLMS Project',  to: '/projects/eplms',    emoji: '🚛' },
+  { label: 'HR Questions',   to: '/hr-questions',      emoji: '🤝' },
+  { label: 'Flash Cards',    to: '/flashcards',        emoji: '🃏' },
+  { label: 'Mock Interview', to: '/mock-interview',    emoji: '🎤' },
+  { label: 'System Design',  to: '/system-design',     emoji: '🏗️' },
 ]
 
+const TYPE_META = {
+  study:    { color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',   border: 'rgba(96,165,250,0.2)'   },
+  project:  { color: '#c084fc', bg: 'rgba(192,132,252,0.1)', border: 'rgba(192,132,252,0.2)' },
+  mock:     { color: '#34d399', bg: 'rgba(52,211,153,0.1)',  border: 'rgba(52,211,153,0.2)'  },
+  hr:       { color: '#f472b6', bg: 'rgba(244,114,182,0.1)', border: 'rgba(244,114,182,0.2)' },
+  revision: { color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.2)'  },
+}
+
 const TOTAL_QUESTIONS = 215
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
 
 export default function Dashboard() {
   const { streak, completed, startDate } = useProgress()
@@ -55,74 +78,122 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
 
-      {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-r from-blue-900/60 to-purple-900/40 border border-blue-800/50 rounded-2xl p-6 overflow-hidden">
-        <div className="absolute right-0 top-0 w-64 h-64 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+      {/* ── Hero Banner ───────────────────────────────── */}
+      <div className="relative rounded-2xl overflow-hidden p-7"
+        style={{
+          background: 'linear-gradient(135deg, rgba(20,18,60,0.9) 0%, rgba(30,16,60,0.85) 50%, rgba(10,20,50,0.9) 100%)',
+          border: '1px solid rgba(99,102,241,0.25)',
+          boxShadow: '0 0 60px rgba(99,102,241,0.08)',
+        }}>
+        {/* decorative orbs */}
+        <div className="absolute animate-pulse-glow pointer-events-none"
+          style={{ top: '-60px', right: '-60px', width: '280px', height: '280px',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 65%)' }} />
+        <div className="absolute animate-pulse-glow pointer-events-none"
+          style={{ bottom: '-40px', right: '30%', width: '180px', height: '180px',
+            background: 'radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 65%)',
+            animationDelay: '1s' }} />
+
         <div className="relative z-10">
-          <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">Good {getGreeting()}, {firstName}</div>
-          <h1 className="text-2xl font-bold text-white mb-1">Your Interview Prep Dashboard</h1>
-          <p className="text-gray-400 text-sm max-w-xl">Java Backend Engineer · Targeting Product & Service Companies · Let's crack it in 30 days 🚀</p>
-        </div>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={<Flame className="text-orange-400" size={20} />} label="Day Streak" value={streak} unit="days" bg="bg-orange-900/20 border-orange-800/40" />
-        <StatCard icon={<CheckCircle2 className="text-green-400" size={20} />} label="Completed" value={completed.length} unit="topics" bg="bg-green-900/20 border-green-800/40" />
-        <StatCard icon={<Clock className="text-blue-400" size={20} />} label="Days Left" value={daysLeft} unit="days" bg="bg-blue-900/20 border-blue-800/40" />
-        <StatCard icon={<TrendingUp className="text-purple-400" size={20} />} label="Readiness" value={readiness} unit="%" bg="bg-purple-900/20 border-purple-800/40" />
-      </div>
-
-      {/* Interview Readiness Meter */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <div className="font-semibold text-white">Interview Readiness Meter</div>
-            <div className="text-xs text-gray-500">Based on topics completed</div>
+          {/* Greeting pill */}
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4 text-xs font-medium"
+            style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ display: 'inline-block' }} />
+            {getGreeting()}, {firstName}
           </div>
-          <div className="text-2xl font-bold text-blue-400">{readiness}%</div>
-        </div>
-        <div className="w-full bg-gray-800 rounded-full h-3 mb-2">
-          <div
-            className="h-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-500"
-            style={{ width: `${readiness}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-gray-600">
-          <span>0% — Not started</span>
-          <span className="text-yellow-600">50% — Good progress</span>
-          <span className="text-green-600">100% — Interview Ready</span>
+
+          <h1 className="text-3xl font-bold leading-tight mb-2" style={{ letterSpacing: '-0.03em' }}>
+            <span className="gradient-text">Your Interview Command Center</span>
+          </h1>
+          <p className="text-sm max-w-lg" style={{ color: '#64748b' }}>
+            Java Backend Engineer · Targeting Product &amp; Service Companies ·&nbsp;
+            <span style={{ color: '#818cf8' }}>30-Day Mission to Crack It 🚀</span>
+          </p>
         </div>
       </div>
 
+      {/* ── Stat Cards ────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard
+          icon={<Flame size={18} />}
+          label="Day Streak" value={streak} unit="days"
+          topGrad="linear-gradient(90deg,#f97316,#ef4444)"
+          iconColor="rgba(251,146,60,0.2)" fg="#fb923c"
+        />
+        <StatCard
+          icon={<CheckCircle2 size={18} />}
+          label="Completed" value={completed.length} unit="items"
+          topGrad="linear-gradient(90deg,#22c55e,#16a34a)"
+          iconColor="rgba(34,197,94,0.2)" fg="#4ade80"
+        />
+        <StatCard
+          icon={<Clock size={18} />}
+          label="Days Left" value={daysLeft} unit="days"
+          topGrad="linear-gradient(90deg,#38bdf8,#6366f1)"
+          iconColor="rgba(56,189,248,0.2)" fg="#7dd3fc"
+        />
+        <StatCard
+          icon={<TrendingUp size={18} />}
+          label="Readiness" value={readiness} unit="%"
+          topGrad="linear-gradient(90deg,#a855f7,#ec4899)"
+          iconColor="rgba(168,85,247,0.2)" fg="#d8b4fe"
+        />
+      </div>
+
+      {/* ── Readiness Meter ───────────────────────────── */}
+      <div className="card">
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <div className="text-base font-semibold text-slate-100">Interview Readiness Meter</div>
+            <div className="text-xs mt-0.5" style={{ color: '#475569' }}>Based on questions completed across all topics</div>
+          </div>
+          <div className="text-3xl font-bold gradient-text">{readiness}%</div>
+        </div>
+        <div className="progress-bar" style={{ height: '8px' }}>
+          <div className="progress-fill" style={{ width: `${readiness}%` }} />
+        </div>
+        <div className="flex justify-between mt-2 text-xs" style={{ color: '#374151' }}>
+          <span>0% — Not started</span>
+          <span style={{ color: '#ca8a04' }}>50% — Good progress</span>
+          <span style={{ color: '#16a34a' }}>100% — Interview Ready</span>
+        </div>
+      </div>
+
+      {/* ── Today's Focus + Weak Areas ────────────────── */}
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* Today's Focus */}
         <div className="lg:col-span-2 card">
           <div className="flex items-center gap-2 mb-4">
-            <Target size={18} className="text-blue-400" />
-            <span className="font-semibold text-white">Today's Focus</span>
+            <Target size={16} style={{ color: '#818cf8' }} />
+            <span className="font-semibold text-slate-100">Today's Focus</span>
           </div>
           <div className="space-y-2">
-            {TODAY_FOCUS.map((t, i) => (
-              <div key={i} className="flex items-center gap-3 p-2.5 bg-gray-800/50 rounded-lg">
-                <div className={`w-2 h-2 rounded-full ${typeColor(t.type)}`} />
-                <span className="text-sm text-gray-300 flex-1">{t.task}</span>
-                <span className={`text-xs px-2 py-0.5 rounded ${typeBadge(t.type)}`}>{t.type}</span>
-              </div>
-            ))}
+            {TODAY_FOCUS.map((t, i) => {
+              const meta = TYPE_META[t.type] || {}
+              return (
+                <div key={i} className="flex items-center gap-3 rounded-xl px-3.5 py-2.5"
+                  style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: meta.color }} />
+                  <span className="text-sm flex-1" style={{ color: '#cbd5e1' }}>{t.task}</span>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.border}` }}>
+                    {t.type}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Weak Areas */}
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle size={18} className="text-yellow-400" />
-            <span className="font-semibold text-white">Weak Areas</span>
+            <AlertTriangle size={16} style={{ color: '#fbbf24' }} />
+            <span className="font-semibold text-slate-100">Weak Areas</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {WEAK_AREAS.map((area, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-gray-400">
-                <span className="text-yellow-500 mt-0.5 flex-shrink-0">⚠</span>
+              <div key={i} className="flex items-start gap-2.5 text-sm"
+                style={{ color: '#64748b' }}>
+                <span className="flex-shrink-0 mt-0.5" style={{ color: '#ca8a04' }}>⚠</span>
                 <span>{area}</span>
               </div>
             ))}
@@ -130,41 +201,70 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Access */}
+      {/* ── Quick Access ──────────────────────────────── */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Zap size={16} className="text-yellow-400" />
-          <span className="text-sm font-semibold text-gray-300">Quick Access</span>
+          <Zap size={14} style={{ color: '#fbbf24' }} />
+          <span className="text-sm font-semibold" style={{ color: '#94a3b8' }}>Quick Access</span>
         </div>
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
           {QUICK_WINS.map((q, i) => (
-            <Link key={i} to={q.to} className="flex flex-col items-center gap-1.5 p-3 bg-gray-900 border border-gray-800 rounded-xl hover:border-blue-700 hover:bg-gray-800 transition-all text-center">
-              <span className="text-xl">{q.emoji}</span>
-              <span className="text-xs text-gray-400">{q.label}</span>
+            <Link key={i} to={q.to}
+              className="card-hover flex flex-col items-center gap-2 rounded-xl py-4 text-center"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
+              <span className="text-2xl">{q.emoji}</span>
+              <span className="text-xs leading-tight" style={{ color: '#94a3b8' }}>{q.label}</span>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Topic Cards */}
+      {/* ── Topics Progress ───────────────────────────── */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <BookOpen size={16} className="text-blue-400" />
-          <span className="text-sm font-semibold text-gray-300">Topics Progress</span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <BookOpen size={14} style={{ color: '#818cf8' }} />
+            <span className="text-sm font-semibold" style={{ color: '#94a3b8' }}>Topics Progress</span>
+          </div>
+          <Link to="/analytics" className="flex items-center gap-1 text-xs"
+            style={{ color: '#6366f1' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#a5b4fc'}
+            onMouseLeave={e => e.currentTarget.style.color = '#6366f1'}>
+            View all <ArrowRight size={12} />
+          </Link>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {TOPIC_ITEMS.map((t) => {
             const done = completed.filter(c => c.startsWith(t.id + '_')).length
-            const pct = Math.round((done / t.total) * 100)
+            const pct  = Math.round((done / t.total) * 100)
             return (
-              <Link key={t.id} to={t.to} className="card hover:border-gray-600 transition-all group">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${t.color} flex items-center justify-center text-xl mb-3`}>
-                  {t.icon}
-                </div>
-                <div className="font-medium text-sm text-white mb-1 group-hover:text-blue-300">{t.label}</div>
-                <div className="text-xs text-gray-500 mb-2">{done}/{t.total} completed</div>
-                <div className="w-full bg-gray-800 rounded-full h-1.5">
-                  <div className="h-1.5 rounded-full bg-blue-600 transition-all" style={{ width: `${pct}%` }} />
+              <Link key={t.id} to={t.to}
+                className="card card-hover group relative overflow-hidden"
+                style={{ padding: '16px' }}
+              >
+                {/* per-topic glow on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{ background: `radial-gradient(ellipse at 50% 0%, ${t.glow} 0%, transparent 60%)` }} />
+
+                <div className="relative z-10">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-3 shadow-lg"
+                    style={{ background: t.gradient }}>
+                    {t.icon}
+                  </div>
+                  <div className="text-sm font-semibold mb-0.5 group-hover:text-indigo-300 transition-colors"
+                    style={{ color: '#e2e8f0' }}>
+                    {t.label}
+                  </div>
+                  <div className="text-xs mb-3" style={{ color: '#475569' }}>{done}/{t.total} done</div>
+                  <div className="progress-bar" style={{ height: '4px' }}>
+                    <div style={{ height: '100%', borderRadius: '999px', background: t.prog,
+                      width: `${pct}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }} />
+                  </div>
+                  <div className="text-xs mt-1.5 text-right" style={{ color: '#374151' }}>{pct}%</div>
                 </div>
               </Link>
             )
@@ -172,45 +272,44 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Motivation */}
-      <div className="card bg-gradient-to-r from-gray-900 to-gray-900 border-l-4 border-blue-500">
-        <div className="flex items-start gap-3">
-          <div className="text-2xl">💡</div>
-          <div>
-            <div className="text-sm font-semibold text-blue-300 mb-1">Daily Reminder</div>
-            <div className="text-sm text-gray-400 italic">"Consistency beats talent. One focused hour daily for 30 days is better than 10 unfocused hours on one day. Randhir — you have the experience, you just need to structure it well. Let's go!"</div>
+      {/* ── Daily Motivation ──────────────────────────── */}
+      <div className="rounded-2xl p-5 flex items-start gap-4"
+        style={{
+          background: 'rgba(255,255,255,0.025)',
+          border: '1px solid rgba(99,102,241,0.2)',
+          borderLeft: '4px solid #6366f1',
+        }}>
+        <div className="text-2xl flex-shrink-0">💡</div>
+        <div>
+          <div className="text-sm font-semibold mb-1.5" style={{ color: '#a5b4fc' }}>Daily Reminder</div>
+          <div className="text-sm italic leading-relaxed" style={{ color: '#475569' }}>
+            "Consistency beats talent. One focused hour daily for 30 days is better than 10 unfocused hours in one day.
+            {firstName !== 'there' ? ` ${firstName} —` : ''} you have the experience, you just need to structure it well. Let's go!"
           </div>
         </div>
       </div>
+
     </div>
   )
 }
 
-function StatCard({ icon, label, value, unit, bg }) {
+/* ── Sub-components ──────────────────────────────────── */
+
+function StatCard({ icon, label, value, unit, topGrad, iconColor, fg }) {
   return (
-    <div className={`card flex items-center gap-3 border ${bg}`}>
-      {icon}
-      <div>
-        <div className="text-xs text-gray-500">{label}</div>
-        <div className="text-xl font-bold text-white">{value}<span className="text-xs text-gray-500 ml-1">{unit}</span></div>
+    <div className="card relative overflow-hidden" style={{ padding: '18px' }}>
+      {/* colored top bar */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" style={{ background: topGrad }} />
+      {/* icon pill */}
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+        style={{ background: iconColor, color: fg }}>
+        {icon}
       </div>
+      <div className="text-2xl font-bold text-slate-100 leading-none">
+        {value}
+        <span className="text-xs font-normal ml-1" style={{ color: '#475569' }}>{unit}</span>
+      </div>
+      <div className="text-xs mt-1" style={{ color: '#475569' }}>{label}</div>
     </div>
   )
-}
-
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'morning'
-  if (h < 17) return 'afternoon'
-  return 'evening'
-}
-
-function typeColor(t) {
-  const m = { study: 'bg-blue-500', project: 'bg-purple-500', mock: 'bg-green-500', hr: 'bg-pink-500', revision: 'bg-yellow-500' }
-  return m[t] || 'bg-gray-500'
-}
-
-function typeBadge(t) {
-  const m = { study: 'bg-blue-900/50 text-blue-300', project: 'bg-purple-900/50 text-purple-300', mock: 'bg-green-900/50 text-green-300', hr: 'bg-pink-900/50 text-pink-300', revision: 'bg-yellow-900/50 text-yellow-300' }
-  return m[t] || ''
 }
