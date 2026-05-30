@@ -303,7 +303,7 @@ Cognizant tip: They want examples, not just definitions. The code snippet for D 
 3. application-{profile}.properties (e.g., application-prod.properties)
 4. application.properties / application.yml
 5. @PropertySource annotations
-6. Default values in @Value("${prop:default}")
+6. Default values in @Value("\${prop:default}")
 
 Environment variables override properties files — this is key for 12-factor app / cloud deployment. You set DB passwords and secrets as environment variables (or Kubernetes secrets), not in committed properties files.
 
@@ -1032,7 +1032,7 @@ What goes where:
 
 Secret management: NEVER commit passwords/API keys to application-prod.properties. Use:
 - Environment variables (Kubernetes secrets, Azure Key Vault, AWS Secrets Manager)
-- @Value("${DB_PASSWORD}") reads from env variable at runtime
+- @Value("\${DB_PASSWORD}") reads from env variable at runtime
 
 Spring Cloud Config (optional): centralized config server for all microservices — single place to update config across services.
 
