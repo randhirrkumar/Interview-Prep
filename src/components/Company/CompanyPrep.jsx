@@ -431,6 +431,208 @@ Configure thresholds in application.yml: failure rate percentage, wait duration 
     color: 'border-cyan-700',
   },
   {
+    id: 'infosys',
+    name: 'Infosys',
+    type: 'Service',
+    difficulty: 'Medium',
+    focus: 'Java OOP, Spring Boot, Microservices, SQL, Data Structures, project discussion',
+    style: 'Online test (coding + aptitude) → Technical interview(s) → HR round. Project-heavy discussion.',
+    questions: [
+      {
+        question: 'What are the four pillars of OOP and how have you applied them in your project?',
+        answer: `The four pillars are Encapsulation, Inheritance, Polymorphism, and Abstraction.
+
+Encapsulation: Wrapping data and methods together, restricting direct access via private fields + getters/setters. In my project, every entity class encapsulates its fields — no direct field access outside the class.
+
+Inheritance: IS-A relationship. A subclass inherits fields and methods from its parent. Example: BaseEntity (id, createdAt, updatedAt) extended by all domain entities — avoids repeating audit fields everywhere.
+
+Polymorphism: One interface, many implementations. Runtime polymorphism via method overriding. Example: PaymentProcessor interface implemented by CreditCardProcessor and UpiProcessor — the service layer calls process() without caring which one is injected.
+
+Abstraction: Hiding implementation details. Service interfaces expose WHAT, not HOW. Repository interfaces abstract DB access — business logic doesn't know if it's MySQL or any other DB.
+
+Infosys tip: They love real project examples. Don't give textbook answers. For each pillar, say one line about where you used it in your actual project.`,
+      },
+      {
+        question: 'What is the difference between ArrayList and LinkedList? When would you use each?',
+        answer: `ArrayList: backed by a dynamic array. Index-based access is O(1). Insert/delete in the middle is O(n) because elements need to be shifted. More cache-friendly (contiguous memory).
+
+LinkedList: doubly linked list. Index-based access is O(n) (must traverse). Insert/delete at head/tail is O(1). Higher memory overhead (each node stores prev/next pointers).
+
+When to use ArrayList:
+- Frequent random access by index
+- Mostly read-heavy operations
+- Default choice for most use cases
+
+When to use LinkedList:
+- Frequent insertions/deletions at the beginning or middle
+- Implementing a queue or deque (use ArrayDeque in practice — faster than LinkedList for most queue operations)
+
+Practical reality: ArrayList is almost always the right choice. LinkedList is rarely used in production Java code due to poor cache performance and higher memory overhead. ArrayDeque is preferred even for queue use cases.
+
+Infosys tip: Mention time complexities for each operation. They frequently ask "which is faster for X operation."`,
+      },
+      {
+        question: 'Explain the Spring Boot request lifecycle — what happens from HTTP request to response?',
+        answer: `Step-by-step flow:
+
+1. HTTP request arrives at the embedded Tomcat server
+2. DispatcherServlet receives the request (the "front controller")
+3. HandlerMapping finds the matching controller method based on URL and HTTP method
+4. HandlerInterceptors run preHandle() — auth checks, logging, etc.
+5. Argument resolvers convert request params/body to method parameters (@RequestBody deserialized via Jackson)
+6. Controller method executes — calls service layer
+7. Service calls repository, repository hits DB via JPA/Hibernate
+8. Controller returns response object or ResponseEntity
+9. HandlerInterceptors run postHandle()
+10. Return value is processed: @ResponseBody → Jackson serializes to JSON
+11. ExceptionHandler/ControllerAdvice intercepts if an exception was thrown
+12. Response is written back to the client
+
+Filters (e.g., Spring Security's JwtAuthenticationFilter) run before DispatcherServlet — they operate at the Servlet level, not Spring MVC level.
+
+Infosys tip: Draw this as a flow when explaining it. Even verbally, saying "first X, then Y" in order shows you deeply understand the framework, not just how to use annotations.`,
+      },
+      {
+        question: 'What is normalization? Explain 1NF, 2NF, 3NF with examples.',
+        answer: `Normalization is the process of organizing a relational database to reduce data redundancy and improve data integrity.
+
+1NF (First Normal Form):
+- Each column contains atomic (indivisible) values
+- No repeating groups or arrays in a column
+- Violation: storing "Java, Spring, SQL" in a single skills column
+- Fix: separate Skills table with one row per skill
+
+2NF (Second Normal Form):
+- Must be in 1NF
+- Every non-key column is fully dependent on the entire primary key (eliminates partial dependencies)
+- Applies when you have a composite primary key
+- Violation: Order table with (OrderId, ProductId) as PK, but ProductName only depends on ProductId (not the full key)
+- Fix: Move ProductName to a separate Products table
+
+3NF (Third Normal Form):
+- Must be in 2NF
+- No transitive dependencies — non-key columns must not depend on other non-key columns
+- Violation: Employee table has DepartmentId and DepartmentName — DepartmentName depends on DepartmentId, not the primary key (EmployeeId)
+- Fix: Move DepartmentName to a Departments table
+
+In practice: normalize to 3NF for OLTP systems. Selective denormalization is acceptable for read-heavy reporting queries where joins are expensive.`,
+      },
+      {
+        question: 'How do you manage application configuration in different environments (dev, staging, prod)?',
+        answer: `Spring Boot profile-based configuration:
+
+1. application.properties — shared/default config
+2. application-dev.properties — dev overrides
+3. application-staging.properties — staging overrides
+4. application-prod.properties — prod overrides
+
+Activate profile:
+- Via env variable: SPRING_PROFILES_ACTIVE=prod
+- In application.properties: spring.profiles.active=dev (for local)
+- Command line: --spring.profiles.active=prod
+
+What goes where:
+- Dev: H2 in-memory DB, debug logging, mock external services
+- Staging: real DB (clone of prod), info logging, real integrations
+- Prod: production DB (credentials from env variables, not files), warn/error logging only
+
+Secret management: NEVER commit passwords/API keys to application-prod.properties. Use:
+- Environment variables (Kubernetes secrets, Azure Key Vault, AWS Secrets Manager)
+- @Value("\${DB_PASSWORD}") reads from env variable at runtime
+
+Spring Cloud Config (optional): centralized config server for all microservices — single place to update config across services.
+
+Infosys tip: They often ask "how do you handle secrets?" — always say environment variables or a secrets manager, never hardcoded in properties files.`,
+      },
+      {
+        question: 'Write a Java program to find duplicates in an array.',
+        answer: `// Method 1: Using HashSet — O(n) time, O(n) space
+public List<Integer> findDuplicates(int[] arr) {
+    Set<Integer> seen = new HashSet<>();
+    List<Integer> duplicates = new ArrayList<>();
+    for (int num : arr) {
+        if (!seen.add(num)) {  // add() returns false if already present
+            duplicates.add(num);
+        }
+    }
+    return duplicates;
+}
+
+// Method 2: Using HashMap to count frequencies — O(n) time, O(n) space
+public List<Integer> findDuplicatesWithCount(int[] arr) {
+    Map<Integer, Integer> freq = new HashMap<>();
+    for (int num : arr) freq.merge(num, 1, Integer::sum);
+    return freq.entrySet().stream()
+        .filter(e -> e.getValue() > 1)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+}
+
+// Method 3: Sorting — O(n log n) time, O(1) extra space
+public List<Integer> findDuplicatesSorted(int[] arr) {
+    Arrays.sort(arr);
+    List<Integer> duplicates = new ArrayList<>();
+    for (int i = 1; i < arr.length; i++) {
+        if (arr[i] == arr[i - 1] && (i < 2 || arr[i] != arr[i - 2])) {
+            duplicates.add(arr[i]);
+        }
+    }
+    return duplicates;
+}
+
+Infosys tip: Always mention the time and space complexity of your solution. They expect you to know multiple approaches and explain trade-offs. HashSet method is the preferred interview answer.`,
+      },
+      {
+        question: 'What is the difference between checked and unchecked exceptions in Java?',
+        answer: `Checked exceptions: subclasses of Exception (but not RuntimeException). The compiler forces you to either catch them or declare them with throws. Represent recoverable conditions that the caller should handle.
+Examples: IOException, SQLException, FileNotFoundException
+
+Unchecked exceptions: subclasses of RuntimeException. Compiler doesn't enforce handling. Represent programming errors or unrecoverable conditions.
+Examples: NullPointerException, IllegalArgumentException, ArrayIndexOutOfBoundsException
+
+\`\`\`java
+// Checked — must handle or declare
+public void readFile(String path) throws IOException {
+    FileReader fr = new FileReader(path); // throws checked IOException
+}
+
+// Unchecked — no forced handling
+public void divide(int a, int b) {
+    if (b == 0) throw new ArithmeticException("Division by zero"); // unchecked
+}
+\`\`\`
+
+Custom exceptions:
+- Extend Exception for checked (use when caller can meaningfully recover)
+- Extend RuntimeException for unchecked (use for programming errors or when recovery is unlikely)
+
+Spring convention: Spring wraps most checked exceptions (like SQLException) into unchecked DataAccessException subclasses — you don't need try-catch everywhere in service code.
+
+Infosys tip: They often follow up with "when would you create a custom exception?" — say "when you need to convey domain-specific error information that existing exceptions don't capture."`,
+      },
+      {
+        question: 'Explain your most challenging project module and how you handled it.',
+        answer: `This is the key Infosys question. They want depth on your actual work. Structure as:
+
+Module → Challenge → Technical decisions → Outcome
+
+Template: "The most challenging module I built was [X] in [project]. The challenge was [specific technical/business problem]. The complexity came from [what made it hard — scale, edge cases, integration, performance, requirement ambiguity].
+
+My approach: [what you analyzed, what options you considered, what you chose and why]. I used [specific technologies/patterns]. The key decision was [one important technical decision and why you made it].
+
+The result: [measurable outcome — reduced time, fixed bug, improved performance, enabled feature].
+
+What I'd do differently: [show maturity — one thing you'd change with hindsight]."
+
+For EPLMS example: "The permit lifecycle module was the most complex. Permits had 8+ states and different approval workflows per permit type. The challenge was designing the state machine cleanly without a mass of if-else conditions. I used the State pattern — each permit state was a class implementing a common interface with handle() method. Adding new states or transitions required adding a class, not modifying existing ones. This made the code far easier to test and extend when new permit types were added."
+
+Infosys tip: They probe deep once you start talking — be ready to answer "why did you use that approach over X?" and "what were the trade-offs?"`,
+      },
+    ],
+    tip: 'Infosys interviews are structured — online test first, then technical rounds. They go deep on Java fundamentals, OOP, and your project. Have clear stories ready for your project modules. SQL and basic DS questions are common.',
+    color: 'border-orange-700',
+  },
+  {
     id: 'product',
     name: 'Product Companies',
     type: 'Product',
@@ -923,208 +1125,6 @@ Startup tip: "You can't fix what you can't see. I set up basic monitoring before
     ],
     tip: 'Startups want problem-solvers who can move fast. Show ownership, not just execution. Demonstrate you can think end-to-end — from API design to deployment to monitoring.',
     color: 'border-green-700',
-  },
-  {
-    id: 'infosys',
-    name: 'Infosys',
-    type: 'Service',
-    difficulty: 'Medium',
-    focus: 'Java OOP, Spring Boot, Microservices, SQL, Data Structures, project discussion',
-    style: 'Online test (coding + aptitude) → Technical interview(s) → HR round. Project-heavy discussion.',
-    questions: [
-      {
-        question: 'What are the four pillars of OOP and how have you applied them in your project?',
-        answer: `The four pillars are Encapsulation, Inheritance, Polymorphism, and Abstraction.
-
-Encapsulation: Wrapping data and methods together, restricting direct access via private fields + getters/setters. In my project, every entity class encapsulates its fields — no direct field access outside the class.
-
-Inheritance: IS-A relationship. A subclass inherits fields and methods from its parent. Example: BaseEntity (id, createdAt, updatedAt) extended by all domain entities — avoids repeating audit fields everywhere.
-
-Polymorphism: One interface, many implementations. Runtime polymorphism via method overriding. Example: PaymentProcessor interface implemented by CreditCardProcessor and UpiProcessor — the service layer calls process() without caring which one is injected.
-
-Abstraction: Hiding implementation details. Service interfaces expose WHAT, not HOW. Repository interfaces abstract DB access — business logic doesn't know if it's MySQL or any other DB.
-
-Infosys tip: They love real project examples. Don't give textbook answers. For each pillar, say one line about where you used it in your actual project.`,
-      },
-      {
-        question: 'What is the difference between ArrayList and LinkedList? When would you use each?',
-        answer: `ArrayList: backed by a dynamic array. Index-based access is O(1). Insert/delete in the middle is O(n) because elements need to be shifted. More cache-friendly (contiguous memory).
-
-LinkedList: doubly linked list. Index-based access is O(n) (must traverse). Insert/delete at head/tail is O(1). Higher memory overhead (each node stores prev/next pointers).
-
-When to use ArrayList:
-- Frequent random access by index
-- Mostly read-heavy operations
-- Default choice for most use cases
-
-When to use LinkedList:
-- Frequent insertions/deletions at the beginning or middle
-- Implementing a queue or deque (use ArrayDeque in practice — faster than LinkedList for most queue operations)
-
-Practical reality: ArrayList is almost always the right choice. LinkedList is rarely used in production Java code due to poor cache performance and higher memory overhead. ArrayDeque is preferred even for queue use cases.
-
-Infosys tip: Mention time complexities for each operation. They frequently ask "which is faster for X operation."`,
-      },
-      {
-        question: 'Explain the Spring Boot request lifecycle — what happens from HTTP request to response?',
-        answer: `Step-by-step flow:
-
-1. HTTP request arrives at the embedded Tomcat server
-2. DispatcherServlet receives the request (the "front controller")
-3. HandlerMapping finds the matching controller method based on URL and HTTP method
-4. HandlerInterceptors run preHandle() — auth checks, logging, etc.
-5. Argument resolvers convert request params/body to method parameters (@RequestBody deserialized via Jackson)
-6. Controller method executes — calls service layer
-7. Service calls repository, repository hits DB via JPA/Hibernate
-8. Controller returns response object or ResponseEntity
-9. HandlerInterceptors run postHandle()
-10. Return value is processed: @ResponseBody → Jackson serializes to JSON
-11. ExceptionHandler/ControllerAdvice intercepts if an exception was thrown
-12. Response is written back to the client
-
-Filters (e.g., Spring Security's JwtAuthenticationFilter) run before DispatcherServlet — they operate at the Servlet level, not Spring MVC level.
-
-Infosys tip: Draw this as a flow when explaining it. Even verbally, saying "first X, then Y" in order shows you deeply understand the framework, not just how to use annotations.`,
-      },
-      {
-        question: 'What is normalization? Explain 1NF, 2NF, 3NF with examples.',
-        answer: `Normalization is the process of organizing a relational database to reduce data redundancy and improve data integrity.
-
-1NF (First Normal Form):
-- Each column contains atomic (indivisible) values
-- No repeating groups or arrays in a column
-- Violation: storing "Java, Spring, SQL" in a single skills column
-- Fix: separate Skills table with one row per skill
-
-2NF (Second Normal Form):
-- Must be in 1NF
-- Every non-key column is fully dependent on the entire primary key (eliminates partial dependencies)
-- Applies when you have a composite primary key
-- Violation: Order table with (OrderId, ProductId) as PK, but ProductName only depends on ProductId (not the full key)
-- Fix: Move ProductName to a separate Products table
-
-3NF (Third Normal Form):
-- Must be in 2NF
-- No transitive dependencies — non-key columns must not depend on other non-key columns
-- Violation: Employee table has DepartmentId and DepartmentName — DepartmentName depends on DepartmentId, not the primary key (EmployeeId)
-- Fix: Move DepartmentName to a Departments table
-
-In practice: normalize to 3NF for OLTP systems. Selective denormalization is acceptable for read-heavy reporting queries where joins are expensive.`,
-      },
-      {
-        question: 'How do you manage application configuration in different environments (dev, staging, prod)?',
-        answer: `Spring Boot profile-based configuration:
-
-1. application.properties — shared/default config
-2. application-dev.properties — dev overrides
-3. application-staging.properties — staging overrides
-4. application-prod.properties — prod overrides
-
-Activate profile:
-- Via env variable: SPRING_PROFILES_ACTIVE=prod
-- In application.properties: spring.profiles.active=dev (for local)
-- Command line: --spring.profiles.active=prod
-
-What goes where:
-- Dev: H2 in-memory DB, debug logging, mock external services
-- Staging: real DB (clone of prod), info logging, real integrations
-- Prod: production DB (credentials from env variables, not files), warn/error logging only
-
-Secret management: NEVER commit passwords/API keys to application-prod.properties. Use:
-- Environment variables (Kubernetes secrets, Azure Key Vault, AWS Secrets Manager)
-- @Value("\${DB_PASSWORD}") reads from env variable at runtime
-
-Spring Cloud Config (optional): centralized config server for all microservices — single place to update config across services.
-
-Infosys tip: They often ask "how do you handle secrets?" — always say environment variables or a secrets manager, never hardcoded in properties files.`,
-      },
-      {
-        question: 'Write a Java program to find duplicates in an array.',
-        answer: `// Method 1: Using HashSet — O(n) time, O(n) space
-public List<Integer> findDuplicates(int[] arr) {
-    Set<Integer> seen = new HashSet<>();
-    List<Integer> duplicates = new ArrayList<>();
-    for (int num : arr) {
-        if (!seen.add(num)) {  // add() returns false if already present
-            duplicates.add(num);
-        }
-    }
-    return duplicates;
-}
-
-// Method 2: Using HashMap to count frequencies — O(n) time, O(n) space
-public List<Integer> findDuplicatesWithCount(int[] arr) {
-    Map<Integer, Integer> freq = new HashMap<>();
-    for (int num : arr) freq.merge(num, 1, Integer::sum);
-    return freq.entrySet().stream()
-        .filter(e -> e.getValue() > 1)
-        .map(Map.Entry::getKey)
-        .collect(Collectors.toList());
-}
-
-// Method 3: Sorting — O(n log n) time, O(1) extra space
-public List<Integer> findDuplicatesSorted(int[] arr) {
-    Arrays.sort(arr);
-    List<Integer> duplicates = new ArrayList<>();
-    for (int i = 1; i < arr.length; i++) {
-        if (arr[i] == arr[i - 1] && (i < 2 || arr[i] != arr[i - 2])) {
-            duplicates.add(arr[i]);
-        }
-    }
-    return duplicates;
-}
-
-Infosys tip: Always mention the time and space complexity of your solution. They expect you to know multiple approaches and explain trade-offs. HashSet method is the preferred interview answer.`,
-      },
-      {
-        question: 'What is the difference between checked and unchecked exceptions in Java?',
-        answer: `Checked exceptions: subclasses of Exception (but not RuntimeException). The compiler forces you to either catch them or declare them with throws. Represent recoverable conditions that the caller should handle.
-Examples: IOException, SQLException, FileNotFoundException
-
-Unchecked exceptions: subclasses of RuntimeException. Compiler doesn't enforce handling. Represent programming errors or unrecoverable conditions.
-Examples: NullPointerException, IllegalArgumentException, ArrayIndexOutOfBoundsException
-
-\`\`\`java
-// Checked — must handle or declare
-public void readFile(String path) throws IOException {
-    FileReader fr = new FileReader(path); // throws checked IOException
-}
-
-// Unchecked — no forced handling
-public void divide(int a, int b) {
-    if (b == 0) throw new ArithmeticException("Division by zero"); // unchecked
-}
-\`\`\`
-
-Custom exceptions:
-- Extend Exception for checked (use when caller can meaningfully recover)
-- Extend RuntimeException for unchecked (use for programming errors or when recovery is unlikely)
-
-Spring convention: Spring wraps most checked exceptions (like SQLException) into unchecked DataAccessException subclasses — you don't need try-catch everywhere in service code.
-
-Infosys tip: They often follow up with "when would you create a custom exception?" — say "when you need to convey domain-specific error information that existing exceptions don't capture."`,
-      },
-      {
-        question: 'Explain your most challenging project module and how you handled it.',
-        answer: `This is the key Infosys question. They want depth on your actual work. Structure as:
-
-Module → Challenge → Technical decisions → Outcome
-
-Template: "The most challenging module I built was [X] in [project]. The challenge was [specific technical/business problem]. The complexity came from [what made it hard — scale, edge cases, integration, performance, requirement ambiguity].
-
-My approach: [what you analyzed, what options you considered, what you chose and why]. I used [specific technologies/patterns]. The key decision was [one important technical decision and why you made it].
-
-The result: [measurable outcome — reduced time, fixed bug, improved performance, enabled feature].
-
-What I'd do differently: [show maturity — one thing you'd change with hindsight]."
-
-For EPLMS example: "The permit lifecycle module was the most complex. Permits had 8+ states and different approval workflows per permit type. The challenge was designing the state machine cleanly without a mass of if-else conditions. I used the State pattern — each permit state was a class implementing a common interface with handle() method. Adding new states or transitions required adding a class, not modifying existing ones. This made the code far easier to test and extend when new permit types were added."
-
-Infosys tip: They probe deep once you start talking — be ready to answer "why did you use that approach over X?" and "what were the trade-offs?"`,
-      },
-    ],
-    tip: 'Infosys interviews are structured — online test first, then technical rounds. They go deep on Java fundamentals, OOP, and your project. Have clear stories ready for your project modules. SQL and basic DS questions are common.',
-    color: 'border-orange-700',
   },
 ]
 
