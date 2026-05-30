@@ -70,10 +70,19 @@ const SECTIONS = [
   },
   {
     id: 'projects',
-    label: 'Projects',
+    label: 'My Projects',
     items: [
       { label: 'EPLMS (Adani)', icon: FolderKanban, to: '/projects/eplms' },
       { label: 'MetLife Insurance', icon: FolderKanban, to: '/projects/metlife' },
+    ]
+  },
+  {
+    id: 'sample-projects',
+    label: 'Sample Projects',
+    items: [
+      { label: 'E-Commerce Platform', icon: FolderKanban, to: '/projects/ecommerce' },
+      { label: 'URL Shortener', icon: FolderKanban, to: '/projects/urlshortener' },
+      { label: 'Banking System', icon: FolderKanban, to: '/projects/banking' },
     ]
   },
   {
