@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import {
   LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield,
   FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap,
@@ -101,6 +102,8 @@ const DEFAULT_OPEN = Object.fromEntries(
 
 export default function Sidebar({ open, onClose }) {
   const [openSections, setOpenSections] = useState(DEFAULT_OPEN)
+  const { user } = useAuth()
+  const firstName = user?.displayName?.split(' ')[0]
 
   const toggle = (id) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }))
 
@@ -115,7 +118,7 @@ export default function Sidebar({ open, onClose }) {
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">R</div>
           <div>
-            <div className="text-sm font-bold text-white">Randhir's Prep</div>
+            <div className="text-sm font-bold text-white">{firstName ? `${firstName}'s Prep` : 'Interview Prep'}</div>
             <div className="text-xs text-gray-500">Java Backend 2026</div>
           </div>
         </div>

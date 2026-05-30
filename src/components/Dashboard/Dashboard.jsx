@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap } from 'lucide-react'
 import { useProgress } from '../../hooks/useProgress'
+import { useAuth } from '../../contexts/AuthContext'
 
 const TOPIC_ITEMS = [
   { id: 'java-core', label: 'Java Core & OOP', to: '/topics/java-core', color: 'from-blue-600 to-blue-800', icon: '☕', total: 40 },
@@ -42,6 +43,8 @@ const TOTAL_QUESTIONS = 215
 
 export default function Dashboard() {
   const { streak, completed, startDate } = useProgress()
+  const { user } = useAuth()
+  const firstName = user?.displayName?.split(' ')[0] || 'there'
 
   const daysLeft = startDate
     ? Math.max(0, 30 - Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000))
@@ -56,7 +59,7 @@ export default function Dashboard() {
       <div className="relative bg-gradient-to-r from-blue-900/60 to-purple-900/40 border border-blue-800/50 rounded-2xl p-6 overflow-hidden">
         <div className="absolute right-0 top-0 w-64 h-64 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10">
-          <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">Good {getGreeting()}, Randhir</div>
+          <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">Good {getGreeting()}, {firstName}</div>
           <h1 className="text-2xl font-bold text-white mb-1">Your Interview Prep Dashboard</h1>
           <p className="text-gray-400 text-sm max-w-xl">Java Backend Engineer · 4+ Years · Targeting Product & Service Companies · Let's crack it in 30 days 🚀</p>
         </div>
