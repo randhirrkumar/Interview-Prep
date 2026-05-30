@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { Search, Filter } from 'lucide-react'
 import QuestionCard from '../common/QuestionCard'
-import { getItem, STORAGE_KEYS } from '../../utils/storage'
+import { useProgress } from '../../contexts/ProgressContext'
 
 import javaCore from '../../data/javaCore'
 import java8 from '../../data/java8Streams'
@@ -43,7 +43,7 @@ export default function TopicPage() {
   const topicData = TOPICS[topicId] || { title: 'Topic', description: '', questions: [] }
   const [search, setSearch] = useState('')
   const [diffFilter, setDiffFilter] = useState('all')
-  const completed = getItem(STORAGE_KEYS.COMPLETED, [])
+  const { completed } = useProgress()
 
   const questions = useMemo(() => {
     return topicData.questions.filter(q => {

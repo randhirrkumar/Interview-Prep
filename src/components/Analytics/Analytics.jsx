@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { TrendingUp, CheckCircle, BookOpen, Target, Award, Calendar } from 'lucide-react'
 import { useProgress } from '../../hooks/useProgress'
-import { getItem, STORAGE_KEYS } from '../../utils/storage'
 
 import javaCore from '../../data/javaCore'
 import java8 from '../../data/java8Streams'
@@ -50,7 +49,7 @@ function BarChart({ percent, color }) {
 }
 
 export default function Analytics() {
-  const { completed, streak } = useProgress()
+  const { completed, streak, startDate } = useProgress()
 
   const stats = useMemo(() => {
     const topicStats = TOPICS.map(({ id, data, color }) => {
@@ -69,7 +68,6 @@ export default function Analytics() {
     const strong = topicStats.filter(t => t.pct >= 70).sort((a, b) => b.pct - a.pct)
     const weak = topicStats.filter(t => t.pct < 40 && t.total > 0).sort((a, b) => a.pct - b.pct)
 
-    const startDate = getItem(STORAGE_KEYS.START_DATE)
     const daysStudying = startDate
       ? Math.max(1, Math.ceil((Date.now() - new Date(startDate).getTime()) / 86400000))
       : 1

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle2, Clock, MessageSquare, BookOpen } from 'lucide-react'
 import roadmapData from '../../data/roadmap'
-import { getItem, markCompleted, isCompleted, STORAGE_KEYS } from '../../utils/storage'
+import { useProgress } from '../../contexts/ProgressContext'
 
 export default function Roadmap() {
   const [activeWeek, setActiveWeek] = useState(1)
@@ -50,10 +50,11 @@ export default function Roadmap() {
 
 function DayCard({ day }) {
   const id = `roadmap_day_${day.day}`
-  const [done, setDone] = useState(() => isCompleted(id))
+  const { isCompleted, complete } = useProgress()
+  const done = isCompleted(id)
 
   const toggle = () => {
-    if (!done) { markCompleted(id); setDone(true) }
+    if (!done) complete(id)
   }
 
   return (
