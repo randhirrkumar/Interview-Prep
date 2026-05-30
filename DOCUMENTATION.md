@@ -4,6 +4,43 @@
 
 ---
 
+## How to Keep This Document Updated
+
+Whenever you add, change, or integrate something new, give Claude this prompt to update the docs:
+
+**When you add something new:**
+```
+Update DOCUMENTATION.md — I added [what you added]. Add a section / update the relevant section to cover [what it does, how it's set up, how to change it].
+```
+
+**When you change something existing:**
+```
+Update DOCUMENTATION.md — I changed [what changed] in [file/feature]. Reflect this in the docs.
+```
+
+**When you add a new external service or library:**
+```
+Update DOCUMENTATION.md — I integrated [service name]. Add setup steps, config, and a how-to cookbook entry for it.
+```
+
+**Real examples:**
+```
+Update DOCUMENTATION.md — I added a Notes feature to each QuestionCard, stored in Firestore. Add the Firestore field, the component behavior, and a cookbook entry for how to use it.
+```
+```
+Update DOCUMENTATION.md — I switched from GitHub Pages to Vercel for deployment. Update the Deployment section.
+```
+```
+Update DOCUMENTATION.md — I added a new topic called GraphQL with its data file and route. Add it to the directory structure, data files section, and the add-a-topic cookbook.
+```
+```
+Update DOCUMENTATION.md — I added email/password login alongside Google. Update the Auth section.
+```
+
+> **Rule:** Always mention **what changed and where**. The more specific, the more accurate the update.
+
+---
+
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
