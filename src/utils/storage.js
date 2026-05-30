@@ -40,6 +40,11 @@ export function markCompleted(id) {
   }
 }
 
+export function unmarkCompleted(id) {
+  const completed = getItem(STORAGE_KEYS.COMPLETED, [])
+  setItem(STORAGE_KEYS.COMPLETED, completed.filter(c => c !== id))
+}
+
 export function isCompleted(id) {
   return getItem(STORAGE_KEYS.COMPLETED, []).includes(id)
 }

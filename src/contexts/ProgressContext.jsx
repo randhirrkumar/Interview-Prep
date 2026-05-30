@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from './AuthContext'
-import { getItem, setItem, STORAGE_KEYS, markCompleted, toggleBookmark } from '../utils/storage'
+import { getItem, setItem, STORAGE_KEYS, markCompleted, unmarkCompleted, toggleBookmark } from '../utils/storage'
 
 const ProgressContext = createContext(null)
 
@@ -104,6 +104,17 @@ export function ProgressProvider({ children }) {
     }
   }
 
+  const uncomplete = async (id) => {
+    const newCompleted = completed.filter(c => c !== id)
+    setCompleted(newCompleted)
+    if (user) {
+      await saveToFirestore(user.uid, { completed: newCompleted })
+    } else {
+      unmarkCompleted(id)
+      setCompleted(getItem(STORAGE_KEYS.COMPLETED, []))
+    }
+  }
+
   const bookmark = async (id) => {
     if (user) {
       const newBookmarks = bookmarks.includes(id)
@@ -126,7 +137,7 @@ export function ProgressProvider({ children }) {
   return (
     <ProgressContext.Provider value={{
       streak, completed, bookmarks, loading, startDate,
-      complete, bookmark,
+      complete, uncomplete, bookmark,
       isCompleted: (id) => completed.includes(id),
       isBookmarked: (id) => bookmarks.includes(id),
       getCompletionPercent

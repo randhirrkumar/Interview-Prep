@@ -40,7 +40,7 @@ export default function QuestionCard({ q, topicId }) {
   const id   = `${topicId}_${q.id}`
   const [open, setOpen] = useState(false)
   const [tab,  setTab]  = useState('answer')
-  const { isCompleted, isBookmarked, complete, bookmark } = useProgress()
+  const { isCompleted, isBookmarked, complete, uncomplete, bookmark } = useProgress()
   const done  = isCompleted(id)
   const saved = isBookmarked(id)
 
@@ -164,9 +164,26 @@ export default function QuestionCard({ q, topicId }) {
             ) : <div />}
 
             {done ? (
-              <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#4ade80' }}>
-                <CheckCircle2 size={13} /> Completed
-              </span>
+              <button
+                onClick={e => { e.stopPropagation(); uncomplete(id) }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all group"
+                style={{ color: '#4ade80', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(239,68,68,0.08)'
+                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)'
+                  e.currentTarget.style.color = '#f87171'
+                  e.currentTarget.querySelector('span').textContent = 'Undo'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(34,197,94,0.08)'
+                  e.currentTarget.style.borderColor = 'rgba(34,197,94,0.2)'
+                  e.currentTarget.style.color = '#4ade80'
+                  e.currentTarget.querySelector('span').textContent = 'Completed'
+                }}
+              >
+                <CheckCircle2 size={13} />
+                <span>Completed</span>
+              </button>
             ) : (
               <button
                 onClick={e => { e.stopPropagation(); complete(id) }}

@@ -50,11 +50,12 @@ export default function Roadmap() {
 
 function DayCard({ day }) {
   const id = `roadmap_day_${day.day}`
-  const { isCompleted, complete } = useProgress()
+  const { isCompleted, complete, uncomplete } = useProgress()
   const done = isCompleted(id)
 
   const toggle = () => {
-    if (!done) complete(id)
+    if (done) uncomplete(id)
+    else complete(id)
   }
 
   return (
