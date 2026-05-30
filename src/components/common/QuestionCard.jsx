@@ -2,6 +2,34 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, Bookmark, BookmarkCheck, CheckCircle2, Code2, MessageSquare, AlertCircle } from 'lucide-react'
 import { markCompleted, isCompleted, toggleBookmark, isBookmarked } from '../../utils/storage'
 
+function FollowUpItem({ index, item }) {
+  const [open, setOpen] = useState(false)
+  const isObj = typeof item === 'object' && item !== null
+  const question = isObj ? item.question : item
+  const answer = isObj ? item.answer : null
+
+  return (
+    <div className="bg-gray-800/50 rounded-lg overflow-hidden">
+      <button
+        className={`w-full flex items-start gap-2 p-2.5 text-left transition-colors ${answer ? 'hover:bg-gray-800 cursor-pointer' : 'cursor-default'}`}
+        onClick={() => answer && setOpen(!open)}
+      >
+        <span className="text-blue-400 font-bold text-xs mt-0.5 flex-shrink-0">Q{index + 1}</span>
+        <span className="text-sm text-gray-300 flex-1">{question}</span>
+        {answer && (open
+          ? <ChevronUp size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
+          : <ChevronDown size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
+        )}
+      </button>
+      {open && answer && (
+        <div className="px-4 pb-3 pt-2 text-sm text-gray-400 leading-relaxed border-t border-gray-700/50 whitespace-pre-wrap">
+          {answer}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function QuestionCard({ q, topicId }) {
   const id = `${topicId}_${q.id}`
   const [open, setOpen] = useState(false)
@@ -84,10 +112,7 @@ export default function QuestionCard({ q, topicId }) {
             {tab === 'followup' && q.followUp && (
               <div className="space-y-2">
                 {q.followUp.map((f, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg">
-                    <span className="text-blue-400 font-bold text-xs mt-0.5 flex-shrink-0">Q{i + 1}</span>
-                    <span className="text-sm text-gray-300">{f}</span>
-                  </div>
+                  <FollowUpItem key={i} index={i} item={f} />
                 ))}
               </div>
             )}

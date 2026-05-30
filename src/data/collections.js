@@ -22,13 +22,7 @@ put(key, value):
 
 Default capacity: 16. Default load factor: 0.75. Resizing (rehashing) happens when size > capacity * loadFactor.
 
-hashCode() + equals() contract: if two objects are equals(), they MUST have the same hashCode. Violating this breaks HashMap — objects are lost!
-
-**HashMap vs TreeMap:** HashMap is backed by a hash table — O(1) average for get/put, no ordering. TreeMap is backed by a Red-Black Tree — O(log n) for get/put, keys are sorted in natural order (or by Comparator). Use TreeMap when you need sorted keys or range queries (subMap, headMap, tailMap). For most use cases where you don't need ordering, HashMap is faster.
-
-**LinkedHashMap:** Maintains insertion order (default) or access order (LRU). Has a doubly-linked list running through the nodes. Slightly slower than HashMap due to maintaining the linked list. Use for: predictable iteration order, LRU cache (access order = true + override removeEldestEntry). In Spring: LinkedMultiValueMap maintains order of added values.
-
-**Two keys with same hashCode (collision):** Both keys go to the same bucket. HashMap stores them as a chain (linked list). get() walks the chain, comparing with equals() until it finds the right key. In Java 8+, if bucket length exceeds 8, the chain converts to a Red-Black Tree for O(log n) performance. This is why hashCode() quality matters — poor hash functions cause many collisions → poor performance.`,
+hashCode() + equals() contract: if two objects are equals(), they MUST have the same hashCode. Violating this breaks HashMap — objects are lost!`,
       code: `// HashMap bucket structure (simplified)
 class HashMap<K, V> {
     Node<K,V>[] table;  // array of buckets
@@ -90,9 +84,9 @@ class PolicyKey {
 ConcurrentHashMap<String, Vehicle> cache = new ConcurrentHashMap<>();
 cache.computeIfAbsent(key, k -> loadFromDB(k));  // atomic get-or-compute`,
       followUp: [
-        'What is the difference between HashMap and TreeMap?',
-        'What is LinkedHashMap? When would you use it?',
-        'What happens in HashMap if two keys have the same hashCode?',
+        { question: 'What is the difference between HashMap and TreeMap?', answer: `HashMap is backed by a hash table — O(1) average for get/put, no ordering. TreeMap is backed by a Red-Black Tree — O(log n) for get/put, keys are sorted in natural order (or by Comparator). Use TreeMap when you need sorted keys or range queries (subMap, headMap, tailMap). For most use cases where you don't need ordering, HashMap is faster.` },
+        { question: 'What is LinkedHashMap? When would you use it?', answer: `Maintains insertion order (default) or access order (LRU). Has a doubly-linked list running through the nodes. Slightly slower than HashMap due to maintaining the linked list. Use for: predictable iteration order, LRU cache (access order = true + override removeEldestEntry). In Spring: LinkedMultiValueMap maintains order of added values.` },
+        { question: 'What happens in HashMap if two keys have the same hashCode?', answer: `Both keys go to the same bucket. HashMap stores them as a chain (linked list). get() walks the chain, comparing with equals() until it finds the right key. In Java 8+, if bucket length exceeds 8, the chain converts to a Red-Black Tree for O(log n) performance. This is why hashCode() quality matters — poor hash functions cause many collisions → poor performance.` },
       ],
       tip: 'HashMap allows null key (one), null values (many). TreeMap sorts by key (uses Comparable/Comparator). LinkedHashMap maintains insertion order. Know when to use each.',
     },
@@ -118,11 +112,7 @@ LinkedList:
 
 In practice, ArrayList is almost always better. I use it in 95% of cases. LinkedList only when I need frequent add/remove at the front (like a queue) and don't need random access.
 
-In my projects, I always use ArrayList. For queue operations, I use ArrayDeque (better than LinkedList as a queue).
-
-**ArrayList initial capacity and resize:** Default initial capacity is 10. When full, ArrayList creates a new array of capacity * 1.5 (grows by 50%) and copies all elements — O(n) operation. This is why add() is O(1) AMORTIZED — most adds are O(1), occasional resize is O(n), but amortized over many adds it's O(1). If you know the size upfront, pass it to the constructor: new ArrayList<>(expectedSize) to avoid resizing.
-
-**List.of() vs new ArrayList():** List.of() (Java 9+) returns an immutable list — no add(), remove(), set() — throws UnsupportedOperationException. Also does NOT allow null elements. new ArrayList() is mutable and allows null. Collections.unmodifiableList(list) returns an unmodifiable VIEW of a mutable list — modifications to the underlying list ARE reflected. List.copyOf() creates an immutable copy.`,
+In my projects, I always use ArrayList. For queue operations, I use ArrayDeque (better than LinkedList as a queue).`,
       code: `// ArrayList — best for random access and iteration
 List<VehicleEvent> events = new ArrayList<>();
 events.add(event);          // O(1) amortized
@@ -145,8 +135,8 @@ taskQueue.pollLast();             // O(1)
 CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
 // Add creates a new copy — safe for concurrent reads during iteration`,
       followUp: [
-        'What is the initial capacity of ArrayList? When does it resize?',
-        'What is the difference between List.of() and new ArrayList()?',
+        { question: 'What is the initial capacity of ArrayList? When does it resize?', answer: `Default initial capacity is 10. When full, ArrayList creates a new array of capacity * 1.5 (grows by 50%) and copies all elements — O(n) operation. This is why add() is O(1) AMORTIZED — most adds are O(1), occasional resize is O(n), but amortized over many adds it's O(1). If you know the size upfront, pass it to the constructor: new ArrayList<>(expectedSize) to avoid resizing.` },
+        { question: 'What is the difference between List.of() and new ArrayList()?', answer: `List.of() (Java 9+) returns an immutable list — no add(), remove(), set() — throws UnsupportedOperationException. Also does NOT allow null elements. new ArrayList() is mutable and allows null. Collections.unmodifiableList(list) returns an unmodifiable VIEW of a mutable list — modifications to the underlying list ARE reflected. List.copyOf() creates an immutable copy.` },
       ],
       tip: 'List.of() (Java 9+) returns an immutable list. new ArrayList() is mutable. Collections.unmodifiableList() returns a view that throws UnsupportedOperationException on modification.',
     },

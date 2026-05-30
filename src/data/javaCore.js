@@ -17,13 +17,7 @@ Inheritance: "IS-A" relationship. In EPLMS, I had a base Vehicle class and speci
 
 Polymorphism: Same method name, different behavior. Method overriding is runtime polymorphism — a Truck and Car both override the calculateLoadCapacity() method differently.
 
-Abstraction: Hiding complexity. In Spring Boot, we use interfaces everywhere — a NotificationService interface with EmailNotificationService and SMSNotificationService implementations. The caller doesn't care which one is being used.
-
-**Abstraction vs Encapsulation:** Abstraction is about WHAT — it hides the complexity of what a class does by exposing only the interface. Encapsulation is about HOW — it protects the internal state using access modifiers (private fields). Abstraction is a design concept; encapsulation is an implementation technique. Example: a Vehicle interface is abstraction (you know it can move()). The Vehicle class's private engine field with a getter is encapsulation.
-
-**Method Overloading vs Overriding:** Overloading is compile-time polymorphism — same method name, different parameter types/count in the SAME class. Overriding is runtime polymorphism — subclass provides its own implementation of a method already defined in the parent class with the SAME signature. @Override annotation confirms it's overriding.
-
-**Can you override a static method?** No. Static methods are resolved at compile time based on the reference type, not the actual object. If a subclass defines a static method with the same name, it's called "method hiding" — not overriding. Instance methods are resolved at runtime (runtime polymorphism).`,
+Abstraction: Hiding complexity. In Spring Boot, we use interfaces everywhere — a NotificationService interface with EmailNotificationService and SMSNotificationService implementations. The caller doesn't care which one is being used.`,
       code: `// Encapsulation
 public class Policy {
     private String policyNumber;
@@ -69,9 +63,9 @@ class EmailService implements NotificationService {
 @Autowired
 private NotificationService notificationService;`,
       followUp: [
-        'What is the difference between abstraction and encapsulation?',
-        'What is method overloading vs method overriding?',
-        'Can you override a static method in Java?',
+        { question: 'What is the difference between abstraction and encapsulation?', answer: `Abstraction is about WHAT — it hides the complexity of what a class does by exposing only the interface. Encapsulation is about HOW — it protects the internal state using access modifiers (private fields). Abstraction is a design concept; encapsulation is an implementation technique. Example: a Vehicle interface is abstraction (you know it can move()). The Vehicle class's private engine field with a getter is encapsulation.` },
+        { question: 'What is method overloading vs method overriding?', answer: `Overloading is compile-time polymorphism — same method name, different parameter types/count in the SAME class. Overriding is runtime polymorphism — subclass provides its own implementation of a method already defined in the parent class with the SAME signature. @Override annotation confirms it's overriding.` },
+        { question: 'Can you override a static method in Java?', answer: `No. Static methods are resolved at compile time based on the reference type, not the actual object. If a subclass defines a static method with the same name, it's called "method hiding" — not overriding. Instance methods are resolved at runtime (runtime polymorphism).` },
       ],
       tip: 'No, you cannot override a static method. Static methods are resolved at compile time (method hiding). This is a classic trap question.',
     },
@@ -87,13 +81,7 @@ For primitives, == compares values. For objects, == compares memory addresses.
 
 String is special because Java maintains a String pool. String literals go into the pool, but new String("x") creates a new object in heap. This is why two string literals with the same value are == equal, but a literal and a new String() are not.
 
-I had a production bug once where someone used == to compare status strings from a database. Since they came as new String objects (not from pool), the comparison always failed.
-
-**String Pool / Intern Pool:** Java maintains a special area in the heap (Metaspace in Java 8+) called the String pool where string literals are stored. When you write String s = "hello", Java checks if "hello" already exists in the pool — if yes, it reuses it. This saves memory. String.intern() forces a heap string into the pool. Two interned strings with the same value are == equal.
-
-**Integer Cache:** Java caches Integer objects from -128 to 127. Integer.valueOf(127) returns the cached instance. Integer.valueOf(128) creates a new object. So Integer x = 127; Integer y = 127; x == y is TRUE (same cached object). But Integer p = 128; Integer q = 128; p == q is FALSE. Always use .equals() for Integer comparison.
-
-**== with null:** Completely safe. null == null is true. anyObjectRef == null is safe even if the variable is null — no NullPointerException. NPE only happens when you call a method on null.`,
+I had a production bug once where someone used == to compare status strings from a database. Since they came as new String objects (not from pool), the comparison always failed.`,
       code: `// Primitives: == compares values
 int a = 5, b = 5;
 System.out.println(a == b);  // true
@@ -115,9 +103,9 @@ Integer p = 128, q = 128;
 System.out.println(p == q);  // FALSE (outside cache range)
 System.out.println(p.equals(q));  // true`,
       followUp: [
-        'What is the String pool / String intern pool?',
-        'What is the Integer cache? What is its range?',
-        'What happens when you use == with null?',
+        { question: 'What is the String pool / String intern pool?', answer: `Java maintains a special area in the heap (Metaspace in Java 8+) called the String pool where string literals are stored. When you write String s = "hello", Java checks if "hello" already exists in the pool — if yes, it reuses it. This saves memory. String.intern() forces a heap string into the pool. Two interned strings with the same value are == equal.` },
+        { question: 'What is the Integer cache? What is its range?', answer: `Java caches Integer objects from -128 to 127. Integer.valueOf(127) returns the cached instance. Integer.valueOf(128) creates a new object. So Integer x = 127; Integer y = 127; x == y is TRUE (same cached object). But Integer p = 128; Integer q = 128; p == q is FALSE. Always use .equals() for Integer comparison.` },
+        { question: 'What happens when you use == with null?', answer: `Completely safe. null == null is true. anyObjectRef == null is safe even if the variable is null — no NullPointerException. NPE only happens when you call a method on null.` },
       ],
       tip: 'The Integer cache covers -128 to 127. This is a famous interview gotcha. Always use .equals() for object comparisons.',
     },
@@ -137,13 +125,7 @@ When I use which:
 - Abstract class when I have a template method pattern — like a base workflow class where steps are fixed but individual steps can be overridden
 - Interface when I want to define a contract that multiple unrelated classes can implement — like Serializable, Runnable, Comparable
 
-In my projects, I use interfaces for service layer contracts. Spring Boot beans wire implementations, not implementations. That's the key.
-
-**Can an abstract class have a constructor?** Yes! Abstract classes can have constructors. The constructor cannot be called directly with new (since abstract classes can't be instantiated), but it IS called by the subclass via super(). This is useful for initializing common fields that all subclasses need. Example: abstract class Animal { String name; Animal(String name) { this.name = name; } }
-
-**Can you instantiate an abstract class?** No. You cannot do new AbstractClass(). However, you can create an anonymous class that extends it inline — like new AbstractClass() { @Override void method() {} }. But that's an anonymous subclass, not the abstract class itself.
-
-**Default methods in interfaces:** Added in Java 8 to allow backward compatibility — you can add new methods to existing interfaces without breaking all implementing classes. Before Java 8, adding a method to an interface would break every class that implements it. Default methods provide a base implementation that existing classes inherit automatically.`,
+In my projects, I use interfaces for service layer contracts. Spring Boot beans wire implementations, not implementations. That's the key.`,
       code: `// Abstract class: base behavior + template
 abstract class KafkaEventProcessor {
     // Template method — fixed algorithm
@@ -183,9 +165,9 @@ class TruckService implements VehicleService, AuditableService {
     // implements both
 }`,
       followUp: [
-        'Can an abstract class have a constructor?',
-        'Can you instantiate an abstract class?',
-        'What are default methods in interfaces? Why were they added?',
+        { question: 'Can an abstract class have a constructor?', answer: `Yes! Abstract classes can have constructors. The constructor cannot be called directly with new (since abstract classes can't be instantiated), but it IS called by the subclass via super(). This is useful for initializing common fields that all subclasses need. Example: abstract class Animal { String name; Animal(String name) { this.name = name; } }` },
+        { question: 'Can you instantiate an abstract class?', answer: `No. You cannot do new AbstractClass(). However, you can create an anonymous class that extends it inline — like new AbstractClass() { @Override void method() {} }. But that's an anonymous subclass, not the abstract class itself.` },
+        { question: 'What are default methods in interfaces? Why were they added?', answer: `Added in Java 8 to allow backward compatibility — you can add new methods to existing interfaces without breaking all implementing classes. Before Java 8, adding a method to an interface would break every class that implements it. Default methods provide a base implementation that existing classes inherit automatically.` },
       ],
       tip: 'Default methods in interfaces were added to allow backward compatibility — adding new methods to existing interfaces without breaking all implementing classes.',
     },
@@ -201,13 +183,7 @@ StringBuilder is mutable and NOT thread-safe. Use it in single-threaded code for
 
 StringBuffer is mutable and thread-safe (synchronized). Use it in multi-threaded code.
 
-In my projects, I almost always use StringBuilder for building dynamic SQL queries or constructing Kafka message payloads in single-threaded code. I've never had a real need for StringBuffer because I design concurrent code without shared mutable state.
-
-**String interning / String.intern():** intern() forces a heap string to use the String pool. After calling str.intern(), if an equal string exists in the pool, the pool's reference is returned. This allows == comparison instead of equals(). Rarely needed in modern code — just use equals() for safety.
-
-**String constant pool in JVM:** Part of heap memory (moved from PermGen to heap in Java 7, and metaspace manages it in Java 8+). When JVM loads a class with string literals, it stores unique strings in the pool to avoid duplicates. Constant expressions like "Hello" + "World" are resolved at compile time and pooled.
-
-**Why String is immutable:** Three reasons: (1) Thread safety — immutable objects are inherently safe to share between threads. (2) Security — class names, file paths, DB URLs are strings; if mutable, malicious code could change them after validation. (3) Caching hashCode — String is commonly used as HashMap key; immutability means hashCode can be computed once and cached (computed lazily and cached in the hash field).`,
+In my projects, I almost always use StringBuilder for building dynamic SQL queries or constructing Kafka message payloads in single-threaded code. I've never had a real need for StringBuffer because I design concurrent code without shared mutable state.`,
       code: `// String: immutable — BAD for loop concatenation
 String result = "";
 for (int i = 0; i < 1000; i++) {
@@ -239,9 +215,9 @@ s.toUpperCase()         // "HELLO WORLD"
 s.replace("World","Java")  // "Hello Java"
 s.trim()               // removes whitespace`,
       followUp: [
-        'What is string interning? What does String.intern() do?',
-        'What is the String constant pool in JVM?',
-        'Why is String immutable in Java?',
+        { question: 'What is string interning? What does String.intern() do?', answer: `intern() forces a heap string to use the String pool. After calling str.intern(), if an equal string exists in the pool, the pool's reference is returned. This allows == comparison instead of equals(). Rarely needed in modern code — just use equals() for safety.` },
+        { question: 'What is the String constant pool in JVM?', answer: `Part of heap memory (moved from PermGen to heap in Java 7, and metaspace manages it in Java 8+). When JVM loads a class with string literals, it stores unique strings in the pool to avoid duplicates. Constant expressions like "Hello" + "World" are resolved at compile time and pooled.` },
+        { question: 'Why is String immutable in Java?', answer: `Three reasons: (1) Thread safety — immutable objects are inherently safe to share between threads. (2) Security — class names, file paths, DB URLs are strings; if mutable, malicious code could change them after validation. (3) Caching hashCode — String is commonly used as HashMap key; immutability means hashCode can be computed once and cached (computed lazily and cached in the hash field).` },
       ],
       tip: 'String is immutable for thread safety, security (ClassLoader uses String), and to enable String pooling. Mention all 3 reasons.',
     },
@@ -255,13 +231,7 @@ s.trim()               // removes whitespace`,
 
 Unchecked exceptions are runtime exceptions — you don't have to handle them explicitly. NullPointerException, IllegalArgumentException, ArrayIndexOutOfBoundsException extend RuntimeException.
 
-In my Spring Boot services, I create custom runtime exceptions (extending RuntimeException) and let them propagate to a global exception handler (@ControllerAdvice). This is cleaner than checked exceptions which pollute method signatures.
-
-**Exception hierarchy:** Throwable is at the top. It has two branches: Error (JVM-level problems — OutOfMemoryError, StackOverflowError — not meant to be caught) and Exception. Exception branches into checked exceptions (IOException, SQLException, ClassNotFoundException) and RuntimeException (NullPointerException, IllegalArgumentException, IndexOutOfBoundsException — unchecked).
-
-**finally block and when it does NOT execute:** finally always executes EXCEPT: (1) if System.exit() is called inside try/catch — JVM shuts down immediately. (2) if the JVM process is forcefully killed (kill -9). (3) if the thread running the code is interrupted/killed. Note: finally executes even if a return statement is in the try block.
-
-**try-with-resources:** Introduced in Java 7. Any class implementing the AutoCloseable interface (which has a close() method) can be used in try(). When the try block exits — normally or via exception — close() is automatically called. No need for a finally block to close connections/streams. Multiple resources can be declared: try(A a = new A(); B b = new B()) — closed in reverse order (B first, then A).`,
+In my Spring Boot services, I create custom runtime exceptions (extending RuntimeException) and let them propagate to a global exception handler (@ControllerAdvice). This is cleaner than checked exceptions which pollute method signatures.`,
       code: `// Checked exception — must handle or declare
 public void readFile(String path) throws IOException {
     Files.readAllLines(Paths.get(path));  // throws checked IOException
@@ -299,9 +269,9 @@ public class GlobalExceptionHandler {
     }
 }`,
       followUp: [
-        'What is the exception hierarchy? (Throwable → Error, Exception → RuntimeException)',
-        'What is the finally block? When does it NOT execute?',
-        'What is try-with-resources? When was it introduced?',
+        { question: 'What is the exception hierarchy? (Throwable → Error, Exception → RuntimeException)', answer: `Throwable is at the top. It has two branches: Error (JVM-level problems — OutOfMemoryError, StackOverflowError — not meant to be caught) and Exception. Exception branches into checked exceptions (IOException, SQLException, ClassNotFoundException) and RuntimeException (NullPointerException, IllegalArgumentException, IndexOutOfBoundsException — unchecked).` },
+        { question: 'What is the finally block? When does it NOT execute?', answer: `finally always executes EXCEPT: (1) if System.exit() is called inside try/catch — JVM shuts down immediately. (2) if the JVM process is forcefully killed (kill -9). (3) if the thread running the code is interrupted/killed. Note: finally executes even if a return statement is in the try block.` },
+        { question: 'What is try-with-resources? When was it introduced?', answer: `Introduced in Java 7. Any class implementing the AutoCloseable interface (which has a close() method) can be used in try(). When the try block exits — normally or via exception — close() is automatically called. No need for a finally block to close connections/streams. Multiple resources can be declared: try(A a = new A(); B b = new B()) — closed in reverse order (B first, then A).` },
       ],
       tip: 'finally does NOT execute if System.exit() is called or if the JVM crashes. Also know that try-with-resources (Java 7) auto-closes AutoCloseable resources.',
     },
@@ -319,13 +289,7 @@ JVM architecture has:
 
 The JIT compiler is what makes Java fast — it identifies "hot spots" (frequently executed code) and compiles them to native machine code. That's literally where the name HotSpot JVM comes from.
 
-In production, I've seen JVM tuning flags like -Xmx (max heap), -Xms (initial heap), and GC tuning make a significant difference in application performance.
-
-**Heap vs Stack memory:** Stack is per-thread, LIFO, stores method call frames and local primitives/references. Very fast, auto-managed — frame popped when method returns. Stack overflow if too many nested calls. Heap is shared across all threads, stores all objects. GC-managed. Objects live until no references point to them. Heap is much larger than stack.
-
-**Metaspace vs PermGen:** Before Java 8, class metadata (class definitions, method bytecode, static variables) lived in PermGen (Permanent Generation) — part of the heap with a FIXED maximum size (-XX:MaxPermSize). PermGen was a common source of OutOfMemoryError in apps that loaded many classes dynamically. Java 8 replaced PermGen with Metaspace — it's in NATIVE memory (not heap) and grows dynamically. You can still cap it with -XX:MaxMetaspaceSize.
-
-**Memory leaks in Java:** Yes, despite GC, memory leaks CAN happen. Common causes: (1) Static collections that grow indefinitely — static Map<String, Object> cache that's never evicted. (2) Event listeners/callbacks registered but never removed — the listener holds a reference to the object, preventing GC. (3) Unclosed resources (Connection, InputStream) — though try-with-resources prevents this. (4) ThreadLocal variables not cleaned up after request. (5) Inner class holding outer class reference. Use VisualVM or heap dump analysis to find them.`,
+In production, I've seen JVM tuning flags like -Xmx (max heap), -Xms (initial heap), and GC tuning make a significant difference in application performance.`,
       code: `// JVM Memory Areas
 /*
   Heap:
@@ -355,9 +319,9 @@ long maxMemory = runtime.maxMemory();      // max heap (-Xmx)
 
 System.out.println("Used: " + (totalMemory - freeMemory) / 1024 / 1024 + " MB");`,
       followUp: [
-        'What is the difference between heap and stack memory?',
-        'What is Metaspace? How is it different from PermGen?',
-        'What is a memory leak in Java? Can it happen with garbage collection?',
+        { question: 'What is the difference between heap and stack memory?', answer: `Stack is per-thread, LIFO, stores method call frames and local primitives/references. Very fast, auto-managed — frame popped when method returns. Stack overflow if too many nested calls. Heap is shared across all threads, stores all objects. GC-managed. Objects live until no references point to them. Heap is much larger than stack.` },
+        { question: 'What is Metaspace? How is it different from PermGen?', answer: `Before Java 8, class metadata (class definitions, method bytecode, static variables) lived in PermGen (Permanent Generation) — part of the heap with a FIXED maximum size (-XX:MaxPermSize). PermGen was a common source of OutOfMemoryError in apps that loaded many classes dynamically. Java 8 replaced PermGen with Metaspace — it's in NATIVE memory (not heap) and grows dynamically. You can still cap it with -XX:MaxMetaspaceSize.` },
+        { question: 'What is a memory leak in Java? Can it happen with garbage collection?', answer: `Yes, despite GC, memory leaks CAN happen. Common causes: (1) Static collections that grow indefinitely — static Map<String, Object> cache that's never evicted. (2) Event listeners/callbacks registered but never removed — the listener holds a reference to the object, preventing GC. (3) Unclosed resources (Connection, InputStream) — though try-with-resources prevents this. (4) ThreadLocal variables not cleaned up after request. (5) Inner class holding outer class reference. Use VisualVM or heap dump analysis to find them.` },
       ],
       tip: 'Yes, memory leaks CAN happen in Java. Classic examples: unclosed resources, static collections that grow indefinitely, listener/callback registrations that are never removed.',
     },
@@ -380,13 +344,7 @@ GC algorithms:
 - G1 GC (default Java 9+): divides heap into regions, better predictable pause times
 - ZGC (Java 15+): ultra-low pause (<10ms), scales to multi-terabyte heaps
 
-In my EPLMS project we used G1 GC with 4GB heap. We tuned the GC pause target to 200ms which balanced throughput and latency for our Kafka event processing.
-
-**Stop-the-World pause:** When GC runs, it needs to pause all application threads momentarily to ensure no objects are modified during collection (prevents corrupted state). This is called Stop-the-World (STW). Minor GC STW is typically 10-50ms (young gen is small). Full GC STW can be seconds on large heaps. ZGC and Shenandoah minimize STW to under 10ms by doing most work concurrently with application threads.
-
-**Minor GC vs Major GC:** Minor GC collects only the Young Generation (Eden + Survivors). It's fast because young gen is small and most objects are short-lived. Major GC (Full GC) collects the entire heap including Old Generation. Much slower (seconds on large heaps). Major GC is triggered when Old Gen is nearly full or explicitly by System.gc(). In G1GC, "mixed" collections partially collect Old Gen without full stop.
-
-**Analyzing a heap dump:** Take heap dump with: jmap -dump:format=b,file=heap.hprof <pid>. Open with Eclipse Memory Analyzer (MAT) or VisualVM. Look for: (1) Dominator tree — objects that retain the most memory. (2) Histogram — which classes have the most instances. (3) Unreachable objects leaking through GC roots. Classic signs: growing Map/List in static fields, Class objects held by ClassLoaders, connection objects not closed.`,
+In my EPLMS project we used G1 GC with 4GB heap. We tuned the GC pause target to 200ms which balanced throughput and latency for our Kafka event processing.`,
       code: `// Triggering GC (not guaranteed)
 System.gc();           // suggestion to JVM
 Runtime.getRuntime().gc();
@@ -414,9 +372,9 @@ WeakReference<BigObject> weakRef = new WeakReference<>(new BigObject());
 Object obj = new Object();
 obj = null;  // eligible for GC now`,
       followUp: [
-        'What is a Stop-the-World pause?',
-        'What is the difference between Minor GC and Major GC?',
-        'How do you analyze a heap dump?',
+        { question: 'What is a Stop-the-World pause?', answer: `When GC runs, it needs to pause all application threads momentarily to ensure no objects are modified during collection (prevents corrupted state). This is called Stop-the-World (STW). Minor GC STW is typically 10-50ms (young gen is small). Full GC STW can be seconds on large heaps. ZGC and Shenandoah minimize STW to under 10ms by doing most work concurrently with application threads.` },
+        { question: 'What is the difference between Minor GC and Major GC?', answer: `Minor GC collects only the Young Generation (Eden + Survivors). It's fast because young gen is small and most objects are short-lived. Major GC (Full GC) collects the entire heap including Old Generation. Much slower (seconds on large heaps). Major GC is triggered when Old Gen is nearly full or explicitly by System.gc(). In G1GC, "mixed" collections partially collect Old Gen without full stop.` },
+        { question: 'How do you analyze a heap dump?', answer: `Take heap dump with: jmap -dump:format=b,file=heap.hprof <pid>. Open with Eclipse Memory Analyzer (MAT) or VisualVM. Look for: (1) Dominator tree — objects that retain the most memory. (2) Histogram — which classes have the most instances. (3) Unreachable objects leaking through GC roots. Classic signs: growing Map/List in static fields, Class objects held by ClassLoaders, connection objects not closed.` },
       ],
       tip: 'In interviews, mention that G1GC is the default from Java 9. ZGC/Shenandoah are for low-latency requirements. Don\'t recommend Serial GC for production.',
     },
@@ -432,13 +390,7 @@ final: a keyword. final variable = constant (can't reassign). final method = can
 
 finally: a block in try-catch-finally. It always executes (almost) regardless of exception — perfect for cleanup like closing DB connections. Java 7's try-with-resources mostly replaced the need for finally for resource cleanup.
 
-finalize(): a method on Object that used to be called by GC before collecting an object. It's deprecated in Java 9 and removed usage discouraged. It's unreliable — you don't know when or if GC will call it.
-
-**When does finally NOT execute?** Three cases: (1) System.exit() is called — JVM shuts down before finally runs. (2) JVM is forcefully terminated (kill -9 on Linux, End Task). (3) An infinite loop or deadlock in the try block — finally never gets a chance to run. Important: if an exception is thrown in the finally block itself, the original exception is suppressed (swallowed). Be careful with code that can throw in finally.
-
-**AutoCloseable and try-with-resources:** AutoCloseable is an interface with a single close() method. Any resource that implements it (Connection, InputStream, ResultSet, etc.) can be used in try-with-resources. Java generates the equivalent of a finally block calling close() — even if close() itself throws. If both the body and close() throw, the exception from the body is propagated and the close() exception is "suppressed" (accessible via Throwable.getSuppressed()).
-
-**try without catch:** Perfectly valid. You can have try-finally (no catch) for cleanup-only scenarios. You can also have try-with-resources without catch — the resource is still closed. This is common when you want to let the exception propagate up but still ensure cleanup.`,
+finalize(): a method on Object that used to be called by GC before collecting an object. It's deprecated in Java 9 and removed usage discouraged. It's unreliable — you don't know when or if GC will call it.`,
       code: `// final keyword
 final int MAX = 100;          // constant
 // MAX = 200;                 // CompileError
@@ -477,9 +429,9 @@ protected void finalize() throws Throwable {
     super.finalize();
 }`,
       followUp: [
-        'When does finally NOT execute?',
-        'What is AutoCloseable? How does try-with-resources work?',
-        'Can you have try without catch? (yes, with finally or with try-with-resources)',
+        { question: 'When does finally NOT execute?', answer: `Three cases: (1) System.exit() is called — JVM shuts down before finally runs. (2) JVM is forcefully terminated (kill -9 on Linux, End Task). (3) An infinite loop or deadlock in the try block — finally never gets a chance to run. Important: if an exception is thrown in the finally block itself, the original exception is suppressed (swallowed). Be careful with code that can throw in finally.` },
+        { question: 'What is AutoCloseable? How does try-with-resources work?', answer: `AutoCloseable is an interface with a single close() method. Any resource that implements it (Connection, InputStream, ResultSet, etc.) can be used in try-with-resources. Java generates the equivalent of a finally block calling close() — even if close() itself throws. If both the body and close() throw, the exception from the body is propagated and the close() exception is "suppressed" (accessible via Throwable.getSuppressed()).` },
+        { question: 'Can you have try without catch? (yes, with finally or with try-with-resources)', answer: `Perfectly valid. You can have try-finally (no catch) for cleanup-only scenarios. You can also have try-with-resources without catch — the resource is still closed. This is common when you want to let the exception propagate up but still ensure cleanup.` },
       ],
     },
     {
@@ -496,11 +448,7 @@ Static method: can be called without creating an object. Can only access static 
 
 Static block: runs once when the class loads. Used for initialization that needs to happen before any instance is created.
 
-Static nested class: a nested class that doesn't need a reference to the outer class. Used for builder patterns and utility classes.
-
-**Static nested class vs Inner class:** Static nested class has no implicit reference to the outer class. It can be instantiated independently: new Outer.StaticNested(). It can only access static members of the outer class. Inner class (non-static nested) has an implicit reference to the outer instance — it can access all private members of the outer class. To instantiate: outer.new Inner(). Prefer static nested classes for helpers/builders since they don't hold an outer reference (prevents memory leaks).
-
-**Can a static method access instance variables?** No. Static methods don't have a "this" reference — they have no object context. They can only access static variables and call other static methods. To access instance variables from a static method, you must pass an object reference as a parameter.`,
+Static nested class: a nested class that doesn't need a reference to the outer class. Used for builder patterns and utility classes.`,
       code: `public class DatabaseConfig {
     // Static variable: shared across all instances
     private static int connectionCount = 0;
@@ -535,9 +483,9 @@ DatabaseConfig config = DatabaseConfig.Builder()
     .port(3306)
     .build();`,
       followUp: [
-        'Can you override a static method?',
-        'What is the difference between static nested class and inner class?',
-        'Can a static method access instance variables?',
+        { question: 'Can you override a static method?', answer: `No. Static methods are resolved at compile time based on the reference type, not the actual object type. If a subclass defines a static method with the same signature, it's called "method hiding" — not overriding. Polymorphism doesn't apply. Instance methods are resolved at runtime (dynamic dispatch).` },
+        { question: 'What is the difference between static nested class and inner class?', answer: `Static nested class has no implicit reference to the outer class. It can be instantiated independently: new Outer.StaticNested(). It can only access static members of the outer class. Inner class (non-static nested) has an implicit reference to the outer instance — it can access all private members of the outer class. To instantiate: outer.new Inner(). Prefer static nested classes for helpers/builders since they don't hold an outer reference (prevents memory leaks).` },
+        { question: 'Can a static method access instance variables?', answer: `No. Static methods don't have a "this" reference — they have no object context. They can only access static variables and call other static methods. To access instance variables from a static method, you must pass an object reference as a parameter.` },
       ],
     },
     {
@@ -552,13 +500,7 @@ Singleton: ensures only one instance exists. Used for database connection pools,
 
 Factory: decouples object creation from usage. When you need to create different types but the caller doesn't know which type at compile time.
 
-Builder: for constructing complex objects step by step. I use Lombok's @Builder extensively in Spring Boot for DTOs and entity builders.
-
-**Singleton in multi-threaded environments:** Without synchronization, two threads can simultaneously check "is instance null?" and both see null, then both create instances — breaking the singleton. Fix: use double-checked locking with volatile (as shown in the code), or use enum-based singleton (JVM guarantees single instance), or use static inner holder class (lazy and thread-safe via class loading guarantee).
-
-**Factory Method vs Abstract Factory:** Factory Method is a single method that creates ONE type of object — subclasses override it to change the type. Abstract Factory is a family of related methods that together create a complete set of related objects. Example: Factory Method = createButton(). Abstract Factory = UIFactory with createButton(), createCheckbox(), createDialog() — everything for a specific UI theme (Windows vs Mac).
-
-**Builder vs constructor:** Use Builder when: (1) You have many optional parameters (avoids telescoping constructors with 7 overloads). (2) You want named parameters for readability — VehicleEvent.builder().vehicleId("X").eventType("CHECK_IN") is clearer than new VehicleEvent("X", null, "CHECK_IN", null, null). (3) Construction requires multiple steps or validation. (4) You want immutable objects without a huge constructor. Simple objects with 2-3 required params are fine with a constructor.`,
+Builder: for constructing complex objects step by step. I use Lombok's @Builder extensively in Spring Boot for DTOs and entity builders.`,
       code: `// Singleton (Thread-safe with enum — best practice)
 public enum AppConfig {
     INSTANCE;
@@ -623,9 +565,9 @@ VehicleEvent event = VehicleEvent.builder()
     .longitude(77.2090)
     .build();`,
       followUp: [
-        'What is the problem with Singleton in multi-threaded environments?',
-        'What is the difference between Factory Method and Abstract Factory?',
-        'When would you use Builder over constructor?',
+        { question: 'What is the problem with Singleton in multi-threaded environments?', answer: `Without synchronization, two threads can simultaneously check "is instance null?" and both see null, then both create instances — breaking the singleton. Fix: use double-checked locking with volatile (as shown in the code), or use enum-based singleton (JVM guarantees single instance), or use static inner holder class (lazy and thread-safe via class loading guarantee).` },
+        { question: 'What is the difference between Factory Method and Abstract Factory?', answer: `Factory Method is a single method that creates ONE type of object — subclasses override it to change the type. Abstract Factory is a family of related methods that together create a complete set of related objects. Example: Factory Method = createButton(). Abstract Factory = UIFactory with createButton(), createCheckbox(), createDialog() — everything for a specific UI theme (Windows vs Mac).` },
+        { question: 'When would you use Builder over constructor?', answer: `Use Builder when: (1) You have many optional parameters (avoids telescoping constructors with 7 overloads). (2) You want named parameters for readability — VehicleEvent.builder().vehicleId("X").eventType("CHECK_IN") is clearer than new VehicleEvent("X", null, "CHECK_IN", null, null). (3) Construction requires multiple steps or validation. (4) You want immutable objects without a huge constructor. Simple objects with 2-3 required params are fine with a constructor.` },
       ],
       tip: 'In Spring context — all @Bean methods are Factory pattern. @Component beans are Singleton. This real-world connection impresses interviewers.',
     },

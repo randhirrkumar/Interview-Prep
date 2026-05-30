@@ -20,13 +20,7 @@ The key Spring Boot features:
 - Actuator for production monitoring
 - Opinionated defaults (can be overridden)
 
-In my projects, I used Spring Boot 2.x for MetLife and 3.x for EPLMS. The upgrade to 3.x was mainly for Java 17 support and the Jakarta namespace change.
-
-**@SpringBootApplication breakdown:** It combines three annotations: @Configuration (marks this as a bean definition source), @EnableAutoConfiguration (activates auto-configuration based on classpath), and @ComponentScan (scans the current package and sub-packages for @Component, @Service, @Repository, @Controller beans).
-
-**How auto-configuration works internally:** Spring Boot ships META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports listing hundreds of auto-config classes. Each is annotated with @Conditional annotations: @ConditionalOnClass (activates only if a class is on classpath), @ConditionalOnMissingBean (activates only if you haven't defined your own), @ConditionalOnProperty (activates only if a property is set). Run with debug=true in application.properties to see what was auto-configured and why.
-
-**spring.jpa.hibernate.ddl-auto options:** none — do nothing (use Liquibase/Flyway to manage schema). validate — verify DB schema matches entities, fail if mismatch. update — apply changes to DB schema (safe for dev, DANGEROUS for prod). create — drop and recreate schema on startup (LOSE ALL DATA). create-drop — create on startup, drop on shutdown. Production: use validate or none.`,
+In my projects, I used Spring Boot 2.x for MetLife and 3.x for EPLMS. The upgrade to 3.x was mainly for Java 17 support and the Jakarta namespace change.`,
       code: `// Minimal Spring Boot Application
 @SpringBootApplication  // = @Configuration + @EnableAutoConfiguration + @ComponentScan
 public class EplmsApplication {
@@ -56,9 +50,9 @@ spring.jpa.show-sql=false
 management.endpoints.web.exposure.include=health,info,metrics,prometheus
 management.endpoint.health.show-details=when-authorized`,
       followUp: [
-        'What is @SpringBootApplication? What three annotations does it include?',
-        'How does Spring Boot auto-configuration work internally?',
-        'What is the difference between spring.jpa.hibernate.ddl-auto options?',
+        { question: 'What is @SpringBootApplication? What three annotations does it include?', answer: `It combines three annotations: @Configuration (marks this as a bean definition source), @EnableAutoConfiguration (activates auto-configuration based on classpath), and @ComponentScan (scans the current package and sub-packages for @Component, @Service, @Repository, @Controller beans).` },
+        { question: 'How does Spring Boot auto-configuration work internally?', answer: `Spring Boot ships META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports listing hundreds of auto-config classes. Each is annotated with @Conditional annotations: @ConditionalOnClass (activates only if a class is on classpath), @ConditionalOnMissingBean (activates only if you haven't defined your own), @ConditionalOnProperty (activates only if a property is set). Run with debug=true in application.properties to see what was auto-configured and why.` },
+        { question: 'What is the difference between spring.jpa.hibernate.ddl-auto options?', answer: `none — do nothing (use Liquibase/Flyway to manage schema). validate — verify DB schema matches entities, fail if mismatch. update — apply changes to DB schema (safe for dev, DANGEROUS for prod). create — drop and recreate schema on startup (LOSE ALL DATA). create-drop — create on startup, drop on shutdown. Production: use validate or none.` },
       ],
       tip: 'NEVER use ddl-auto=create or update in production. Use validate (schema must match entities) or none (manage schema with Liquibase/Flyway).',
     },
@@ -78,13 +72,7 @@ There are 3 types of DI in Spring:
 
 3. Field Injection (@Autowired on field): easiest to write but considered bad practice. Hard to test (can't inject mock without reflection), hides dependencies, makes it look like the class manages its own dependencies.
 
-I always use constructor injection in my projects. Lombok's @RequiredArgsConstructor makes it even cleaner.
-
-**@Autowired vs @Inject vs @Resource:** @Autowired is Spring-specific, matches by type first. @Inject is JSR-330 standard (javax.inject) — portable across DI frameworks, also matches by type. @Resource is JSR-250 (javax.annotation) — matches by name first, then type. In practice, @Autowired is used everywhere in Spring apps. @Inject is useful if you want your code to be portable to non-Spring DI containers (CDI, Guice).
-
-**Circular dependencies:** If Bean A needs Bean B and Bean B needs Bean A — Spring throws BeanCurrentlyInCreationException. Fix options: (1) Redesign to eliminate the cycle (best option). (2) Use @Lazy on one injection point — defers bean creation. (3) Use setter injection instead of constructor injection (Spring resolves setter-based circular deps). (4) Use @PostConstruct to do initialization after both beans are created.
-
-**@Qualifier:** When multiple beans of the same type exist, @Autowired throws NoUniqueBeanDefinitionException. @Qualifier("beanName") specifies which one. @Primary marks a default bean (used when no @Qualifier is specified). @Qualifier overrides @Primary.`,
+I always use constructor injection in my projects. Lombok's @RequiredArgsConstructor makes it even cleaner.`,
       code: `// 1. Constructor Injection (PREFERRED)
 @Service
 @RequiredArgsConstructor  // Lombok generates constructor for final fields
@@ -140,9 +128,9 @@ class VehicleServiceTest {
     }
 }`,
       followUp: [
-        'What is the difference between @Autowired, @Inject, and @Resource?',
-        'How does Spring resolve circular dependencies?',
-        'What is @Qualifier? When do you use it?',
+        { question: 'What is the difference between @Autowired, @Inject, and @Resource?', answer: `@Autowired is Spring-specific, matches by type first. @Inject is JSR-330 standard (javax.inject) — portable across DI frameworks, also matches by type. @Resource is JSR-250 (javax.annotation) — matches by name first, then type. In practice, @Autowired is used everywhere in Spring apps. @Inject is useful if you want your code to be portable to non-Spring DI containers (CDI, Guice).` },
+        { question: 'How does Spring resolve circular dependencies?', answer: `If Bean A needs Bean B and Bean B needs Bean A — Spring throws BeanCurrentlyInCreationException. Fix options: (1) Redesign to eliminate the cycle (best option). (2) Use @Lazy on one injection point — defers bean creation. (3) Use setter injection instead of constructor injection (Spring resolves setter-based circular deps). (4) Use @PostConstruct to do initialization after both beans are created.` },
+        { question: 'What is @Qualifier? When do you use it?', answer: `When multiple beans of the same type exist, @Autowired throws NoUniqueBeanDefinitionException. @Qualifier("beanName") specifies which one. @Primary marks a default bean (used when no @Qualifier is specified). @Qualifier overrides @Primary.` },
       ],
       tip: '@Autowired is Spring-specific. @Inject is JSR-330 standard (portable). @Resource is JSR-250 (Java EE). In practice, use @Autowired or constructor injection — the difference rarely matters.',
     },
@@ -169,13 +157,7 @@ class VehicleServiceTest {
 
 @PreDestroy: runs before bean is destroyed (app shutdown). I use this for: closing connections, flushing caches, releasing resources.
 
-In my EPLMS project, I used @PostConstruct to pre-load vehicle master data into an in-memory cache on startup, which significantly reduced DB queries during peak load.
-
-**BeanPostProcessor vs @PostConstruct:** BeanPostProcessor is a more powerful framework-level hook — it intercepts ALL beans and can modify them before/after initialization. It has postProcessBeforeInitialization() (called before @PostConstruct) and postProcessAfterInitialization() (called after). Spring uses BeanPostProcessor internally for things like AOP proxy creation and @Autowired injection. @PostConstruct is simpler — just for initialization logic of a SINGLE bean. Use BeanPostProcessor when you need to programmatically enhance every bean of a certain type.
-
-**Spring Singleton vs Singleton Design Pattern:** Spring singleton = one instance per ApplicationContext (IoC container). If you create two ApplicationContexts (rare, but possible in tests), you get two singleton instances. Singleton design pattern = one instance per JVM. They are conceptually similar but scoped differently. Spring's beans use IoC container as the scope boundary.
-
-**Singleton bean with prototype dependency:** If a singleton bean @Autowires a prototype-scoped bean, the prototype is injected ONCE when the singleton is created — effectively making it a singleton too. To get a fresh prototype every time, use ObjectFactory<PrototypeBean>, ApplicationContext.getBean(), or annotate the method with @Lookup.`,
+In my EPLMS project, I used @PostConstruct to pre-load vehicle master data into an in-memory cache on startup, which significantly reduced DB queries during peak load.`,
       code: `@Service
 public class VehicleCacheService {
     private Map<String, Vehicle> vehicleCache = new ConcurrentHashMap<>();
@@ -229,9 +211,9 @@ public class RequestScopedService { }
 @Scope("session")     // web: one instance per HTTP session
 public class SessionScopedService { }`,
       followUp: [
-        'What is BeanPostProcessor? How is it different from @PostConstruct?',
-        'What is the difference between singleton scope in Spring vs Singleton design pattern?',
-        'What happens if a singleton bean has a prototype-scoped dependency?',
+        { question: 'What is BeanPostProcessor? How is it different from @PostConstruct?', answer: `BeanPostProcessor is a more powerful framework-level hook — it intercepts ALL beans and can modify them before/after initialization. It has postProcessBeforeInitialization() (called before @PostConstruct) and postProcessAfterInitialization() (called after). Spring uses BeanPostProcessor internally for things like AOP proxy creation and @Autowired injection. @PostConstruct is simpler — just for initialization logic of a SINGLE bean. Use BeanPostProcessor when you need to programmatically enhance every bean of a certain type.` },
+        { question: 'What is the difference between singleton scope in Spring vs Singleton design pattern?', answer: `Spring singleton = one instance per ApplicationContext (IoC container). If you create two ApplicationContexts (rare, but possible in tests), you get two singleton instances. Singleton design pattern = one instance per JVM. They are conceptually similar but scoped differently. Spring's beans use IoC container as the scope boundary.` },
+        { question: 'What happens if a singleton bean has a prototype-scoped dependency?', answer: `If a singleton bean @Autowires a prototype-scoped bean, the prototype is injected ONCE when the singleton is created — effectively making it a singleton too. To get a fresh prototype every time, use ObjectFactory<PrototypeBean>, ApplicationContext.getBean(), or annotate the method with @Lookup.` },
       ],
       tip: 'Spring singleton = one instance per ApplicationContext container, not per JVM. You CAN have multiple application contexts with multiple singleton instances.',
     },
@@ -253,13 +235,7 @@ For request data:
 - @RequestBody: from request body (JSON payload)
 - @RequestHeader: from HTTP headers
 
-I follow REST conventions: GET for read, POST for create, PUT for full update, PATCH for partial update, DELETE for deletion. Use proper HTTP status codes.
-
-**@Controller vs @RestController:** @Controller is the base MVC controller — methods return view names (strings) that are resolved to HTML templates (Thymeleaf, JSP). For REST APIs, you add @ResponseBody to each method to say "write this directly to the response, don't look for a view." @RestController = @Controller + @ResponseBody applied to all methods. In Spring Boot REST APIs, almost always use @RestController.
-
-**HTTP status codes for REST:** 200 OK (GET/PUT success), 201 Created (POST creates resource — include Location header), 204 No Content (DELETE success), 400 Bad Request (validation failure), 401 Unauthorized (not authenticated), 403 Forbidden (authenticated but not authorized), 404 Not Found, 409 Conflict (duplicate/state conflict), 422 Unprocessable Entity (semantic validation error), 500 Internal Server Error.
-
-**Validation errors with meaningful messages:** Add @Valid to the @RequestBody parameter. Spring validates JSR-380 annotations (@NotNull, @NotBlank, @Size, @Pattern, etc.) on the DTO. If validation fails, MethodArgumentNotValidException is thrown. In @RestControllerAdvice, handle it and map field errors to a structured error response: { "errors": [{"field": "registrationNo", "message": "Invalid format"}] }.`,
+I follow REST conventions: GET for read, POST for create, PUT for full update, PATCH for partial update, DELETE for deletion. Use proper HTTP status codes.`,
       code: `@RestController
 @RequestMapping("/api/v1/vehicles")
 @RequiredArgsConstructor
@@ -327,9 +303,9 @@ public class CreateVehicleRequest {
     private double loadCapacity;
 }`,
       followUp: [
-        'What is the difference between @Controller and @RestController?',
-        'What HTTP status code do you return for different operations?',
-        'How do you handle validation errors and return meaningful error messages?',
+        { question: 'What is the difference between @Controller and @RestController?', answer: `@Controller is the base MVC controller — methods return view names (strings) that are resolved to HTML templates (Thymeleaf, JSP). For REST APIs, you add @ResponseBody to each method to say "write this directly to the response, don't look for a view." @RestController = @Controller + @ResponseBody applied to all methods. In Spring Boot REST APIs, almost always use @RestController.` },
+        { question: 'What HTTP status code do you return for different operations?', answer: `200 OK (GET/PUT success), 201 Created (POST creates resource — include Location header), 204 No Content (DELETE success), 400 Bad Request (validation failure), 401 Unauthorized (not authenticated), 403 Forbidden (authenticated but not authorized), 404 Not Found, 409 Conflict (duplicate/state conflict), 422 Unprocessable Entity (semantic validation error), 500 Internal Server Error.` },
+        { question: 'How do you handle validation errors and return meaningful error messages?', answer: `Add @Valid to the @RequestBody parameter. Spring validates JSR-380 annotations (@NotNull, @NotBlank, @Size, @Pattern, etc.) on the DTO. If validation fails, MethodArgumentNotValidException is thrown. In @RestControllerAdvice, handle it and map field errors to a structured error response: { "errors": [{"field": "registrationNo", "message": "Invalid format"}] }.` },
       ],
       tip: 'HTTP status codes: 200 OK, 201 Created, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Server Error',
     },
@@ -351,13 +327,7 @@ In my projects, I used AOP for:
 1. Logging all API request/response times
 2. Auditing which user called which method
 3. Caching with custom annotations
-4. Retry logic for external API calls
-
-**@Before, @After, @Around, @AfterReturning, @AfterThrowing:** @Before runs BEFORE the method (for logging, validation). @After runs AFTER the method, regardless of success or exception (like finally). @AfterReturning runs only if the method returns SUCCESSFULLY (access the return value). @AfterThrowing runs only if the method throws an EXCEPTION (access the exception). @Around wraps the entire method — you have full control, can modify arguments and return value, decide whether to call the actual method at all (via joinPoint.proceed()).
-
-**Pointcut expression syntax:** "execution(* com.app.service..*(..))" means: any method (*), in any class under com.app.service and sub-packages (..), with any arguments ((..)). Common designators: execution() for method matching, within() for class matching, @annotation() for annotation matching, args() for argument type matching.
-
-**Spring AOP internals (proxy-based):** Spring AOP uses JDK Dynamic Proxies (for classes that implement interfaces) or CGLIB proxies (for concrete classes — creates a subclass at runtime). The proxy intercepts method calls and applies aspects. This is WHY self-invocation doesn't work — when you call this.myMethod() from within the same bean, you're calling directly on the real object, bypassing the proxy. This is also why @Transactional doesn't work on private methods — the proxy can't override private methods.`,
+4. Retry logic for external API calls`,
       code: `// Aspect for logging execution time of all service methods
 @Aspect
 @Component
@@ -421,9 +391,9 @@ public class VehicleService {
     }
 }`,
       followUp: [
-        'What is the difference between @Before, @After, @Around, @AfterReturning, @AfterThrowing?',
-        'What is a pointcut expression? Explain the syntax.',
-        'How does Spring AOP work under the hood? (proxy-based)',
+        { question: 'What is the difference between @Before, @After, @Around, @AfterReturning, @AfterThrowing?', answer: `@Before runs BEFORE the method (for logging, validation). @After runs AFTER the method, regardless of success or exception (like finally). @AfterReturning runs only if the method returns SUCCESSFULLY (access the return value). @AfterThrowing runs only if the method throws an EXCEPTION (access the exception). @Around wraps the entire method — you have full control, can modify arguments and return value, decide whether to call the actual method at all (via joinPoint.proceed()).` },
+        { question: 'What is a pointcut expression? Explain the syntax.', answer: `"execution(* com.app.service..*(..))" means: any method (*), in any class under com.app.service and sub-packages (..), with any arguments ((..)). Common designators: execution() for method matching, within() for class matching, @annotation() for annotation matching, args() for argument type matching.` },
+        { question: 'How does Spring AOP work under the hood? (proxy-based)', answer: `Spring AOP uses JDK Dynamic Proxies (for classes that implement interfaces) or CGLIB proxies (for concrete classes — creates a subclass at runtime). The proxy intercepts method calls and applies aspects. This is WHY self-invocation doesn't work — when you call this.myMethod() from within the same bean, you're calling directly on the real object, bypassing the proxy. This is also why @Transactional doesn't work on private methods — the proxy can't override private methods.` },
       ],
       tip: 'Spring AOP uses JDK dynamic proxies (for interfaces) or CGLIB proxies (for classes). This means AOP does NOT work for self-invocation — calling a @Transactional method from within the same class bypasses the proxy!',
     },
@@ -449,13 +419,7 @@ Key propagation behaviors:
 - SUPPORTS: use existing if present, else run without transaction
 - NEVER: fail if transaction exists
 
-The most common trap: @Transactional on a private method won't work (proxy can't intercept private methods). And self-invocation doesn't work (calling @Transactional method from same bean).
-
-**Why @Transactional doesn't work on private methods:** Spring AOP creates a proxy that wraps your bean. The proxy overrides public/protected methods to add transaction behavior. Private methods CANNOT be overridden (not visible to subclass/proxy), so the proxy can't intercept them. The transaction code never runs — the private method executes directly on the real object. Solution: make the method at least package-private (protected preferred), or move it to a separate bean.
-
-**REQUIRED vs REQUIRES_NEW:** REQUIRED (default): if a transaction already exists, join it. If not, create a new one. All operations participate in the SAME transaction — if inner method rolls back, the outer transaction rolls back too. REQUIRES_NEW: always creates a NEW transaction, suspending the existing one if any. The inner transaction commits/rolls back INDEPENDENTLY. Use for: audit logs that must be saved even if the main transaction rolls back.
-
-**Distributed transactions across multiple databases:** True distributed transactions (2PC — Two-Phase Commit) require JTA (Java Transaction API) and an XA-compliant transaction manager (Atomikos, Bitronix). Very complex and slow. Modern approach: use the Saga pattern — break into local transactions with compensating actions. For most Spring Boot apps, it's better to avoid cross-database transactions by design (same-database for critical operations, eventual consistency via events for others).`,
+The most common trap: @Transactional on a private method won't work (proxy can't intercept private methods). And self-invocation doesn't work (calling @Transactional method from same bean).`,
       code: `// Basic @Transactional usage
 @Service
 public class PolicyService {
@@ -522,9 +486,9 @@ public class BatchService {
     }
 }`,
       followUp: [
-        'Why does @Transactional not work on private methods?',
-        'What is the difference between REQUIRED and REQUIRES_NEW?',
-        'How do you handle transactions across multiple databases (distributed transactions)?',
+        { question: 'Why does @Transactional not work on private methods?', answer: `Spring AOP creates a proxy that wraps your bean. The proxy overrides public/protected methods to add transaction behavior. Private methods CANNOT be overridden (not visible to subclass/proxy), so the proxy can't intercept them. The transaction code never runs — the private method executes directly on the real object. Solution: make the method at least package-private (protected preferred), or move it to a separate bean.` },
+        { question: 'What is the difference between REQUIRED and REQUIRES_NEW?', answer: `REQUIRED (default): if a transaction already exists, join it. If not, create a new one. All operations participate in the SAME transaction — if inner method rolls back, the outer transaction rolls back too. REQUIRES_NEW: always creates a NEW transaction, suspending the existing one if any. The inner transaction commits/rolls back INDEPENDENTLY. Use for: audit logs that must be saved even if the main transaction rolls back.` },
+        { question: 'How do you handle transactions across multiple databases (distributed transactions)?', answer: `True distributed transactions (2PC — Two-Phase Commit) require JTA (Java Transaction API) and an XA-compliant transaction manager (Atomikos, Bitronix). Very complex and slow. Modern approach: use the Saga pattern — break into local transactions with compensating actions. For most Spring Boot apps, it's better to avoid cross-database transactions by design (same-database for critical operations, eventual consistency via events for others).` },
       ],
       tip: '@Transactional only rolls back on RuntimeException by default. If your method throws a checked exception and you don\'t specify rollbackFor, the transaction COMMITS even if an exception is thrown!',
     },

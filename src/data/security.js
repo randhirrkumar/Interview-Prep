@@ -24,13 +24,7 @@ Flow:
 
 The key benefit: stateless. Server doesn't store sessions. Works great for microservices.
 
-In my MetLife project, I implemented JWT-based auth. The token contained userId and roles. Downstream services extracted user info from the token header — no DB call for every request.
-
-**JWT vs Session-based authentication:** Session-based: server stores session data (userId, roles) in memory or Redis. Client stores only a session ID cookie. Each request: server looks up session in store. JWT-based: server stores NOTHING. Client stores the JWT. Each request: server validates the JWT signature (CPU but no DB/Redis lookup). JWT is better for microservices (no shared session store needed). Session-based is better for scenarios requiring instant revocation. Hybrid: short-lived JWT (15min) + long-lived refresh token stored server-side.
-
-**Invalidating JWT tokens (logout):** JWT is stateless — once issued, it's valid until expiry. True logout options: (1) Short expiry (15 minutes) + refresh tokens — users get a new access token with each refresh; on logout, invalidate the refresh token in DB. (2) Token blacklist: store invalidated token JTI (JWT ID) in Redis with TTL matching expiry. On each request, check if JTI is blacklisted. (3) Token version: store a "tokenVersion" in user DB; include version in JWT; on logout, increment version; server rejects tokens with old version. Option 1 is most common in practice.
-
-**RS256 vs HS256:** HS256 (HMAC-SHA256): uses a SINGLE shared secret for both signing and verification. Anyone with the secret can both create and verify tokens. Simple for single-service setups, but all services need the secret — risky if a service is compromised. RS256 (RSA-SHA256): uses a PUBLIC/PRIVATE key pair. Auth server signs with the PRIVATE key. Any service verifies with the PUBLIC key. Public key can be shared openly. Best for microservices — downstream services only need the public key; only the auth server has the private key.`,
+In my MetLife project, I implemented JWT-based auth. The token contained userId and roles. Downstream services extracted user info from the token header — no DB call for every request.`,
       code: `// 1. Security Configuration
 @Configuration
 @EnableWebSecurity
@@ -124,9 +118,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 }`,
       followUp: [
-        'What is the difference between JWT and session-based authentication?',
-        'How do you invalidate a JWT token (logout)?',
-        'What is RS256 vs HS256 signing?',
+        { question: 'What is the difference between JWT and session-based authentication?', answer: `Session-based: server stores session data (userId, roles) in memory or Redis. Client stores only a session ID cookie. Each request: server looks up session in store. JWT-based: server stores NOTHING. Client stores the JWT. Each request: server validates the JWT signature (CPU but no DB/Redis lookup). JWT is better for microservices (no shared session store needed). Session-based is better for scenarios requiring instant revocation. Hybrid: short-lived JWT (15min) + long-lived refresh token stored server-side.` },
+        { question: 'How do you invalidate a JWT token (logout)?', answer: `JWT is stateless — once issued, it's valid until expiry. True logout options: (1) Short expiry (15 minutes) + refresh tokens — users get a new access token with each refresh; on logout, invalidate the refresh token in DB. (2) Token blacklist: store invalidated token JTI (JWT ID) in Redis with TTL matching expiry. On each request, check if JTI is blacklisted. (3) Token version: store a "tokenVersion" in user DB; include version in JWT; on logout, increment version; server rejects tokens with old version. Option 1 is most common in practice.` },
+        { question: 'What is RS256 vs HS256 signing?', answer: `HS256 (HMAC-SHA256): uses a SINGLE shared secret for both signing and verification. Anyone with the secret can both create and verify tokens. Simple for single-service setups, but all services need the secret — risky if a service is compromised. RS256 (RSA-SHA256): uses a PUBLIC/PRIVATE key pair. Auth server signs with the PRIVATE key. Any service verifies with the PUBLIC key. Public key can be shared openly. Best for microservices — downstream services only need the public key; only the auth server has the private key.` },
       ],
       tip: 'JWT cannot be truly invalidated (it\'s stateless). Options: short expiry + refresh tokens, or maintain a server-side blacklist (defeats the stateless benefit). Use refresh token rotation for security.',
     },

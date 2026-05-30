@@ -15,13 +15,7 @@ Hibernate is an implementation of the JPA specification. It's the most popular J
 
 Spring Data JPA is a further abstraction on top of JPA — it auto-generates repository implementations, so I just define an interface and Spring creates the SQL-executing code automatically.
 
-I work with Spring Data JPA in my projects, which uses Hibernate underneath. Most of the time I don't interact with Hibernate directly — Spring Data JPA handles it. But I need to understand Hibernate to debug lazy loading issues, N+1 problems, and performance optimization.
-
-**@Entity vs @Table:** @Entity marks a Java class as a JPA-managed entity — without it, Hibernate ignores the class entirely. @Table is optional and specifies mapping details: the exact table name (name attribute), schema, unique constraints, and indexes. Without @Table, the table name defaults to the class name. Example: @Entity on class Policy maps to "Policy" table by default. @Table(name="insurance_policies") maps it to "insurance_policies" instead. You can have @Entity without @Table (uses defaults), but not @Table without @Entity.
-
-**FetchType.LAZY vs FetchType.EAGER:** LAZY (recommended default): the associated entity/collection is NOT loaded from the database until you access it. Hibernate creates a proxy object. When you call getDriver(), it fires the SQL at that moment. EAGER: the associated entity is always loaded in the same query as the parent — even if you never access it. Defaults: @ManyToOne and @OneToOne default to EAGER (bad — always load). @OneToMany and @ManyToMany default to LAZY (good). Best practice: always declare FetchType.LAZY explicitly on all associations and use JOIN FETCH when you need the data.
-
-**Cascade types in JPA:** CascadeType.PERSIST: saving parent also saves children. CascadeType.MERGE: updating parent also updates children. CascadeType.REMOVE: deleting parent also deletes children. CascadeType.REFRESH: refreshing parent also refreshes children. CascadeType.DETACH: detaching parent also detaches children. CascadeType.ALL: all of the above. orphanRemoval=true: removes a child entity from the database when it's removed from the parent's collection (even without an explicit delete call). Use cascade=PERSIST,MERGE for owned relationships; be careful with REMOVE as it can cause unintended deletes.`,
+I work with Spring Data JPA in my projects, which uses Hibernate underneath. Most of the time I don't interact with Hibernate directly — Spring Data JPA handles it. But I need to understand Hibernate to debug lazy loading issues, N+1 problems, and performance optimization.`,
       code: `// JPA Entity
 @Entity
 @Table(name = "vehicles")
@@ -75,9 +69,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findTopByStatus(@Param("status") String status, @Param("limit") int limit);
 }`,
       followUp: [
-        'What is the difference between @Entity and @Table?',
-        'What is the difference between FetchType.LAZY and FetchType.EAGER?',
-        'What are cascade types in JPA?',
+        { question: 'What is the difference between @Entity and @Table?', answer: `@Entity marks a Java class as a JPA-managed entity — without it, Hibernate ignores the class entirely. @Table is optional and specifies mapping details: the exact table name (name attribute), schema, unique constraints, and indexes. Without @Table, the table name defaults to the class name. Example: @Entity on class Policy maps to "Policy" table by default. @Table(name="insurance_policies") maps it to "insurance_policies" instead. You can have @Entity without @Table (uses defaults), but not @Table without @Entity.` },
+        { question: 'What is the difference between FetchType.LAZY and FetchType.EAGER?', answer: `LAZY (recommended default): the associated entity/collection is NOT loaded from the database until you access it. Hibernate creates a proxy object. When you call getDriver(), it fires the SQL at that moment. EAGER: the associated entity is always loaded in the same query as the parent — even if you never access it. Defaults: @ManyToOne and @OneToOne default to EAGER (bad — always load). @OneToMany and @ManyToMany default to LAZY (good). Best practice: always declare FetchType.LAZY explicitly on all associations and use JOIN FETCH when you need the data.` },
+        { question: 'What are cascade types in JPA?', answer: `CascadeType.PERSIST: saving parent also saves children. CascadeType.MERGE: updating parent also updates children. CascadeType.REMOVE: deleting parent also deletes children. CascadeType.REFRESH: refreshing parent also refreshes children. CascadeType.DETACH: detaching parent also detaches children. CascadeType.ALL: all of the above. orphanRemoval=true: removes a child entity from the database when it's removed from the parent's collection (even without an explicit delete call). Use cascade=PERSIST,MERGE for owned relationships; be careful with REMOVE as it can cause unintended deletes.` },
       ],
       tip: 'Use FetchType.LAZY by default — always. Eager loading fetches related entities even when you don\'t need them. LAZY loads only when accessed. Fix N+1 with JOIN FETCH, not EAGER.',
     },
@@ -99,13 +93,7 @@ Solutions:
 3. Batch fetching — hibernate.default_batch_fetch_size
 4. DTO projection — fetch only the columns you need
 
-In my MetLife project, I fixed an N+1 issue where loading policy list for a customer was firing 1+N queries. Changed to JOIN FETCH — reduced from 200ms to 15ms.
-
-**EntityGraph vs JOIN FETCH:** JOIN FETCH is written directly in the JPQL query string — it's static but very clear about what's being fetched. @EntityGraph is declarative: defined on the entity or as an attributePaths inline — Spring adds the JOIN FETCH automatically. Use EntityGraph when: the same fetch strategy is reused across multiple repository methods (define it once with @NamedEntityGraph), or when you want to avoid writing JPQL for simple cases. Use JOIN FETCH when: you need fine control over complex multi-level joins, or when the query has specific ordering or filtering that interacts with the join. For deep nested graphs (policy → customer → address), EntityGraph with subgraphs is cleaner. Key caveat: both can cause a Cartesian product with multiple OneToMany collections — for that, use batch fetching.
-
-**Hibernate statistics:** Enable with spring.jpa.properties.hibernate.generate_statistics=true. Logs: query count, query execution time, second-level cache hits/misses, connections used. Very useful during development/testing to catch N+1. Also exposed via Spring Boot Actuator: GET /actuator/metrics/hibernate.queries (with micrometer-registry dependency). Check during load testing: if query count grows linearly with data size, you have N+1.
-
-**Open Session in View anti-pattern:** Spring Boot enables spring.jpa.open-in-view=true by default — this keeps the Hibernate EntityManager (session) open for the entire HTTP request, including view rendering and JSON serialization by Jackson. Purpose: allows lazy loading to work during serialization without LazyInitializationException. Problem: N+1 queries hidden in the view/serialization layer are invisible in the service layer — they're hard to detect and appear in production under load. Best practice: set spring.jpa.open-in-view=false in production. Load exactly what you need in the service layer using JOIN FETCH or @EntityGraph. Use DTOs (not entities) as API responses to prevent accidental lazy loading.`,
+In my MetLife project, I fixed an N+1 issue where loading policy list for a customer was firing 1+N queries. Changed to JOIN FETCH — reduced from 200ms to 15ms.`,
       code: `// N+1 Problem
 List<Policy> policies = policyRepository.findAll();  // 1 query
 for (Policy p : policies) {
@@ -137,9 +125,9 @@ spring.jpa.properties.hibernate.format_sql=true
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql=TRACE`,
       followUp: [
-        'When would you use EntityGraph vs JOIN FETCH?',
-        'What is Hibernate statistics and how do you enable it?',
-        'What is the Open Session in View anti-pattern?',
+        { question: 'When would you use EntityGraph vs JOIN FETCH?', answer: `JOIN FETCH is written directly in the JPQL query string — it's static but very clear about what's being fetched. @EntityGraph is declarative: defined on the entity or as an attributePaths inline — Spring adds the JOIN FETCH automatically. Use EntityGraph when: the same fetch strategy is reused across multiple repository methods (define it once with @NamedEntityGraph), or when you want to avoid writing JPQL for simple cases. Use JOIN FETCH when: you need fine control over complex multi-level joins, or when the query has specific ordering or filtering that interacts with the join. For deep nested graphs (policy → customer → address), EntityGraph with subgraphs is cleaner. Key caveat: both can cause a Cartesian product with multiple OneToMany collections — for that, use batch fetching.` },
+        { question: 'What is Hibernate statistics and how do you enable it?', answer: `Enable with spring.jpa.properties.hibernate.generate_statistics=true. Logs: query count, query execution time, second-level cache hits/misses, connections used. Very useful during development/testing to catch N+1. Also exposed via Spring Boot Actuator: GET /actuator/metrics/hibernate.queries (with micrometer-registry dependency). Check during load testing: if query count grows linearly with data size, you have N+1.` },
+        { question: 'What is the Open Session in View anti-pattern?', answer: `Spring Boot enables spring.jpa.open-in-view=true by default — this keeps the Hibernate EntityManager (session) open for the entire HTTP request, including view rendering and JSON serialization by Jackson. Purpose: allows lazy loading to work during serialization without LazyInitializationException. Problem: N+1 queries hidden in the view/serialization layer are invisible in the service layer — they're hard to detect and appear in production under load. Best practice: set spring.jpa.open-in-view=false in production. Load exactly what you need in the service layer using JOIN FETCH or @EntityGraph. Use DTOs (not entities) as API responses to prevent accidental lazy loading.` },
       ],
       tip: 'Open Session in View pattern keeps Hibernate session open during the entire HTTP request. Avoids LazyInitializationException but causes N+1 hidden in the view layer. Disable with spring.jpa.open-in-view=false in production.',
     },

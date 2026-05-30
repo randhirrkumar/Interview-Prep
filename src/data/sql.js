@@ -15,11 +15,7 @@ The simplest approach: use a subquery to exclude the maximum salary, then find t
 
 A better approach: use DISTINCT + LIMIT + OFFSET. Or use ROW_NUMBER() window function which is the most modern and readable way.
 
-In production systems like MetLife, we used window functions for complex ranking queries on policy data.
-
-**ROW_NUMBER() vs RANK() vs DENSE_RANK():** ROW_NUMBER(): assigns unique sequential integers — no ties, every row gets a different number (1, 2, 3, 4). RANK(): assigns same rank to ties, then SKIPS numbers — if two rows are tied at rank 1, the next row gets rank 3, not 2 (1, 1, 3, 4). DENSE_RANK(): assigns same rank to ties but does NOT skip — next rank is always +1 (1, 1, 2, 3). For "second highest salary," DENSE_RANK() is usually the right choice: if multiple employees share the highest salary, DENSE_RANK() still gives you the correct "second distinct salary level."
-
-**Duplicate salaries and which approach handles them correctly:** Approach 1 (WHERE salary < MAX) and Approach 2 (DISTINCT + LIMIT OFFSET) both use DISTINCT — they return the second highest distinct salary value correctly even with duplicates. Approach 3 with ROW_NUMBER() without DISTINCT assigns different row numbers to identical salaries, so you'd get a row for the second occurrence of the maximum, not the second highest distinct value. Fix: use DENSE_RANK() instead of ROW_NUMBER() when salaries can be duplicated.`,
+In production systems like MetLife, we used window functions for complex ranking queries on policy data.`,
       code: `-- Table: Employee (id, name, salary, department_id)
 
 -- Approach 1: Subquery
@@ -59,8 +55,8 @@ SELECT salary FROM (
 ) ranked
 WHERE rnk = 3;  -- 3rd highest`,
       followUp: [
-        'What is the difference between ROW_NUMBER(), RANK(), and DENSE_RANK()?',
-        'What if there are duplicate salaries? Which approach handles that correctly?',
+        { question: 'What is the difference between ROW_NUMBER(), RANK(), and DENSE_RANK()?', answer: `ROW_NUMBER(): assigns unique sequential integers — no ties, every row gets a different number (1, 2, 3, 4). RANK(): assigns same rank to ties, then SKIPS numbers — if two rows are tied at rank 1, the next row gets rank 3, not 2 (1, 1, 3, 4). DENSE_RANK(): assigns same rank to ties but does NOT skip — next rank is always +1 (1, 1, 2, 3). For "second highest salary," DENSE_RANK() is usually the right choice: if multiple employees share the highest salary, DENSE_RANK() still gives you the correct "second distinct salary level."` },
+        { question: 'What if there are duplicate salaries? Which approach handles that correctly?', answer: `Approach 1 (WHERE salary < MAX) and Approach 2 (DISTINCT + LIMIT OFFSET) both use DISTINCT — they return the second highest distinct salary value correctly even with duplicates. Approach 3 with ROW_NUMBER() without DISTINCT assigns different row numbers to identical salaries, so you'd get a row for the second occurrence of the maximum, not the second highest distinct value. Fix: use DENSE_RANK() instead of ROW_NUMBER() when salaries can be duplicated.` },
       ],
       tip: 'ROW_NUMBER(): sequential, no ties. RANK(): gaps after ties (1,1,3). DENSE_RANK(): no gaps after ties (1,1,2). For salary queries, DENSE_RANK() is usually what you want.',
     },
@@ -79,11 +75,7 @@ FULL OUTER JOIN: all rows from both tables, NULL where no match. MySQL doesn't s
 CROSS JOIN: cartesian product — every row from A with every row from B.
 SELF JOIN: join a table with itself (for hierarchies, employee-manager).
 
-In my MetLife project, I frequently used LEFT JOINs to find policies without any claims, and INNER JOINs to get policy-holder details.
-
-**WHERE vs HAVING:** WHERE filters individual rows BEFORE they are grouped. It operates on raw table columns. HAVING filters GROUPS AFTER GROUP BY aggregation. It can use aggregate functions like COUNT(), SUM(), AVG(). Example: WHERE salary > 50000 (filters rows before grouping). HAVING COUNT(*) > 5 (filters groups — only groups with more than 5 members). You cannot use WHERE with aggregate functions.
-
-**UNION vs UNION ALL:** UNION combines result sets and removes DUPLICATE rows — it performs a distinct/sort operation internally, which is slower. UNION ALL combines result sets and keeps ALL rows including duplicates — no deduplication, so it's faster. Use UNION ALL when you know there are no duplicates or when you want all results including duplicates. Use UNION only when you need duplicate elimination. In the FULL OUTER JOIN workaround above, UNION is used to avoid duplicate rows for employees who have a matching department.`,
+In my MetLife project, I frequently used LEFT JOINs to find policies without any claims, and INNER JOINs to get policy-holder details.`,
       code: `-- Sample Tables:
 -- Employee: id, name, department_id, manager_id
 -- Department: id, name
@@ -117,8 +109,8 @@ UNION
 SELECT e.name, d.name
 FROM Employee e RIGHT JOIN Department d ON e.department_id = d.id;`,
       followUp: [
-        'What is the difference between WHERE and HAVING?',
-        'What is the difference between UNION and UNION ALL?',
+        { question: 'What is the difference between WHERE and HAVING?', answer: `WHERE filters individual rows BEFORE they are grouped. It operates on raw table columns. HAVING filters GROUPS AFTER GROUP BY aggregation. It can use aggregate functions like COUNT(), SUM(), AVG(). Example: WHERE salary > 50000 (filters rows before grouping). HAVING COUNT(*) > 5 (filters groups — only groups with more than 5 members). You cannot use WHERE with aggregate functions.` },
+        { question: 'What is the difference between UNION and UNION ALL?', answer: `UNION combines result sets and removes DUPLICATE rows — it performs a distinct/sort operation internally, which is slower. UNION ALL combines result sets and keeps ALL rows including duplicates — no deduplication, so it's faster. Use UNION ALL when you know there are no duplicates or when you want all results including duplicates. Use UNION only when you need duplicate elimination. In the FULL OUTER JOIN workaround above, UNION is used to avoid duplicate rows for employees who have a matching department.` },
       ],
       tip: 'WHERE filters rows BEFORE GROUP BY. HAVING filters groups AFTER GROUP BY. UNION removes duplicates (slower). UNION ALL keeps duplicates (faster).',
     },
@@ -150,13 +142,7 @@ Don't index:
 - Small tables (full scan is fine)
 - Frequently updated columns (index maintenance overhead)
 
-In MetLife, I improved a critical query from 8 seconds to 50ms by adding a composite index on (policy_number, status, created_at).
-
-**Clustered vs Non-clustered index:** Clustered index defines the physical order of data rows on disk. There can be only ONE per table (the PRIMARY KEY in MySQL/InnoDB). The index IS the table — leaf nodes contain the actual data rows. Non-clustered (secondary) index: a separate structure from the data. Leaf nodes contain the index columns plus a pointer to the actual row (the primary key value). Multiple non-clustered indexes can exist per table. Lookups via secondary index: traverse the secondary index to find the primary key, then traverse the clustered index to get the actual row (double lookup).
-
-**Leftmost prefix rule for composite indexes:** A composite index on (A, B, C) can only be used when queries filter on the leftmost columns in order. It helps: WHERE A = ? (uses index on A), WHERE A = ? AND B = ? (uses both A and B), WHERE A = ? AND B = ? AND C = ? (uses all three). It does NOT help: WHERE B = ? alone or WHERE C = ? alone (can't skip A). WHERE A = ? AND C = ? (only uses A portion). Always put the most frequently filtered column first.
-
-**EXPLAIN in MySQL:** EXPLAIN shows the query execution plan — how MySQL will execute the query. Key columns: id (query ID), select_type (SIMPLE, SUBQUERY), table (which table), type (access type: ALL = full scan, ref = index, const = single row), key (which index is being used), rows (estimated rows to examine), Extra (Using index = covering index, Using filesort = sorting without index). Run EXPLAIN on slow queries to identify: full table scans, missing indexes, bad join order.`,
+In MetLife, I improved a critical query from 8 seconds to 50ms by adding a composite index on (policy_number, status, created_at).`,
       code: `-- Create index
 CREATE INDEX idx_policy_number ON Policy(policy_number);
 CREATE UNIQUE INDEX idx_email ON Customer(email);
@@ -193,9 +179,9 @@ WHERE created_at BETWEEN '2024-01-01' AND '2024-12-31'  -- GOOD
 WHERE name LIKE '%john%'  -- BAD (full scan)
 WHERE name LIKE 'john%'   -- GOOD (can use index)`,
       followUp: [
-        'What is a clustered index vs non-clustered index?',
-        'What is the leftmost prefix rule for composite indexes?',
-        'How does EXPLAIN work in MySQL?',
+        { question: 'What is a clustered index vs non-clustered index?', answer: `Clustered index defines the physical order of data rows on disk. There can be only ONE per table (the PRIMARY KEY in MySQL/InnoDB). The index IS the table — leaf nodes contain the actual data rows. Non-clustered (secondary) index: a separate structure from the data. Leaf nodes contain the index columns plus a pointer to the actual row (the primary key value). Multiple non-clustered indexes can exist per table. Lookups via secondary index: traverse the secondary index to find the primary key, then traverse the clustered index to get the actual row (double lookup).` },
+        { question: 'What is the leftmost prefix rule for composite indexes?', answer: `A composite index on (A, B, C) can only be used when queries filter on the leftmost columns in order. It helps: WHERE A = ? (uses index on A), WHERE A = ? AND B = ? (uses both A and B), WHERE A = ? AND B = ? AND C = ? (uses all three). It does NOT help: WHERE B = ? alone or WHERE C = ? alone (can't skip A). WHERE A = ? AND C = ? (only uses A portion). Always put the most frequently filtered column first.` },
+        { question: 'How does EXPLAIN work in MySQL?', answer: `EXPLAIN shows the query execution plan — how MySQL will execute the query. Key columns: id (query ID), select_type (SIMPLE, SUBQUERY), table (which table), type (access type: ALL = full scan, ref = index, const = single row), key (which index is being used), rows (estimated rows to examine), Extra (Using index = covering index, Using filesort = sorting without index). Run EXPLAIN on slow queries to identify: full table scans, missing indexes, bad join order.` },
       ],
       tip: 'Composite index rule: index on (A, B, C) helps queries filtering on A, or A+B, or A+B+C. But NOT B alone or C alone. Always put the most selective column first.',
     },
@@ -205,9 +191,7 @@ WHERE name LIKE 'john%'   -- GOOD (can use index)`,
       difficulty: 'intermediate',
       asked: true,
       tags: ['SQL', 'Self Join'],
-      answer: `Classic self-join problem. Join Employee with itself using manager_id.
-
-**Finding top-level employees (no manager):** SELECT * FROM Employee WHERE manager_id IS NULL. These are employees where the manager_id column is NULL — they have no manager, so they're at the top of the hierarchy. In a self-join context: SELECT e.name FROM Employee e LEFT JOIN Employee m ON e.manager_id = m.id WHERE e.manager_id IS NULL.`,
+      answer: `Classic self-join problem. Join Employee with itself using manager_id.`,
       code: `-- Table: Employee(id, name, salary, manager_id)
 
 SELECT e.name AS employee, e.salary,
@@ -221,7 +205,9 @@ SELECT COUNT(*) as count_earns_more_than_manager
 FROM Employee e
 JOIN Employee m ON e.manager_id = m.id
 WHERE e.salary > m.salary;`,
-      followUp: ['How would you find employees with no manager (top-level employees)?'],
+      followUp: [
+        { question: 'How would you find employees with no manager (top-level employees)?', answer: `SELECT * FROM Employee WHERE manager_id IS NULL. These are employees where the manager_id column is NULL — they have no manager, so they're at the top of the hierarchy. In a self-join context: SELECT e.name FROM Employee e LEFT JOIN Employee m ON e.manager_id = m.id WHERE e.manager_id IS NULL.` },
+      ],
     },
     {
       id: 5,
@@ -243,9 +229,7 @@ WHERE e.salary > m.salary;`,
 - Problem: Employee(id, dept_id, dept_name) — dept_name depends on dept_id (not the key)
 - Fix: separate Departments table
 
-In my MetLife project, the database was well-normalized to 3NF. When we had performance issues, we carefully denormalized some reporting tables (CQRS pattern) to avoid complex joins in read-heavy queries.
-
-**When to intentionally denormalize:** (1) Read-heavy reporting tables where joins across multiple normalized tables are too expensive — store pre-computed/joined data in a report table. (2) CQRS (Command Query Responsibility Segregation) read models — maintain a denormalized read-side projection updated by events, so queries are simple single-table reads. (3) Caching materialized values — storing derived data (like total order amount) on the parent row to avoid recalculation. (4) Time-series data with high insert throughput — strict normalization creates join overhead that hurts write performance. Always denormalize deliberately with a clear performance justification, never by accident.`,
+In my MetLife project, the database was well-normalized to 3NF. When we had performance issues, we carefully denormalized some reporting tables (CQRS pattern) to avoid complex joins in read-heavy queries.`,
       code: `-- NOT normalized (problems):
 CREATE TABLE Orders_BAD (
     order_id INT,
@@ -285,7 +269,9 @@ CREATE TABLE Order_Item (
     FOREIGN KEY (order_id) REFERENCES Order_Table(id),
     FOREIGN KEY (product_id) REFERENCES Product(id)
 );`,
-      followUp: ['When would you intentionally denormalize a database?'],
+      followUp: [
+        { question: 'When would you intentionally denormalize a database?', answer: `(1) Read-heavy reporting tables where joins across multiple normalized tables are too expensive — store pre-computed/joined data in a report table. (2) CQRS (Command Query Responsibility Segregation) read models — maintain a denormalized read-side projection updated by events, so queries are simple single-table reads. (3) Caching materialized values — storing derived data (like total order amount) on the parent row to avoid recalculation. (4) Time-series data with high insert throughput — strict normalization creates join overhead that hurts write performance. Always denormalize deliberately with a clear performance justification, never by accident.` },
+      ],
       tip: 'Denormalize for read-heavy reporting tables, for CQRS read models, or when JOINs are too expensive. Always a deliberate trade-off, not a mistake.',
     },
     {
@@ -304,11 +290,7 @@ Isolation: concurrent transactions don't interfere with each other. Different is
 
 Durability: once committed, the transaction persists even if the system crashes. Data written to disk (WAL/redo log).
 
-In MetLife, I was very conscious of ACID when processing policy premium payments. A payment deduction without the policy being activated would be a data integrity disaster.
-
-**Dirty read, Phantom read, Non-repeatable read:** Dirty read: reading uncommitted data from another transaction. If that transaction rolls back, you read data that never "existed." (Prevented by READ COMMITTED+.) Non-repeatable read: within the same transaction, reading the same row twice gives different results because another transaction committed a change between the two reads. (Prevented by REPEATABLE READ+.) Phantom read: within the same transaction, a query for a range returns different rows because another transaction inserted/deleted rows. (Prevented only by SERIALIZABLE.) MySQL REPEATABLE READ prevents phantom reads using gap locks.
-
-**Deadlock and prevention:** Deadlock: Transaction A holds a lock on row 1 and waits for row 2. Transaction B holds a lock on row 2 and waits for row 1. Neither can proceed. MySQL auto-detects deadlocks and kills one transaction (the "victim"). Prevention strategies: (1) Always acquire locks in the same order in all transactions — if both always lock row with smaller ID first, no deadlock. (2) Use optimistic locking (version column) instead of SELECT FOR UPDATE. (3) Keep transactions short — don't hold locks longer than needed. (4) Use appropriate isolation level — lower isolation = fewer locks.`,
+In MetLife, I was very conscious of ACID when processing policy premium payments. A payment deduction without the policy being activated would be a data integrity disaster.`,
       code: `-- Isolation Levels (MySQL)
 -- READ UNCOMMITTED: sees uncommitted changes (dirty reads) — AVOID
 -- READ COMMITTED: sees only committed changes (default Oracle, Postgres)
@@ -338,8 +320,8 @@ SELECT * FROM Policy WHERE id = 100 FOR UPDATE;  -- locks the row
 UPDATE Policy SET status = 'ACTIVE' WHERE id = 100;
 COMMIT;`,
       followUp: [
-        'What is a dirty read? Phantom read? Non-repeatable read?',
-        'What is a deadlock? How do you prevent it?',
+        { question: 'What is a dirty read? Phantom read? Non-repeatable read?', answer: `Dirty read: reading uncommitted data from another transaction. If that transaction rolls back, you read data that never "existed." (Prevented by READ COMMITTED+.) Non-repeatable read: within the same transaction, reading the same row twice gives different results because another transaction committed a change between the two reads. (Prevented by REPEATABLE READ+.) Phantom read: within the same transaction, a query for a range returns different rows because another transaction inserted/deleted rows. (Prevented only by SERIALIZABLE.) MySQL REPEATABLE READ prevents phantom reads using gap locks.` },
+        { question: 'What is a deadlock? How do you prevent it?', answer: `Deadlock: Transaction A holds a lock on row 1 and waits for row 2. Transaction B holds a lock on row 2 and waits for row 1. Neither can proceed. MySQL auto-detects deadlocks and kills one transaction (the "victim"). Prevention strategies: (1) Always acquire locks in the same order in all transactions — if both always lock row with smaller ID first, no deadlock. (2) Use optimistic locking (version column) instead of SELECT FOR UPDATE. (3) Keep transactions short — don't hold locks longer than needed. (4) Use appropriate isolation level — lower isolation = fewer locks.` },
       ],
       tip: 'Deadlock: Thread A holds lock on table 1 waiting for table 2. Thread B holds lock on table 2 waiting for table 1. MySQL auto-detects and kills one transaction. Prevent by always acquiring locks in the same order.',
     },

@@ -209,11 +209,7 @@ Causes of high lag:
 - Slow consumer processing (heavy DB operations, slow downstream APIs)
 - Too few consumers (need more partitions + consumers)
 - Consumer rebalancing causing pause
-- Deserialization errors causing retries
-
-**Handling a stuck consumer causing lag to grow:** First, identify which consumer instance and partition has the highest lag (kafka-consumer-groups.sh --describe). Common causes: (1) Consumer thread blocked on a slow DB call or external API — add timeouts and circuit breakers. (2) Poison pill message causing infinite retry — add error handler with max.poll.interval.ms and send to DLT after N retries. (3) Too few consumer instances — scale horizontally, add partitions if needed. (4) GC pause on consumer JVM — tune heap and GC. If the consumer is fully stuck (not polling), Kafka's session timeout detects it and triggers rebalance to reassign those partitions to healthy consumers.
-
-**earliest vs latest auto.offset.reset:** auto.offset.reset only applies when a consumer group has NO committed offset (first time connecting, or offset expired). earliest: start consuming from the OLDEST available message (beginning of log). Use for: new consumer that should process all historical data. latest: start consuming from NEW messages only (skip existing). Use for: a new consumer that only cares about future events, not history. In production, latest is the safer default for most use cases — you don't want to replay weeks of history unexpectedly. Set earliest explicitly when you need to replay.`,
+- Deserialization errors causing retries`,
       code: `# Check consumer lag via Kafka CLI
 kafka-consumer-groups.sh \\
   --bootstrap-server localhost:9092 \\
@@ -259,8 +255,8 @@ public class KafkaLagMonitor {
 # Spring Boot Actuator + Micrometer for Kafka metrics
 management.metrics.binders.kafka.enabled=true`,
       followUp: [
-        'How do you handle a consumer that is stuck and causing lag to grow?',
-        'What is the difference between earliest and latest auto.offset.reset?',
+        { question: 'How do you handle a consumer that is stuck and causing lag to grow?', answer: `First, identify which consumer instance and partition has the highest lag (kafka-consumer-groups.sh --describe). Common causes: (1) Consumer thread blocked on a slow DB call or external API — add timeouts and circuit breakers. (2) Poison pill message causing infinite retry — add error handler with max.poll.interval.ms and send to DLT after N retries. (3) Too few consumer instances — scale horizontally, add partitions if needed. (4) GC pause on consumer JVM — tune heap and GC. If the consumer is fully stuck (not polling), Kafka's session timeout detects it and triggers rebalance to reassign those partitions to healthy consumers.` },
+        { question: 'What is the difference between earliest and latest auto.offset.reset?', answer: `auto.offset.reset only applies when a consumer group has NO committed offset (first time connecting, or offset expired). earliest: start consuming from the OLDEST available message (beginning of log). Use for: new consumer that should process all historical data. latest: start consuming from NEW messages only (skip existing). Use for: a new consumer that only cares about future events, not history. In production, latest is the safer default for most use cases — you don't want to replay weeks of history unexpectedly. Set earliest explicitly when you need to replay.` },
       ],
     },
     {
@@ -287,13 +283,7 @@ Flow:
 3. Event Processor service consumes raw events, validates, enriches with vehicle master data from DB, publishes to vehicle-processed-events
 4. Multiple downstream consumers: tracking service (updates location), billing service (computes charges), analytics service (dashboards)
 
-This reduced manual effort by 40% and API response time was optimized to under 200ms even at peak load.
-
-**Ensuring ordered processing per vehicle:** We used vehicleId as the partition key for all vehicle event topics. Kafka guarantees that all messages with the same key go to the same partition, and a partition is consumed by only one consumer in a group. This means all events for vehicle V001 always go to partition 3, always consumed by consumer instance 3 — in order. Without a consistent partition key, events for the same vehicle could land on different partitions and be processed out of order.
-
-**Handling failures in the event pipeline:** Multiple layers: (1) Kafka acknowledgment is manual — consumer only commits offset after successful processing. If processing fails, the offset is not committed and the message is retried. (2) After max retries (3 attempts), the message is routed to a Dead Letter Topic (vehicle-raw-events.DLT) for manual inspection and replay. (3) VehicleNotFoundException — vehicle not found in DB — is a non-retryable error (always fails), so it goes directly to DLT. (4) Producer failures (Kafka unavailable) are caught and the event is saved to a DB fallback table for async retry.
-
-**Scaling to handle load spikes:** The system was designed for horizontal scaling from day one. (1) Consumer instances match partition count: 6 partitions + 6 consumer instances (1:1). (2) When load doubled, we increased to 12 partitions and added 6 more consumer instances — zero downtime. The partition key strategy (vehicleId) preserved ordering through the scaling operation. (3) The most impactful performance fix was adding an in-memory cache for vehicle master data. Fetching vehicle data from DB on every event (200ms) was causing lag. With ConcurrentHashMap cache + 5-minute TTL, processing dropped to 15ms.`,
+This reduced manual effort by 40% and API response time was optimized to under 200ms even at peak load.`,
       code: `// EPLMS Kafka Architecture Code
 
 // 1. API Service publishes vehicle event
@@ -372,9 +362,9 @@ public class VehicleEventProcessor {
     }
 }`,
       followUp: [
-        'How did you ensure ordered processing of events for the same vehicle?',
-        'How did you handle failures in the event processing pipeline?',
-        'How did you scale the system to handle load spikes?',
+        { question: 'How did you ensure ordered processing of events for the same vehicle?', answer: `We used vehicleId as the partition key for all vehicle event topics. Kafka guarantees that all messages with the same key go to the same partition, and a partition is consumed by only one consumer in a group. This means all events for vehicle V001 always go to partition 3, always consumed by consumer instance 3 — in order. Without a consistent partition key, events for the same vehicle could land on different partitions and be processed out of order.` },
+        { question: 'How did you handle failures in the event processing pipeline?', answer: `Multiple layers: (1) Kafka acknowledgment is manual — consumer only commits offset after successful processing. If processing fails, the offset is not committed and the message is retried. (2) After max retries (3 attempts), the message is routed to a Dead Letter Topic (vehicle-raw-events.DLT) for manual inspection and replay. (3) VehicleNotFoundException — vehicle not found in DB — is a non-retryable error (always fails), so it goes directly to DLT. (4) Producer failures (Kafka unavailable) are caught and the event is saved to a DB fallback table for async retry.` },
+        { question: 'How did you scale the system to handle load spikes?', answer: `The system was designed for horizontal scaling from day one. (1) Consumer instances match partition count: 6 partitions + 6 consumer instances (1:1). (2) When load doubled, we increased to 12 partitions and added 6 more consumer instances — zero downtime. The partition key strategy (vehicleId) preserved ordering through the scaling operation. (3) The most impactful performance fix was adding an in-memory cache for vehicle master data. Fetching vehicle data from DB on every event (200ms) was causing lag. With ConcurrentHashMap cache + 5-minute TTL, processing dropped to 15ms.` },
       ],
       tip: 'Using vehicleId as partition key is the key insight for ordering. Same vehicle → same partition → single consumer processes in order. This is the heart of the design.',
     },
