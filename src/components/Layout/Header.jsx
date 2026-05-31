@@ -60,6 +60,8 @@ export default function Header({ onMenuClick }) {
     <header
       className="flex items-center gap-3 px-4 py-3"
       style={{
+        position: 'relative',
+        zIndex: 100,
         background: 'rgba(8,11,20,0.85)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
