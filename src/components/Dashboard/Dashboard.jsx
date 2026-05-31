@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap, ArrowRight } from 'lucide-react'
+import { Flame, Target, BookOpen, TrendingUp, Clock, CheckCircle2, AlertTriangle, Zap, ArrowRight, ChevronRight } from 'lucide-react'
 import { useProgress } from '../../hooks/useProgress'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -31,11 +31,11 @@ const WEAK_AREAS = [
 ]
 
 const TODAY_FOCUS = [
-  { task: 'Java 8 Streams — 30 Q&A',                          type: 'study' },
-  { task: 'EPLMS project deep dive — architecture explanation', type: 'project' },
-  { task: 'Mock Interview — 15 min timed',                     type: 'mock' },
-  { task: 'HR: "Tell me about yourself" practice',             type: 'hr' },
-  { task: 'Revision: Spring Boot auto-configuration',          type: 'revision' },
+  { task: 'Java 8 Streams — 30 Q&A',                          type: 'study',   to: '/topics/java8' },
+  { task: 'EPLMS project deep dive — architecture explanation', type: 'project', to: '/projects/eplms' },
+  { task: 'Mock Interview — 15 min timed',                     type: 'mock',    to: '/mock-interview' },
+  { task: 'HR: "Tell me about yourself" practice',             type: 'hr',      to: '/hr-questions' },
+  { task: 'Revision: Spring Boot auto-configuration',          type: 'revision',to: '/topics/spring-boot' },
 ]
 
 const QUICK_WINS = [
@@ -119,24 +119,28 @@ export default function Dashboard() {
           label="Day Streak" value={streak} unit="days"
           topGrad="linear-gradient(90deg,#f97316,#ef4444)"
           iconColor="rgba(251,146,60,0.2)" fg="#fb923c"
+          to="/analytics"
         />
         <StatCard
           icon={<CheckCircle2 size={18} />}
           label="Completed" value={completed.length} unit="items"
           topGrad="linear-gradient(90deg,#22c55e,#16a34a)"
           iconColor="rgba(34,197,94,0.2)" fg="#4ade80"
+          to="/analytics"
         />
         <StatCard
           icon={<Clock size={18} />}
           label="Days Left" value={daysLeft} unit="days"
           topGrad="linear-gradient(90deg,#38bdf8,#6366f1)"
           iconColor="rgba(56,189,248,0.2)" fg="#7dd3fc"
+          to="/roadmap"
         />
         <StatCard
           icon={<TrendingUp size={18} />}
           label="Readiness" value={readiness} unit="%"
           topGrad="linear-gradient(90deg,#a855f7,#ec4899)"
           iconColor="rgba(168,85,247,0.2)" fg="#d8b4fe"
+          to="/analytics"
         />
       </div>
 
@@ -170,15 +174,20 @@ export default function Dashboard() {
             {TODAY_FOCUS.map((t, i) => {
               const meta = TYPE_META[t.type] || {}
               return (
-                <div key={i} className="flex items-center gap-3 rounded-xl px-3.5 py-2.5"
-                  style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+                <Link key={i} to={t.to}
+                  className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 group transition-all"
+                  style={{ background: meta.bg, border: `1px solid ${meta.border}`, textDecoration: 'none' }}
+                  onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.25)'; e.currentTarget.style.transform = 'translateX(3px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.filter = 'brightness(1)';    e.currentTarget.style.transform = 'translateX(0)' }}
+                >
                   <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: meta.color }} />
                   <span className="text-sm flex-1" style={{ color: '#cbd5e1' }}>{t.task}</span>
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full"
                     style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.border}` }}>
                     {t.type}
                   </span>
-                </div>
+                  <ChevronRight size={13} style={{ color: meta.color, flexShrink: 0, opacity: 0.6 }} />
+                </Link>
               )
             })}
           </div>
@@ -295,9 +304,12 @@ export default function Dashboard() {
 
 /* ── Sub-components ──────────────────────────────────── */
 
-function StatCard({ icon, label, value, unit, topGrad, iconColor, fg }) {
+function StatCard({ icon, label, value, unit, topGrad, iconColor, fg, to }) {
   return (
-    <div className="card relative overflow-hidden" style={{ padding: '18px' }}>
+    <Link to={to}
+      className="card card-hover relative overflow-hidden block group"
+      style={{ padding: '18px', textDecoration: 'none' }}
+    >
       {/* colored top bar */}
       <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl" style={{ background: topGrad }} />
       {/* icon pill */}
@@ -309,7 +321,10 @@ function StatCard({ icon, label, value, unit, topGrad, iconColor, fg }) {
         {value}
         <span className="text-xs font-normal ml-1" style={{ color: '#475569' }}>{unit}</span>
       </div>
-      <div className="text-xs mt-1" style={{ color: '#475569' }}>{label}</div>
-    </div>
+      <div className="flex items-center justify-between mt-1">
+        <div className="text-xs" style={{ color: '#475569' }}>{label}</div>
+        <ChevronRight size={12} style={{ color: '#374151' }} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    </Link>
   )
 }
