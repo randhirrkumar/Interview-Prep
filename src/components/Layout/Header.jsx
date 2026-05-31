@@ -1,14 +1,60 @@
-import { Menu, Search, Flame, LogIn, LogOut } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Menu, Search, Flame, LogIn, LogOut, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProgress } from '../../hooks/useProgress'
+import { searchAll } from '../../utils/searchIndex'
+
+const DIFF_COLOR = {
+  beginner:     '#4ade80',
+  intermediate: '#fbbf24',
+  advanced:     '#f87171',
+  Easy:         '#4ade80',
+  Medium:       '#fbbf24',
+  Hard:         '#f87171',
+}
+
+const TYPE_BADGE = {
+  topic: { bg: 'rgba(99,102,241,0.18)',  color: '#a5b4fc' },
+  dsa:   { bg: 'rgba(20,184,166,0.18)',  color: '#5eead4' },
+  hr:    { bg: 'rgba(236,72,153,0.18)',  color: '#f9a8d4' },
+}
 
 export default function Header({ onMenuClick }) {
   const { user, login, logout } = useAuth()
   const { streak } = useProgress()
+  const navigate = useNavigate()
+
+  const [query, setQuery]     = useState('')
+  const [results, setResults] = useState([])
+  const [focused, setFocused] = useState(false)
+  const searchRef = useRef(null)
 
   const today = new Date().toLocaleDateString('en-IN', {
-    weekday: 'short', day: 'numeric', month: 'short'
+    weekday: 'short', day: 'numeric', month: 'short',
   })
+
+  useEffect(() => {
+    setResults(searchAll(query))
+  }, [query])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setFocused(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  function handleSelect(route) {
+    navigate(route)
+    setQuery('')
+    setFocused(false)
+  }
+
+  const showDropdown = focused && query.length >= 2
 
   return (
     <header
@@ -32,15 +78,94 @@ export default function Header({ onMenuClick }) {
       </button>
 
       {/* Search */}
-      <div
-        className="flex-1 max-w-sm hidden sm:flex items-center gap-2 px-3 py-2 glass-input"
-      >
-        <Search size={13} style={{ color: '#475569', flexShrink: 0 }} />
-        <input
-          placeholder="Search topics, questions…"
-          className="flex-1 bg-transparent text-sm outline-none"
-          style={{ color: '#cbd5e1', fontSize: '0.8125rem' }}
-        />
+      <div className="flex-1 max-w-sm hidden sm:block relative" ref={searchRef}>
+        <div className="flex items-center gap-2 px-3 py-2 glass-input">
+          <Search size={13} style={{ color: '#475569', flexShrink: 0 }} />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onKeyDown={e => {
+              if (e.key === 'Escape') { setFocused(false); setQuery('') }
+              if (e.key === 'Enter' && results.length > 0) handleSelect(results[0].route)
+            }}
+            placeholder="Search topics, questions…"
+            className="flex-1 bg-transparent outline-none"
+            style={{ color: '#cbd5e1', fontSize: '0.8125rem' }}
+          />
+          {query && (
+            <button onClick={() => setQuery('')} style={{ color: '#475569' }}>
+              <X size={12} />
+            </button>
+          )}
+        </div>
+
+        {/* Results dropdown */}
+        {showDropdown && (
+          <div
+            className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden"
+            style={{
+              background: 'rgba(8,11,22,0.98)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+              zIndex: 9999,
+            }}
+          >
+            {results.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <Search size={22} style={{ color: '#374151', margin: '0 auto 8px' }} />
+                <p className="text-sm" style={{ color: '#475569' }}>No results for "{query}"</p>
+                <p className="text-xs mt-1" style={{ color: '#374151' }}>Try a topic name, tag, or keyword</p>
+              </div>
+            ) : (
+              <div className="max-h-80 overflow-y-auto">
+                {results.map((r, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelect(r.route)}
+                    className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 font-medium"
+                      style={{
+                        background: TYPE_BADGE[r.type]?.bg,
+                        color: TYPE_BADGE[r.type]?.color,
+                        whiteSpace: 'nowrap',
+                        maxWidth: '100px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {r.topicTitle}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm leading-snug" style={{ color: '#e2e8f0' }}>
+                        {r.text}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {r.difficulty && (
+                          <span className="text-xs" style={{ color: DIFF_COLOR[r.difficulty] ?? '#64748b' }}>
+                            {r.difficulty}
+                          </span>
+                        )}
+                        {r.tags.slice(0, 3).map(tag => (
+                          <span key={tag} className="text-xs" style={{ color: '#374151' }}>#{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+                <div className="px-4 py-2 text-center text-xs" style={{ color: '#374151', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                  {results.length} result{results.length !== 1 ? 's' : ''} · Enter to open first · Esc to close
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-3">
