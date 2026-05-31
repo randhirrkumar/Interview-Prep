@@ -105,10 +105,9 @@ export default function Header({ onMenuClick }) {
           <div
             className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden"
             style={{
-              background: 'rgba(8,11,22,0.98)',
+              background: '#0b0e1f',
               border: '1px solid rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(24px)',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
               zIndex: 9999,
             }}
           >
