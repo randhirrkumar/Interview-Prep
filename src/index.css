@@ -76,7 +76,7 @@ html.light {
 /* ─── BASE ──────────────────────────────────────────── */
 @layer base {
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 
   body {
     background-color: var(--bg-base);

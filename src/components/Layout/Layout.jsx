@@ -39,7 +39,7 @@ export default function Layout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ position: 'relative', zIndex: 1 }}>
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-scroll p-4 lg:p-6" style={{ scrollbarGutter: 'stable' }}>
           <div key={location.pathname} className="animate-page-in h-full">
             <Outlet />
           </div>
