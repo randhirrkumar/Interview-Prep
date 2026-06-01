@@ -7,7 +7,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#080b14' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
 
       {/* Ambient decorative blobs — fixed, pointer-events-none */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>

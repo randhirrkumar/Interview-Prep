@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Menu, Search, Flame, LogIn, LogOut, X } from 'lucide-react'
+import { Menu, Search, Flame, LogIn, LogOut, X, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProgress } from '../../hooks/useProgress'
+import { useTheme } from '../../contexts/ThemeContext'
 import { searchAll } from '../../utils/searchIndex'
 
 const DIFF_COLOR = {
@@ -25,17 +26,17 @@ function SearchDropdown({ results, query, onSelect }) {
     <div
       className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden"
       style={{
-        background: '#0b0e1f',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'var(--dropdown-bg)',
+        border: '1px solid var(--border-dim)',
         boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
         zIndex: 9999,
       }}
     >
       {results.length === 0 ? (
         <div className="px-4 py-8 text-center">
-          <Search size={22} style={{ color: '#374151', margin: '0 auto 8px' }} />
-          <p className="text-sm" style={{ color: '#475569' }}>No results for "{query}"</p>
-          <p className="text-xs mt-1" style={{ color: '#374151' }}>Try a topic name, tag, or keyword</p>
+          <Search size={22} style={{ color: 'var(--text-dimmer)', margin: '0 auto 8px' }} />
+          <p className="text-sm" style={{ color: 'var(--text-dim)' }}>No results for "{query}"</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-dimmer)' }}>Try a topic name, tag, or keyword</p>
         </div>
       ) : (
         <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
@@ -44,8 +45,8 @@ function SearchDropdown({ results, query, onSelect }) {
               key={i}
               onClick={() => onSelect(r.route)}
               className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              style={{ borderBottom: '1px solid var(--border-dimmer)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               <span
@@ -62,21 +63,21 @@ function SearchDropdown({ results, query, onSelect }) {
                 {r.topicTitle}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm leading-snug" style={{ color: '#e2e8f0' }}>{r.text}</p>
+                <p className="text-sm leading-snug" style={{ color: 'var(--text-body)' }}>{r.text}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   {r.difficulty && (
-                    <span className="text-xs" style={{ color: DIFF_COLOR[r.difficulty] ?? '#64748b' }}>
+                    <span className="text-xs" style={{ color: DIFF_COLOR[r.difficulty] ?? 'var(--text-muted)' }}>
                       {r.difficulty}
                     </span>
                   )}
                   {r.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="text-xs" style={{ color: '#374151' }}>#{tag}</span>
+                    <span key={tag} className="text-xs" style={{ color: 'var(--text-dimmer)' }}>#{tag}</span>
                   ))}
                 </div>
               </div>
             </button>
           ))}
-          <div className="px-4 py-2 text-center text-xs" style={{ color: '#374151', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div className="px-4 py-2 text-center text-xs" style={{ color: 'var(--text-dimmer)', borderTop: '1px solid var(--border-dimmer)' }}>
             {results.length} result{results.length !== 1 ? 's' : ''} · tap to open
           </div>
         </div>
@@ -88,6 +89,7 @@ function SearchDropdown({ results, query, onSelect }) {
 export default function Header({ onMenuClick }) {
   const { user, login, logout } = useAuth()
   const { streak } = useProgress()
+  const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const [query, setQuery]           = useState('')
@@ -140,17 +142,17 @@ export default function Header({ onMenuClick }) {
       style={{
         position: 'relative',
         zIndex: 100,
-        background: 'rgba(8,11,20,0.85)',
+        background: 'var(--header-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.055)',
+        borderBottom: '1px solid var(--border-subtle)',
       }}
     >
       {/* ── Mobile search overlay (full-width bar) ── */}
       {mobileSearch ? (
         <div className="flex-1 relative sm:hidden" ref={mobileRef}>
           <div className="flex items-center gap-2 px-3 py-2 glass-input">
-            <Search size={13} style={{ color: '#475569', flexShrink: 0 }} />
+            <Search size={13} style={{ color: 'var(--text-dim)', flexShrink: 0 }} />
             <input
               ref={mobileInput}
               value={query}
@@ -161,9 +163,9 @@ export default function Header({ onMenuClick }) {
               }}
               placeholder="Search topics, questions…"
               className="flex-1 bg-transparent outline-none"
-              style={{ color: '#cbd5e1', fontSize: '0.875rem' }}
+              style={{ color: 'var(--text-input)', fontSize: '0.875rem' }}
             />
-            <button onClick={closeMobile} style={{ color: '#475569' }}>
+            <button onClick={closeMobile} style={{ color: 'var(--text-dim)' }}>
               <X size={15} />
             </button>
           </div>
@@ -177,7 +179,7 @@ export default function Header({ onMenuClick }) {
           <button
             onClick={onMenuClick}
             className="lg:hidden p-1.5 rounded-lg transition-colors"
-            style={{ color: '#64748b' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             <Menu size={19} />
           </button>
@@ -186,7 +188,7 @@ export default function Header({ onMenuClick }) {
           <button
             onClick={openMobile}
             className="sm:hidden p-1.5 rounded-lg transition-colors"
-            style={{ color: '#64748b' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             <Search size={19} />
           </button>
@@ -196,7 +198,7 @@ export default function Header({ onMenuClick }) {
       {/* ── Desktop search bar ── */}
       <div className="flex-1 max-w-sm hidden sm:block relative" ref={searchRef}>
         <div className="flex items-center gap-2 px-3 py-2 glass-input">
-          <Search size={13} style={{ color: '#475569', flexShrink: 0 }} />
+          <Search size={13} style={{ color: 'var(--text-dim)', flexShrink: 0 }} />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -207,10 +209,10 @@ export default function Header({ onMenuClick }) {
             }}
             placeholder="Search topics, questions…"
             className="flex-1 bg-transparent outline-none"
-            style={{ color: '#cbd5e1', fontSize: '0.8125rem' }}
+            style={{ color: 'var(--text-input)', fontSize: '0.8125rem' }}
           />
           {query && (
-            <button onClick={() => setQuery('')} style={{ color: '#475569' }}>
+            <button onClick={() => setQuery('')} style={{ color: 'var(--text-dim)' }}>
               <X size={12} />
             </button>
           )}
@@ -223,7 +225,19 @@ export default function Header({ onMenuClick }) {
       {/* ── Right side — hidden while mobile search is open ── */}
       {!mobileSearch && (
         <div className="ml-auto flex items-center gap-3">
-          <span className="text-xs hidden md:block" style={{ color: '#374151' }}>{today}</span>
+          <span className="text-xs hidden md:block" style={{ color: 'var(--text-dimmer)' }}>{today}</span>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-body)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
 
           {streak > 0 && (
             <div
@@ -262,9 +276,9 @@ export default function Header({ onMenuClick }) {
                 onClick={logout}
                 title="Sign out"
                 className="p-1.5 rounded-lg transition-colors"
-                style={{ color: '#475569' }}
+                style={{ color: 'var(--text-dim)' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-                onMouseLeave={e => e.currentTarget.style.color = '#475569'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-dim)'}
               >
                 <LogOut size={15} />
               </button>

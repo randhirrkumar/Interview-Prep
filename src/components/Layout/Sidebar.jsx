@@ -106,15 +106,15 @@ export default function Sidebar({ open, onClose }) {
         ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
       `}
       style={{
-        background: 'rgba(5, 7, 16, 0.96)',
+        background: 'var(--sidebar-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        borderRight: '1px solid var(--border-subtle)',
       }}
     >
       {/* Logo / Brand */}
       <div className="flex items-center justify-between px-4 py-4"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-3">
           {/* Gradient avatar orb */}
           <div className="relative">
@@ -123,13 +123,13 @@ export default function Sidebar({ open, onClose }) {
               {firstName?.[0] ?? 'R'}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
-              style={{ background: '#22c55e', borderColor: '#050710' }} />
+              style={{ background: '#22c55e', borderColor: 'var(--sidebar-bg)' }} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-100 leading-tight">
+            <div className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
               {firstName ? `${firstName}'s Prep` : 'Interview Prep'}
             </div>
-            <div className="text-xs" style={{ color: '#475569' }}>Java Backend 2026</div>
+            <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Java Backend 2026</div>
           </div>
         </div>
         <button onClick={onClose} className="lg:hidden text-slate-600 hover:text-slate-300 transition-colors">
@@ -147,14 +147,14 @@ export default function Sidebar({ open, onClose }) {
                 className="w-full flex items-center justify-between px-3 pt-5 pb-1.5 group"
               >
                 <span className="text-[10px] font-semibold uppercase tracking-widest"
-                  style={{ color: '#374151', letterSpacing: '0.1em' }}>
+                  style={{ color: 'var(--text-dimmer)', letterSpacing: '0.1em' }}>
                   {section.label}
                 </span>
                 <ChevronDown
                   size={12}
                   className="transition-transform duration-200"
                   style={{
-                    color: '#374151',
+                    color: 'var(--text-dimmer)',
                     transform: openSections[section.id] ? 'rotate(0deg)' : 'rotate(-90deg)'
                   }}
                 />
@@ -182,7 +182,7 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       {/* Bottom motivation card */}
-      <div className="p-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="p-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <div className="rounded-xl p-3 flex items-center gap-3"
           style={{
             background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.08) 100%)',
@@ -193,7 +193,7 @@ export default function Sidebar({ open, onClose }) {
           </div>
           <div>
             <div className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Crack it in 30 days</div>
-            <div className="text-xs" style={{ color: '#475569' }}>Stay consistent 💪</div>
+            <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Stay consistent 💪</div>
           </div>
         </div>
       </div>

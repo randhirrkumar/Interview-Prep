@@ -10,7 +10,7 @@ function FollowUpItem({ index, item }) {
 
   return (
     <div className="rounded-xl overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-dim)' }}>
       <button
         className="w-full flex items-start gap-3 p-3 text-left transition-colors"
         style={{ cursor: answer ? 'pointer' : 'default' }}
@@ -20,15 +20,15 @@ function FollowUpItem({ index, item }) {
           style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc' }}>
           Q{index + 1}
         </span>
-        <span className="text-sm flex-1" style={{ color: '#cbd5e1' }}>{question}</span>
+        <span className="text-sm flex-1" style={{ color: 'var(--text-input)' }}>{question}</span>
         {answer && (open
-          ? <ChevronUp size={14} style={{ color: '#475569', flexShrink: 0, marginTop: 2 }} />
-          : <ChevronDown size={14} style={{ color: '#475569', flexShrink: 0, marginTop: 2 }} />
+          ? <ChevronUp size={14} style={{ color: 'var(--text-dim)', flexShrink: 0, marginTop: 2 }} />
+          : <ChevronDown size={14} style={{ color: 'var(--text-dim)', flexShrink: 0, marginTop: 2 }} />
         )}
       </button>
       {open && answer && (
         <div className="px-4 pb-3 pt-2 text-sm leading-relaxed whitespace-pre-wrap"
-          style={{ color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--border-subtle)' }}>
           {answer}
         </div>
       )}
@@ -54,14 +54,14 @@ export default function QuestionCard({ q, topicId }) {
     beginner:     'rgba(16,185,129,0.35)',
     intermediate: 'rgba(245,158,11,0.35)',
     advanced:     'rgba(239,68,68,0.35)',
-  }[q.difficulty] ?? 'rgba(255,255,255,0.07)'
+  }[q.difficulty] ?? 'var(--border-dim)'
 
   return (
     <div
       className="overflow-hidden transition-all duration-200"
       style={{
-        background: done ? 'rgba(16,185,129,0.04)' : 'rgba(255,255,255,0.025)',
-        border: `1px solid ${done ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.07)'}`,
+        background: done ? 'var(--card-done-bg)' : 'var(--bg-surface)',
+        border: `1px solid ${done ? 'var(--card-done-border)' : 'var(--border-dim)'}`,
         borderRadius: '14px',
         borderLeft: `3px solid ${done ? '#22c55e' : diffBorderColor}`,
       }}
@@ -71,7 +71,7 @@ export default function QuestionCard({ q, topicId }) {
         className="flex items-start gap-3 p-4 cursor-pointer select-none"
         style={{ transition: 'background 0.15s' }}
         onClick={() => setOpen(!open)}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
         {/* Done indicator */}
@@ -93,7 +93,7 @@ export default function QuestionCard({ q, topicId }) {
               </span>
             )}
           </div>
-          <p className="text-sm font-medium leading-snug" style={{ color: '#e2e8f0' }}>{q.question}</p>
+          <p className="text-sm font-medium leading-snug" style={{ color: 'var(--text-body)' }}>{q.question}</p>
         </div>
 
         {/* Actions */}
@@ -115,7 +115,7 @@ export default function QuestionCard({ q, topicId }) {
 
       {/* ── Expanded body ── */}
       {open && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="animate-fade-in">
+        <div style={{ borderTop: '1px solid var(--border-dim)' }} className="animate-fade-in">
           {/* Tabs */}
           <div className="flex gap-1 px-4 pt-3">
             {tabs.map(t => (
@@ -139,7 +139,7 @@ export default function QuestionCard({ q, topicId }) {
           {/* Content */}
           <div className="p-4">
             {tab === 'answer' && (
-              <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#94a3b8', lineHeight: '1.75' }}>
+              <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)', lineHeight: '1.75' }}>
                 {q.answer}
               </div>
             )}
@@ -155,9 +155,9 @@ export default function QuestionCard({ q, topicId }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between px-4 pb-4 pt-1"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            style={{ borderTop: '1px solid var(--border-dimmer)' }}>
             {q.tip ? (
-              <div className="flex items-start gap-2 text-xs max-w-xs" style={{ color: '#6b7280' }}>
+              <div className="flex items-start gap-2 text-xs max-w-xs" style={{ color: 'var(--text-muted)' }}>
                 <span className="flex-shrink-0">💡</span>
                 <span>{q.tip}</span>
               </div>

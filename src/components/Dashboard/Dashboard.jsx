@@ -105,7 +105,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold leading-tight mb-2" style={{ letterSpacing: '-0.03em' }}>
             <span className="gradient-text">Your Interview Command Center</span>
           </h1>
-          <p className="text-sm max-w-lg" style={{ color: '#64748b' }}>
+          <p className="text-sm max-w-lg" style={{ color: 'var(--text-muted)' }}>
             Java Backend Engineer · Targeting Product &amp; Service Companies ·&nbsp;
             <span style={{ color: '#818cf8' }}>30-Day Mission to Crack It 🚀</span>
           </p>
@@ -148,15 +148,15 @@ export default function Dashboard() {
       <div className="card">
         <div className="flex items-end justify-between mb-4">
           <div>
-            <div className="text-base font-semibold text-slate-100">Interview Readiness Meter</div>
-            <div className="text-xs mt-0.5" style={{ color: '#475569' }}>Based on questions completed across all topics</div>
+            <div className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Interview Readiness Meter</div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>Based on questions completed across all topics</div>
           </div>
           <div className="text-3xl font-bold gradient-text">{readiness}%</div>
         </div>
         <div className="progress-bar" style={{ height: '8px' }}>
           <div className="progress-fill" style={{ width: `${readiness}%` }} />
         </div>
-        <div className="flex justify-between mt-2 text-xs" style={{ color: '#374151' }}>
+        <div className="flex justify-between mt-2 text-xs" style={{ color: 'var(--text-dimmer)' }}>
           <span>0% — Not started</span>
           <span style={{ color: '#ca8a04' }}>50% — Good progress</span>
           <span style={{ color: '#16a34a' }}>100% — Interview Ready</span>
@@ -168,7 +168,7 @@ export default function Dashboard() {
         <div className="lg:col-span-2 card">
           <div className="flex items-center gap-2 mb-4">
             <Target size={16} style={{ color: '#818cf8' }} />
-            <span className="font-semibold text-slate-100">Today's Focus</span>
+            <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Today's Focus</span>
           </div>
           <div className="space-y-2">
             {TODAY_FOCUS.map((t, i) => {
@@ -181,7 +181,7 @@ export default function Dashboard() {
                   onMouseLeave={e => { e.currentTarget.style.filter = 'brightness(1)';    e.currentTarget.style.transform = 'translateX(0)' }}
                 >
                   <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: meta.color }} />
-                  <span className="text-sm flex-1" style={{ color: '#cbd5e1' }}>{t.task}</span>
+                  <span className="text-sm flex-1" style={{ color: 'var(--text-input)' }}>{t.task}</span>
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full"
                     style={{ background: meta.bg, color: meta.color, border: `1px solid ${meta.border}` }}>
                     {t.type}
@@ -196,12 +196,12 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle size={16} style={{ color: '#fbbf24' }} />
-            <span className="font-semibold text-slate-100">Weak Areas</span>
+            <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Weak Areas</span>
           </div>
           <div className="space-y-2.5">
             {WEAK_AREAS.map((area, i) => (
               <div key={i} className="flex items-start gap-2.5 text-sm"
-                style={{ color: '#64748b' }}>
+                style={{ color: 'var(--text-muted)' }}>
                 <span className="flex-shrink-0 mt-0.5" style={{ color: '#ca8a04' }}>⚠</span>
                 <span>{area}</span>
               </div>
@@ -214,19 +214,19 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Zap size={14} style={{ color: '#fbbf24' }} />
-          <span className="text-sm font-semibold" style={{ color: '#94a3b8' }}>Quick Access</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Quick Access</span>
         </div>
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
           {QUICK_WINS.map((q, i) => (
             <Link key={i} to={q.to}
               className="card-hover flex flex-col items-center gap-2 rounded-xl py-4 text-center"
               style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-dim)',
               }}
             >
               <span className="text-2xl">{q.emoji}</span>
-              <span className="text-xs leading-tight" style={{ color: '#94a3b8' }}>{q.label}</span>
+              <span className="text-xs leading-tight" style={{ color: 'var(--text-secondary)' }}>{q.label}</span>
             </Link>
           ))}
         </div>
@@ -237,7 +237,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <BookOpen size={14} style={{ color: '#818cf8' }} />
-            <span className="text-sm font-semibold" style={{ color: '#94a3b8' }}>Topics Progress</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Topics Progress</span>
           </div>
           <Link to="/analytics" className="flex items-center gap-1 text-xs"
             style={{ color: '#6366f1' }}
@@ -265,15 +265,15 @@ export default function Dashboard() {
                     {t.icon}
                   </div>
                   <div className="text-sm font-semibold mb-0.5 group-hover:text-indigo-300 transition-colors"
-                    style={{ color: '#e2e8f0' }}>
+                    style={{ color: 'var(--text-body)' }}>
                     {t.label}
                   </div>
-                  <div className="text-xs mb-3" style={{ color: '#475569' }}>{done}/{t.total} done</div>
+                  <div className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>{done}/{t.total} done</div>
                   <div className="progress-bar" style={{ height: '4px' }}>
                     <div style={{ height: '100%', borderRadius: '999px', background: t.prog,
                       width: `${pct}%`, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }} />
                   </div>
-                  <div className="text-xs mt-1.5 text-right" style={{ color: '#374151' }}>{pct}%</div>
+                  <div className="text-xs mt-1.5 text-right" style={{ color: 'var(--text-dimmer)' }}>{pct}%</div>
                 </div>
               </Link>
             )
@@ -284,14 +284,14 @@ export default function Dashboard() {
       {/* ── Daily Motivation ──────────────────────────── */}
       <div className="rounded-2xl p-5 flex items-start gap-4"
         style={{
-          background: 'rgba(255,255,255,0.025)',
+          background: 'var(--bg-surface)',
           border: '1px solid rgba(99,102,241,0.2)',
           borderLeft: '4px solid #6366f1',
         }}>
         <div className="text-2xl flex-shrink-0">💡</div>
         <div>
           <div className="text-sm font-semibold mb-1.5" style={{ color: '#a5b4fc' }}>Daily Reminder</div>
-          <div className="text-sm italic leading-relaxed" style={{ color: '#475569' }}>
+          <div className="text-sm italic leading-relaxed" style={{ color: 'var(--text-dim)' }}>
             "Consistency beats talent. One focused hour daily for 30 days is better than 10 unfocused hours in one day.
             {firstName !== 'there' ? ` ${firstName} —` : ''} you have the experience, you just need to structure it well. Let's go!"
           </div>
@@ -317,12 +317,12 @@ function StatCard({ icon, label, value, unit, topGrad, iconColor, fg, to }) {
         style={{ background: iconColor, color: fg }}>
         {icon}
       </div>
-      <div className="text-2xl font-bold text-slate-100 leading-none">
+      <div className="text-2xl font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
         {value}
-        <span className="text-xs font-normal ml-1" style={{ color: '#475569' }}>{unit}</span>
+        <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-dim)' }}>{unit}</span>
       </div>
       <div className="flex items-center justify-between mt-1">
-        <div className="text-xs" style={{ color: '#475569' }}>{label}</div>
+        <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{label}</div>
         <ChevronRight size={12} style={{ color: '#374151' }} className="opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </Link>
