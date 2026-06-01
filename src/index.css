@@ -32,6 +32,10 @@
   --card-done-border: rgba(16,185,129,0.25);
   --hero-bg:          linear-gradient(135deg, rgba(20,18,60,0.9) 0%, rgba(30,16,60,0.85) 50%, rgba(10,20,50,0.9) 100%);
   --hero-border:      rgba(99,102,241,0.25);
+  --hero-pill-bg:     rgba(99,102,241,0.15);
+  --hero-pill-border: rgba(99,102,241,0.3);
+  --hero-pill-text:   #a5b4fc;
+  --hero-accent:      #818cf8;
 }
 
 html.light {
@@ -61,8 +65,12 @@ html.light {
   --shadow-card:      rgba(0,0,0,0.1);
   --card-done-bg:     rgba(16,185,129,0.06);
   --card-done-border: rgba(16,185,129,0.3);
-  --hero-bg:          linear-gradient(135deg, rgba(49,46,129,0.92) 0%, rgba(76,29,149,0.88) 50%, rgba(30,58,138,0.92) 100%);
-  --hero-border:      rgba(99,102,241,0.4);
+  --hero-bg:          linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #eff6ff 100%);
+  --hero-border:      rgba(99,102,241,0.2);
+  --hero-pill-bg:     rgba(99,102,241,0.08);
+  --hero-pill-border: rgba(99,102,241,0.2);
+  --hero-pill-text:   #4338ca;
+  --hero-accent:      #4f46e5;
 }
 
 /* ─── BASE ──────────────────────────────────────────── */
@@ -217,6 +225,12 @@ html.light {
   /* === GRADIENT TEXT === */
   .gradient-text {
     background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 45%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  html.light .gradient-text {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 45%, #2563eb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

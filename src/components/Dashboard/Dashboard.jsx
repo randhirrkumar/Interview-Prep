@@ -97,8 +97,9 @@ export default function Dashboard() {
         <div className="relative z-10">
           {/* Greeting pill */}
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4 text-xs font-medium"
-            style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ display: 'inline-block' }} />
+            style={{ background: 'var(--hero-pill-bg)', border: '1px solid var(--hero-pill-border)', color: 'var(--hero-pill-text)' }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ display: 'inline-block', background: 'var(--hero-pill-text)' }} />
             {getGreeting()}, {firstName}
           </div>
 
@@ -107,7 +108,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-sm max-w-lg" style={{ color: 'var(--text-muted)' }}>
             Java Backend Engineer · Targeting Product &amp; Service Companies ·&nbsp;
-            <span style={{ color: '#818cf8' }}>30-Day Mission to Crack It 🚀</span>
+            <span style={{ color: 'var(--hero-accent)' }}>30-Day Mission to Crack It 🚀</span>
           </p>
         </div>
       </div>
