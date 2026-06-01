@@ -34,9 +34,9 @@
 
 html.light {
   --bg-base:          #f0f4f8;
-  --bg-surface:       rgba(255,255,255,0.88);
-  --bg-elevated:      rgba(255,255,255,0.6);
-  --bg-hover:         rgba(0,0,0,0.04);
+  --bg-surface:       rgba(255,255,255,0.9);
+  --bg-elevated:      rgba(0,0,0,0.05);
+  --bg-hover:         rgba(0,0,0,0.05);
   --border-default:   rgba(0,0,0,0.09);
   --border-dim:       rgba(0,0,0,0.08);
   --border-subtle:    rgba(0,0,0,0.06);
@@ -46,8 +46,8 @@ html.light {
   --text-input:       #334155;
   --text-secondary:   #475569;
   --text-muted:       #64748b;
-  --text-dim:         #94a3b8;
-  --text-dimmer:      #cbd5e1;
+  --text-dim:         #64748b;
+  --text-dimmer:      #94a3b8;
   --header-bg:        rgba(240,244,248,0.92);
   --sidebar-bg:       rgba(248,250,252,0.98);
   --dropdown-bg:      #f8fafc;
