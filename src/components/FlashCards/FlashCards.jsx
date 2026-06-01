@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RotateCcw, ChevronLeft, ChevronRight, Shuffle } from 'lucide-react'
+import { RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const CARDS = [
   { front: 'What are the 4 pillars of OOP?', back: 'Encapsulation (data hiding), Inheritance (IS-A), Polymorphism (many forms), Abstraction (hiding complexity via interfaces)', topic: 'Java' },
@@ -65,25 +65,30 @@ export default function FlashCards() {
 
   if (!card) return null
 
+  const inactiveBtn = 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white'
+
   return (
     <div className="max-w-2xl mx-auto space-y-5 animate-fade-in">
       <div className="card">
         <h1 className="section-title">Flash Cards</h1>
-        <p className="text-sm text-gray-400">Quick revision — flip to see the answer. Track what you know and what needs more work.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Quick revision — flip to see the answer. Track what you know and what needs more work.</p>
       </div>
 
       {/* Topic filter */}
       <div className="flex flex-wrap gap-2">
         {TOPICS.map(t => (
-          <button key={t} onClick={() => { setTopic(t); setIndex(0); setFlipped(false) }} className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${topic === t ? 'bg-blue-700 text-white' : 'bg-gray-900 border border-gray-700 text-gray-400 hover:text-white'}`}>{t}</button>
+          <button key={t} onClick={() => { setTopic(t); setIndex(0); setFlipped(false) }}
+            className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${topic === t ? 'bg-blue-700 text-white' : inactiveBtn}`}>
+            {t}
+          </button>
         ))}
       </div>
 
       {/* Stats */}
       <div className="flex items-center gap-4 text-sm">
         <span className="text-gray-500">{index + 1} / {total}</span>
-        <span className="text-green-400">✓ {known.length} known</span>
-        <span className="text-red-400">✗ {unknown.length} review</span>
+        <span className="text-green-500 dark:text-green-400">✓ {known.length} known</span>
+        <span className="text-red-500 dark:text-red-400">✗ {unknown.length} review</span>
         <button onClick={reset} className="ml-auto flex items-center gap-1.5 text-xs btn-ghost py-1">
           <RotateCcw size={12} />Shuffle
         </button>
@@ -96,15 +101,15 @@ export default function FlashCards() {
       >
         <div className={`relative w-full h-full transition-all duration-500 ${flipped ? 'rotate-y-180' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
           {/* Front */}
-          <div className="absolute inset-0 card flex flex-col items-center justify-center text-center border-blue-700" style={{ backfaceVisibility: 'hidden' }}>
-            <span className="text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded mb-4">{card.topic}</span>
-            <p className="text-lg font-semibold text-white px-4">{card.front}</p>
-            <p className="text-xs text-gray-600 mt-4">Click to reveal answer</p>
+          <div className="absolute inset-0 card flex flex-col items-center justify-center text-center border-blue-400 dark:border-blue-700" style={{ backfaceVisibility: 'hidden' }}>
+            <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded mb-4">{card.topic}</span>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white px-4">{card.front}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-600 mt-4">Click to reveal answer</p>
           </div>
           {/* Back */}
-          <div className="absolute inset-0 card flex flex-col items-center justify-center text-center bg-green-950/20 border-green-700" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-            <span className="text-xs bg-green-900/40 text-green-300 px-2 py-0.5 rounded mb-4">Answer</span>
-            <p className="text-sm text-gray-300 px-4 leading-relaxed">{card.back}</p>
+          <div className="absolute inset-0 card flex flex-col items-center justify-center text-center bg-green-50 border-green-400 dark:bg-green-950/20 dark:border-green-700" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+            <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded mb-4">Answer</span>
+            <p className="text-sm text-gray-700 dark:text-gray-300 px-4 leading-relaxed">{card.back}</p>
           </div>
         </div>
       </div>
@@ -112,10 +117,10 @@ export default function FlashCards() {
       {/* Actions */}
       {flipped && (
         <div className="flex gap-3 animate-fade-in">
-          <button onClick={() => next('review')} className="flex-1 py-3 bg-red-900/30 border border-red-700 text-red-300 rounded-xl hover:bg-red-900/50 transition-colors text-sm font-medium">
+          <button onClick={() => next('review')} className="flex-1 py-3 bg-red-50 border border-red-300 text-red-600 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors text-sm font-medium">
             Need Review
           </button>
-          <button onClick={() => next('know')} className="flex-1 py-3 bg-green-900/30 border border-green-700 text-green-300 rounded-xl hover:bg-green-900/50 transition-colors text-sm font-medium">
+          <button onClick={() => next('know')} className="flex-1 py-3 bg-green-50 border border-green-300 text-green-600 dark:bg-green-900/30 dark:border-green-700 dark:text-green-300 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-sm font-medium">
             I Know This
           </button>
         </div>

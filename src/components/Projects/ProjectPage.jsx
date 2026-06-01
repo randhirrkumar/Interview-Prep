@@ -79,15 +79,15 @@ export default function ProjectPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="card bg-gradient-to-br from-gray-900 to-gray-950 border-blue-800/50">
+      <div className="card from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 border-blue-300 dark:border-blue-800/50" style={{ background: undefined }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-1">{project.period}</div>
-            <h1 className="text-2xl font-bold text-white mb-1">{project.name}</h1>
-            <p className="text-gray-400 text-sm mb-4">{project.tagline}</p>
+            <div className="text-xs text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-wider mb-1">{project.period}</div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{project.name}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">{project.tagline}</p>
             <div className="flex flex-wrap gap-1.5">
               {project.techStack.map(t => (
-                <span key={t} className="tag bg-blue-900/40 text-blue-300 text-xs">{t}</span>
+                <span key={t} className="tag bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 text-xs">{t}</span>
               ))}
             </div>
           </div>
@@ -97,20 +97,20 @@ export default function ProjectPage() {
 
       {/* Overview */}
       <SectionCard title="Project Overview" icon="📋">
-        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{project.overview}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{project.overview}</p>
       </SectionCard>
 
       {/* Architecture */}
       {project.architecture && (
         <SectionCard title="Architecture Deep Dive" icon="🏛️">
-          <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{project.architecture}</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{project.architecture}</p>
         </SectionCard>
       )}
 
       {/* Kafka Flow */}
       {project.kafkaFlow && (
         <SectionCard title="Kafka Event Flow" icon="📨">
-          <pre className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{project.kafkaFlow}</pre>
+          <pre className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{project.kafkaFlow}</pre>
         </SectionCard>
       )}
 
@@ -119,13 +119,13 @@ export default function ProjectPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={16} className="text-yellow-400" />
-            <span className="font-semibold text-white">Real Production Challenges</span>
+            <span className="font-semibold text-gray-900 dark:text-white">Real Production Challenges</span>
           </div>
           <div className="space-y-3">
             {project.challenges.map((c, i) => (
-              <div key={i} className="card border-l-4 border-yellow-600">
-                <div className="font-semibold text-yellow-300 mb-2">🔥 {c.title}</div>
-                <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{c.desc}</p>
+              <div key={i} className="card border-l-4 border-yellow-500 dark:border-yellow-600">
+                <div className="font-semibold text-yellow-600 dark:text-yellow-300 mb-2">🔥 {c.title}</div>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{c.desc}</p>
               </div>
             ))}
           </div>
@@ -137,7 +137,7 @@ export default function ProjectPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Zap size={16} className="text-blue-400" />
-            <span className="font-semibold text-white">Interview Q&A — Project Deep Dive</span>
+            <span className="font-semibold text-gray-900 dark:text-white">Interview Q&A — Project Deep Dive</span>
           </div>
           <div className="space-y-3">
             {project.deepDiveQA.map((qa, i) => (
@@ -147,15 +147,15 @@ export default function ProjectPage() {
         </div>
       )}
 
-      {/* How to Explain Architecture */}
-      <div className="card border-blue-800/50 bg-blue-950/10">
+      {/* How to Explain */}
+      <div className="card border-blue-300 bg-blue-50 dark:border-blue-800/50 dark:bg-blue-950/10">
         <div className="flex items-center gap-2 mb-3">
-          <Code2 size={16} className="text-blue-400" />
-          <span className="font-semibold text-blue-300">
+          <Code2 size={16} className="text-blue-500 dark:text-blue-400" />
+          <span className="font-semibold text-blue-600 dark:text-blue-300">
             {['eplms','metlife'].includes(projectId) ? 'How to Explain the Project in 2 Minutes' : 'How to Discuss This in a System Design Interview'}
           </span>
         </div>
-        <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
           {TWO_MIN_PITCH[projectId] || project.overview}
         </div>
       </div>
@@ -168,11 +168,11 @@ function SectionCard({ title, icon, children }) {
   return (
     <div className="card">
       <div className="flex items-center justify-between cursor-pointer mb-3" onClick={() => setOpen(!open)}>
-        <div className="flex items-center gap-2 font-semibold text-white">
+        <div className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
           <span>{icon}</span>
           <span>{title}</span>
         </div>
-        {open ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
+        {open ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
       </div>
       {open && children}
     </div>
@@ -184,12 +184,12 @@ function DeepDiveCard({ qa }) {
   return (
     <div className="card">
       <div className="flex items-start justify-between gap-3 cursor-pointer" onClick={() => setOpen(!open)}>
-        <p className="text-sm font-medium text-blue-300 flex-1">{qa.q}</p>
-        {open ? <ChevronUp size={16} className="text-gray-500 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-500 flex-shrink-0" />}
+        <p className="text-sm font-medium text-blue-600 dark:text-blue-300 flex-1">{qa.q}</p>
+        {open ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
       </div>
       {open && (
-        <div className="mt-3 pt-3 border-t border-gray-800 animate-fade-in">
-          <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{qa.a}</p>
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800 animate-fade-in">
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{qa.a}</p>
         </div>
       )}
     </div>

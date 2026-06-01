@@ -231,13 +231,13 @@ export default function SystemDesign() {
     <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
       <div className="card">
         <h1 className="section-title">System Design</h1>
-        <p className="text-sm text-gray-400">HLD + LLD for common backend system design questions. Tailored to Java/Spring Boot ecosystem.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">HLD + LLD for common backend system design questions. Tailored to Java/Spring Boot ecosystem.</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
         {DESIGNS.map(d => (
-          <button key={d.id} onClick={() => setSelected(d.id)} className="card text-left hover:border-blue-700 transition-all">
+          <button key={d.id} onClick={() => setSelected(d.id)} className="card text-left hover:border-blue-500 dark:hover:border-blue-700 transition-all">
             <div className="text-3xl mb-3">{d.icon}</div>
-            <div className="font-semibold text-white mb-1">{d.title}</div>
+            <div className="font-semibold text-gray-900 dark:text-white mb-1">{d.title}</div>
             <div className="text-xs text-gray-500 mb-2 line-clamp-2">{d.context}</div>
             <span className={`diff-badge diff-${d.difficulty}`}>{d.difficulty}</span>
           </button>
@@ -258,27 +258,34 @@ function DesignDetail({ design, onBack }) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 animate-fade-in">
-      <button onClick={onBack} className="text-sm text-gray-400 hover:text-white flex items-center gap-1">← Back to System Design</button>
+      <button onClick={onBack} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">← Back to System Design</button>
 
       <div className="card">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl">{design.icon}</span>
           <div>
-            <h1 className="text-xl font-bold text-white">{design.title}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{design.title}</h1>
             <span className={`diff-badge diff-${design.difficulty}`}>{design.difficulty}</span>
           </div>
         </div>
-        <p className="text-sm text-yellow-300/80 mt-2 p-3 bg-yellow-950/20 rounded-lg">📋 {design.context}</p>
+        <p className="text-sm text-yellow-700 dark:text-yellow-300/80 mt-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">📋 {design.context}</p>
       </div>
 
       <div className="flex gap-1">
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`text-sm px-4 py-2 rounded-lg transition-colors ${tab === t.key ? 'bg-blue-700 text-white' : 'bg-gray-900 border border-gray-700 text-gray-400 hover:text-white'}`}>{t.label}</button>
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
+              tab === t.key
+                ? 'bg-blue-700 text-white'
+                : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white'
+            }`}>
+            {t.label}
+          </button>
         ))}
       </div>
 
       <div className="card animate-fade-in">
-        <pre className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">{design[tab]}</pre>
+        <pre className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">{design[tab]}</pre>
       </div>
     </div>
   )

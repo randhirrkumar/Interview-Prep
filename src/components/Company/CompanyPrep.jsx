@@ -1132,20 +1132,20 @@ function QuestionItem({ index, q }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-gray-800/50 rounded-lg overflow-hidden">
+    <div className="bg-gray-100 dark:bg-gray-800/50 rounded-lg overflow-hidden">
       <button
-        className="w-full flex items-start gap-2.5 p-3 text-left hover:bg-gray-800 transition-colors cursor-pointer"
+        className="w-full flex items-start gap-2.5 p-3 text-left hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer"
         onClick={() => setOpen(!open)}
       >
-        <span className="text-blue-400 font-bold text-xs mt-0.5 flex-shrink-0">Q{index + 1}</span>
-        <span className="text-sm text-gray-300 flex-1">{q.question}</span>
+        <span className="text-blue-500 dark:text-blue-400 font-bold text-xs mt-0.5 flex-shrink-0">Q{index + 1}</span>
+        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{q.question}</span>
         {open
-          ? <ChevronUp size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
-          : <ChevronDown size={14} className="text-gray-500 flex-shrink-0 mt-0.5" />
+          ? <ChevronUp size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+          : <ChevronDown size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
         }
       </button>
       {open && (
-        <div className="px-4 pb-3 pt-2 text-sm text-gray-400 leading-relaxed border-t border-gray-700/50 whitespace-pre-wrap">
+        <div className="px-4 pb-3 pt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-200 dark:border-gray-700/50 whitespace-pre-wrap">
           {q.answer}
         </div>
       )}
@@ -1161,7 +1161,7 @@ export default function CompanyPrep() {
     <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
       <div className="card">
         <h1 className="section-title">Company-Specific Preparation</h1>
-        <p className="text-sm text-gray-400">Interview style, focus areas, and common questions with answers tailored for each company type.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Interview style, focus areas, and common questions with answers tailored for each company type.</p>
       </div>
 
       {!company ? (
@@ -1169,43 +1169,53 @@ export default function CompanyPrep() {
           {COMPANIES.map(c => (
             <button key={c.id} onClick={() => setSelected(c.id)} className={`card text-left hover:opacity-90 transition-all border-l-4 ${c.color}`}>
               <div className="flex items-center justify-between mb-2">
-                <div className="font-bold text-white text-lg">{c.name}</div>
-                <span className={`text-xs px-2 py-0.5 rounded ${c.type === 'Product' ? 'bg-yellow-900/40 text-yellow-300' : c.type === 'Startup' ? 'bg-green-900/40 text-green-300' : 'bg-blue-900/40 text-blue-300'}`}>{c.type}</span>
+                <div className="font-bold text-gray-900 dark:text-white text-lg">{c.name}</div>
+                <span className={`text-xs px-2 py-0.5 rounded ${
+                  c.type === 'Product'
+                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                    : c.type === 'Startup'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                }`}>{c.type}</span>
               </div>
-              <div className="text-xs text-gray-500 mb-1">Difficulty: <span className="text-gray-300">{c.difficulty}</span></div>
-              <div className="text-xs text-gray-400 line-clamp-2">{c.focus}</div>
-              <div className="text-xs text-gray-600 mt-2">{c.questions.length} questions with answers</div>
+              <div className="text-xs text-gray-500 mb-1">Difficulty: <span className="text-gray-700 dark:text-gray-300">{c.difficulty}</span></div>
+              <div className="text-xs text-gray-500 line-clamp-2">{c.focus}</div>
+              <div className="text-xs text-gray-400 mt-2">{c.questions.length} questions with answers</div>
             </button>
           ))}
         </div>
       ) : (
         <div className="space-y-4 animate-fade-in">
-          <button onClick={() => setSelected(null)} className="text-sm text-gray-400 hover:text-white">← Back to companies</button>
+          <button onClick={() => setSelected(null)} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">← Back to companies</button>
 
           <div className={`card border-l-4 ${company.color}`}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-2xl font-bold text-white">{company.name}</h2>
-              <span className={`text-sm px-3 py-1 rounded-full ${company.type === 'Product' ? 'bg-yellow-900/40 text-yellow-300' : 'bg-blue-900/40 text-blue-300'}`}>{company.type}</span>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{company.name}</h2>
+              <span className={`text-sm px-3 py-1 rounded-full ${
+                company.type === 'Product'
+                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+              }`}>{company.type}</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-xs text-gray-500 uppercase mb-1">Interview Style</div>
-                <p className="text-gray-300">{company.style}</p>
+                <p className="text-gray-700 dark:text-gray-300">{company.style}</p>
               </div>
               <div>
                 <div className="text-xs text-gray-500 uppercase mb-1">Focus Areas</div>
-                <p className="text-gray-300">{company.focus}</p>
+                <p className="text-gray-700 dark:text-gray-300">{company.focus}</p>
               </div>
             </div>
           </div>
 
-          <div className="card border-yellow-800/50 bg-yellow-950/10">
-            <div className="text-xs text-yellow-400 uppercase mb-2">Strategy Tip</div>
-            <p className="text-sm text-gray-300">{company.tip}</p>
+          <div className="card border-yellow-300 bg-yellow-50 dark:border-yellow-800/50 dark:bg-yellow-950/10">
+            <div className="text-xs text-yellow-500 dark:text-yellow-400 uppercase mb-2">Strategy Tip</div>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{company.tip}</p>
           </div>
 
           <div className="card">
-            <div className="text-sm font-semibold text-white mb-1">Common Interview Questions</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Common Interview Questions</div>
             <div className="text-xs text-gray-500 mb-3">Click any question to see the answer</div>
             <div className="space-y-2">
               {company.questions.map((q, i) => (
