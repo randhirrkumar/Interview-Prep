@@ -81,9 +81,9 @@ export default function Dashboard() {
       {/* ── Hero Banner ───────────────────────────────── */}
       <div className="relative rounded-2xl overflow-hidden p-7"
         style={{
-          background: 'linear-gradient(135deg, rgba(20,18,60,0.9) 0%, rgba(30,16,60,0.85) 50%, rgba(10,20,50,0.9) 100%)',
-          border: '1px solid rgba(99,102,241,0.25)',
-          boxShadow: '0 0 60px rgba(99,102,241,0.08)',
+          background: 'var(--hero-bg)',
+          border: '1px solid var(--hero-border)',
+          boxShadow: '0 0 60px rgba(99,102,241,0.12)',
         }}>
         {/* decorative orbs */}
         <div className="absolute animate-pulse-glow pointer-events-none"
