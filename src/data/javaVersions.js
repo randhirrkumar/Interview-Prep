@@ -1,43 +1,33 @@
 const javaVersions = {
   title: 'Java Versions 8 → 21',
-  description: 'Comprehensive Java 8, 11, 17, and 21 features — lambdas, records, sealed classes, virtual threads, pattern matching, and interview-ready comparisons.',
+  description: 'Interview-ready answers for every Java 8, 11, 17, and 21 feature — written the way you\'d actually speak in an interview.',
   tags: ['Java 8', 'Java 11', 'Java 17', 'Java 21', 'Lambda', 'Records', 'Virtual Threads', 'Sealed Classes', 'Pattern Matching'],
   questions: [
 
-    // ═══════════════════════════════════════════════════
-    //  JAVA 8  (Released March 2014 — LTS)
-    // ═══════════════════════════════════════════════════
+    // ═══════════════════════════════════
+    //  JAVA 8
+    // ═══════════════════════════════════
 
     {
       id: 1,
-      question: 'Java 8 Overview — Why was it a landmark release? What are its key features?',
+      question: 'What are the key features introduced in Java 8?',
       difficulty: 'beginner',
       asked: true,
-      tags: ['Java 8', 'Overview', 'LTS'],
-      answer: `Java 8 (March 2014) is arguably the most important Java release since Java 5. It introduced functional programming to Java and is still the most widely deployed Java version in enterprise systems.
+      tags: ['Java 8', 'Overview'],
+      answer: `Java 8 was released in March 2014 and it's honestly the most impactful Java release since Java 5. It completely changed the way we write Java code by bringing in functional programming.
 
-Why it was critical:
-— Functional Programming: Lambda expressions let you pass behavior as data
-— Code conciseness: Replaced verbose anonymous inner classes
-— Performance: Stream API enables parallel processing with minimal code
-— Null safety: Optional class reduces NullPointerExceptions
-— Modern Date/Time: Replaced the notoriously bad java.util.Date
+The main features are:
+1. Lambda Expressions — anonymous functions, makes code much shorter
+2. Functional Interfaces — Predicate, Function, Consumer, Supplier from java.util.function
+3. Method References — shorthand for lambdas that just call one method
+4. Stream API — functional-style pipeline for processing collections
+5. Optional — wrapper to avoid NullPointerException
+6. New Date/Time API — LocalDate, LocalDateTime, ZonedDateTime — replaces the broken java.util.Date
+7. Default and Static methods in interfaces
+8. CompletableFuture — async programming without blocking threads
 
-LTS Status: Java 8 is an LTS (Long-Term Support) release. Oracle supports it until December 2030.
-
-Enterprise adoption: As of 2024, ~40% of enterprise Java applications still run on Java 8. It remains the baseline for most interview questions.
-
-Key Features:
-1. Lambda Expressions
-2. Functional Interfaces (java.util.function)
-3. Method References
-4. Stream API
-5. Optional<T>
-6. Default and Static methods in interfaces
-7. New Date/Time API (java.time)
-8. CompletableFuture
-9. Nashorn JavaScript engine (deprecated later)`,
-      code: `// Before Java 8 — verbose anonymous inner class
+In my daily work, I use streams and lambdas constantly. In my EPLMS project, I used streams to filter and process vehicle events. In MetLife, I used CompletableFuture for async policy processing. Java 8 is still the most asked Java version in interviews because most companies still run it.`,
+      code: `// Before Java 8 — verbose anonymous class
 List<String> names = Arrays.asList("Charlie", "Alice", "Bob");
 Collections.sort(names, new Comparator<String>() {
     @Override
@@ -48,10 +38,8 @@ Collections.sort(names, new Comparator<String>() {
 
 // Java 8 — lambda + method reference
 names.sort(String::compareTo);
-// or
-names.sort(Comparator.naturalOrder());
 
-// Before Java 8 — for loop
+// Before Java 8 — for loop with condition
 List<String> result = new ArrayList<>();
 for (String name : names) {
     if (name.startsWith("A")) {
@@ -59,1651 +47,1458 @@ for (String name : names) {
     }
 }
 
-// Java 8 — Stream pipeline
+// Java 8 — clean stream pipeline
 List<String> result = names.stream()
     .filter(n -> n.startsWith("A"))
     .map(String::toUpperCase)
     .collect(Collectors.toList());`,
-      tip: 'In interviews: "Java 8 brought functional programming to Java — the most important change since generics in Java 5. It makes code concise, readable, and enables parallelism without boilerplate."',
+      followUp: [
+        { question: 'Why is Java 8 still so widely used?', answer: `Java 8 became an LTS (Long-Term Support) release and Oracle extended free support until December 2030. When it came out, most enterprises migrated to it and it solved enough problems that many teams never felt the urgency to upgrade. The Stream API and lambdas were so big that teams spent years learning and adopting them. Today about 35-40% of enterprise Java is still on Java 8. That's why it's asked in almost every interview.` },
+      ],
+      tip: 'Java 8 LTS support extended until 2030. Always mention this — it explains why companies are still on Java 8 even though Java 21 is out.',
     },
 
     {
       id: 2,
-      question: 'What is a Lambda Expression in Java 8? How does it work internally?',
+      question: 'What is a Lambda Expression in Java 8? Why was it introduced?',
       difficulty: 'beginner',
       asked: true,
-      tags: ['Java 8', 'Lambda', 'Functional Programming'],
-      answer: `A lambda expression is an anonymous function — a block of code with parameters that can be passed around as data.
+      tags: ['Java 8', 'Lambda'],
+      answer: `A lambda expression is basically an anonymous function — a block of code without a name that you can pass around like a variable.
 
-Syntax:
-  (parameters) -> expression
-  (parameters) -> { statements; return value; }
+Before Java 8, if I wanted to define some behavior to pass to a method — like a sorting rule — I had to write a whole anonymous inner class. It was 5-6 lines for something conceptually simple. Lambdas let me express the same thing in one line.
 
-Internally: Lambda expressions are compiled to invokedynamic bytecode (introduced in Java 7). At runtime, the JVM uses LambdaMetafactory to create the functional interface implementation. This avoids creating a .class file per lambda (unlike anonymous inner classes).
+The syntax is: (parameters) -> expression, or (parameters) -> { statements }
 
-Key rules:
-1. Lambdas can only be used where a functional interface is expected
-2. They can capture effectively final local variables
-3. "this" inside a lambda refers to the ENCLOSING class (not the lambda)
-4. They are NOT anonymous classes — they don't create a new scope
+The important thing to remember is that lambdas can only be assigned to a functional interface — an interface with exactly one abstract method. The lambda provides the implementation of that one method.
 
-Effectively final: Local variables used inside a lambda must not be modified after initialization. The compiler enforces this because the lambda may outlive the stack frame.`,
+One key gotcha: "this" inside a lambda refers to the ENCLOSING class, not the lambda itself. This is different from anonymous inner classes where "this" refers to the anonymous class.
+
+Also, lambdas can only use local variables from the outer scope if they are effectively final — meaning they don't change after initialization.`,
       code: `// 1. No parameters
 Runnable r = () -> System.out.println("Running");
 
 // 2. Single parameter (parens optional)
-Consumer<String> print = s -> System.out.println(s);
+Consumer<String> print = name -> System.out.println("Hello, " + name);
 
 // 3. Multiple parameters
 BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
 
-// 4. Block body
+// 4. Block body (multiple statements need return)
 Comparator<String> byLength = (s1, s2) -> {
-    if (s1.length() != s2.length()) return s1.length() - s2.length();
+    if (s1.length() != s2.length())
+        return s1.length() - s2.length();
     return s1.compareTo(s2);
 };
 
-// 5. Effectively final capture
-String prefix = "Hello, ";  // effectively final
+// 5. Effectively final — OK
+String prefix = "Hello ";  // never re-assigned after this
 Consumer<String> greet = name -> System.out.println(prefix + name);
 
-// 6. "this" refers to enclosing class
-class MyService {
-    String name = "Service";
-    Runnable r = () -> System.out.println(this.name); // "Service"
+// 6. "this" in lambda refers to enclosing class
+class OrderService {
+    String serviceName = "OrderService";
+    Runnable log = () -> System.out.println(this.serviceName); // "OrderService"
 }
 
-// Production: Sorting employees
-employees.sort(Comparator.comparingDouble(Employee::getSalary)
-    .thenComparing(Employee::getName));`,
+// Real usage — sorting employees by salary
+employees.sort(Comparator.comparingDouble(Employee::getSalary));`,
       followUp: [
-        { question: 'What is the difference between a lambda and an anonymous inner class?', answer: `(1) Syntax: Lambda is concise; anonymous class is verbose. (2) "this" keyword: In lambda, "this" = enclosing class. In anonymous class, "this" = the anonymous class instance. (3) Compilation: Lambda → invokedynamic bytecode (no .class file). Anonymous class → separate .class file. (4) State: Anonymous class can have instance variables. Lambda only implements the one abstract method. (5) Performance: Lambda avoids creating a separate class per usage — slightly more efficient.` },
-        { question: 'What does "effectively final" mean?', answer: `A local variable is effectively final if its value is never changed after initialization — even without the explicit "final" keyword. The compiler checks this. If you try to modify it inside a lambda, you get: "Variable used in lambda expression should be final or effectively final." Why: lambdas may be executed asynchronously, and by then the local variable's stack frame may be gone. Only effectively final variables are safe to capture.` },
+        { question: 'What does "effectively final" mean?', answer: `It means a local variable is never modified after its initial assignment — even without the explicit "final" keyword. The Java compiler enforces this for variables captured inside lambdas. Why? Because a lambda might execute later (maybe asynchronously), and by then the stack frame is gone. So Java needs the captured value to be stable. If you try to change the variable inside or after the lambda, you get: "Variable used in lambda expression should be final or effectively final."` },
+        { question: 'What is the difference between a lambda and an anonymous inner class?', answer: `Three key differences: (1) "this" keyword — in lambda, this = enclosing class. In anonymous class, this = the anonymous class instance itself. (2) Compilation — lambdas compile to invokedynamic bytecode, no extra .class file created. Anonymous classes get their own .class file. (3) Scope — lambda doesn't create a new scope, so you can't re-declare variables from the enclosing method. Anonymous class creates its own scope so you can.` },
       ],
-      tip: '"this" in a lambda refers to the ENCLOSING class — this is a classic interview trap. In an anonymous class, "this" is the anonymous class itself.',
+      tip: '"this" in lambda = enclosing class. "this" in anonymous class = the anonymous class itself. This distinction comes up in almost every Java 8 interview.',
     },
 
     {
       id: 3,
-      question: 'What are Functional Interfaces? List and explain the core ones from java.util.function.',
+      question: 'What are Functional Interfaces? What are the main ones from java.util.function?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 8', 'Functional Interface', '@FunctionalInterface'],
-      answer: `A functional interface has EXACTLY ONE abstract method. Lambdas and method references are syntactic sugar for implementing functional interfaces.
+      tags: ['Java 8', 'Functional Interface', 'Predicate', 'Function', 'Consumer', 'Supplier'],
+      answer: `A functional interface is any interface with exactly one abstract method. It's the target type for a lambda or method reference — the lambda provides the implementation of that single abstract method.
 
-@FunctionalInterface annotation: Optional but adds compile-time safety — the compiler throws an error if you accidentally add a second abstract method. Can have any number of default and static methods.
+The @FunctionalInterface annotation is optional but I always use it because it gives you a compile-time error if you accidentally add a second abstract method. It's like a safety net.
 
-Core interfaces from java.util.function:
+The key ones from java.util.function that I use every day:
 
-┌─────────────────────┬──────────────────┬──────────────────────────┐
-│ Interface           │ Signature        │ Used in                  │
-├─────────────────────┼──────────────────┼──────────────────────────┤
-│ Function<T,R>       │ T → R            │ stream.map()             │
-│ Predicate<T>        │ T → boolean      │ stream.filter()          │
-│ Consumer<T>         │ T → void         │ stream.forEach()         │
-│ Supplier<T>         │ () → T           │ Optional.orElseGet()     │
-│ BiFunction<T,U,R>   │ T,U → R          │ Map.merge()              │
-│ UnaryOperator<T>    │ T → T            │ List.replaceAll()        │
-│ BinaryOperator<T>   │ T,T → T          │ Stream.reduce()          │
-│ Comparator<T>       │ T,T → int        │ List.sort()              │
-└─────────────────────┴──────────────────┴──────────────────────────┘
+Predicate<T> — takes T, returns boolean. I use it in stream.filter(). For example, filtering active users.
 
-Primitive specializations (avoid boxing overhead):
-IntPredicate, IntFunction<R>, IntSupplier, IntConsumer, IntUnaryOperator`,
-      code: `// Predicate — test condition, compose with and/or/negate
-Predicate<String> isLong = s -> s.length() > 5;
-Predicate<String> startsA = s -> s.startsWith("A");
-Predicate<String> longAndA = isLong.and(startsA);
-Predicate<String> longOrA  = isLong.or(startsA);
-Predicate<String> notLong  = isLong.negate();
-// Java 11+: Predicate.not(isLong)
+Function<T,R> — takes T, returns R. I use it in stream.map(). For example, converting a User entity to a UserDTO.
 
-// Function — transform, compose with andThen/compose
-Function<String, Integer> len = String::length;
-Function<Integer, String> toStr = n -> "Length:" + n;
-Function<String, String> lenStr = len.andThen(toStr);
-System.out.println(lenStr.apply("Java")); // "Length:4"
+Consumer<T> — takes T, returns nothing. I use it in stream.forEach() and for logging.
 
-// Consumer — action
-Consumer<String> log = msg -> System.out.println("[LOG] " + msg);
-Consumer<String> save = msg -> db.save(msg);
-Consumer<String> logAndSave = log.andThen(save);  // chain consumers
+Supplier<T> — takes nothing, returns T. I use it in Optional.orElseGet() for lazy default values.
 
-// Supplier — lazy factory (only evaluated when needed)
-Supplier<List<Employee>> factory = ArrayList::new;
-Supplier<LocalDate> today = LocalDate::now;
+BiFunction<T,U,R> — takes two inputs, returns R. Useful when your transformation needs two parameters.
 
-// Production: Validation pipeline
+In my MetLife project, I built a validation pipeline using Predicate composition — isActive.and(hasEmail).and(isVerified) — and applied it to filter valid policy holders before processing.`,
+      code: `// Predicate — test condition
 Predicate<User> isActive  = u -> u.getStatus() == Status.ACTIVE;
-Predicate<User> hasEmail   = u -> u.getEmail() != null;
-Predicate<User> isVerified = u -> u.isEmailVerified();
-Predicate<User> isValid    = isActive.and(hasEmail).and(isVerified);
+Predicate<User> hasEmail  = u -> u.getEmail() != null && !u.getEmail().isBlank();
+Predicate<User> isValid   = isActive.and(hasEmail);  // compose with and()
 
 List<User> validUsers = users.stream()
     .filter(isValid)
-    .collect(Collectors.toList());`,
+    .collect(Collectors.toList());
+
+// Function — transform
+Function<User, UserDTO> toDTO = user ->
+    new UserDTO(user.getId(), user.getName(), user.getEmail());
+
+List<UserDTO> dtos = users.stream()
+    .map(toDTO)
+    .collect(Collectors.toList());
+
+// Function composition — andThen runs left to right
+Function<String, Integer> length = String::length;
+Function<Integer, String> describe = n -> "Length is " + n;
+Function<String, String> combined = length.andThen(describe);
+System.out.println(combined.apply("Java")); // "Length is 4"
+
+// Consumer — side effect, no return
+Consumer<String> logInfo = msg -> log.info("[INFO] " + msg);
+Consumer<String> logAudit = msg -> auditService.log(msg);
+Consumer<String> logAll = logInfo.andThen(logAudit); // chain consumers
+
+// Supplier — lazy factory
+Supplier<List<String>> emptyList = ArrayList::new;
+// Used in Optional.orElseGet — only called if empty
+User user = userRepo.findById(id)
+    .orElseGet(() -> createDefaultUser()); // lazy — only called if empty`,
       followUp: [
-        { question: 'What is the difference between andThen() and compose() in Function?', answer: `andThen(after): applies THIS function first, then "after". f.andThen(g) = g(f(x)). compose(before): applies "before" first, then THIS. f.compose(g) = f(g(x)). Memory trick: andThen = "do this, THEN do that" (left-to-right). compose = inside-out (mathematical composition). In practice, andThen() is more intuitive.` },
-        { question: 'Can a functional interface have default or static methods?', answer: `Yes — unlimited. @FunctionalInterface only restricts abstract methods to exactly one. Predicate itself has default and(), or(), negate() and static not() — all default/static, doesn't break the functional interface contract.` },
+        { question: 'What is the difference between andThen() and compose() in Function?', answer: `andThen(f): applies the current function first, then f. So a.andThen(b) = b(a(x)). compose(f): applies f first, then the current function. So a.compose(b) = a(b(x)). I always use andThen because it reads left to right — "do this, THEN do that." compose is more mathematical and reads inside-out. Example: doubleIt.andThen(addTen).apply(5) → first double to 10, then add 10 → 20.` },
+        { question: 'Can a functional interface have default or static methods?', answer: `Yes, it can have any number of default and static methods — they don't count against the "exactly one abstract method" rule. The Predicate interface itself is a perfect example — it has one abstract method test(), but also default methods and(), or(), negate() and a static method not(). The @FunctionalInterface annotation only enforces that there's exactly ONE abstract method.` },
       ],
-      tip: '@FunctionalInterface is optional but a compile-time safety net. Primitive specializations (IntPredicate, IntFunction) avoid boxing — mention this for performance interviews.',
+      tip: 'The four most asked: Predicate (filter), Function (map/transform), Consumer (forEach/side effects), Supplier (lazy factories / orElseGet). Know them cold.',
     },
 
     {
       id: 4,
-      question: 'What are Default and Static methods in interfaces? Why were they introduced?',
+      question: 'What are Method References? What are the 4 types?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 8', 'Default Methods', 'Interface', 'Backward Compatibility'],
-      answer: `Default Methods: Concrete methods with a body in an interface. Declared with the "default" keyword.
+      tags: ['Java 8', 'Method References'],
+      answer: `A method reference is a shorthand for a lambda that does nothing but call a single existing method. When my lambda body is just "call this method," I use a method reference instead — it's cleaner and more readable.
 
-Why introduced: Java 8 needed to add methods to existing interfaces (like Collection, List, Iterable) for Stream API support — forEach(), stream(), spliterator() — without breaking the millions of existing implementations. Default methods solve the "interface evolution" problem.
+The syntax is ClassName::methodName or object::methodName.
 
-Static Methods: Interface-level utility methods — like helper factories. They cannot be overridden and are called via InterfaceName.method().
+There are 4 types:
 
-Diamond Problem with defaults: If a class implements two interfaces that both have a default method with the same signature, the class MUST override it — otherwise compile error.
+1. Static method reference — Integer::parseInt, String::valueOf. Equivalent lambda: x -> Integer.parseInt(x)
 
-Priority rule (when there's a conflict):
-1. Class methods ALWAYS win over interface defaults
-2. Most specific interface wins (child interface over parent interface)
-3. If ambiguous → compile error, must override`,
-      code: `// Default method example
-interface Greeting {
-    String greet(String name);  // abstract
+2. Instance method on arbitrary object of that type — String::toUpperCase. Equivalent lambda: s -> s.toUpperCase(). This is used in stream.map(String::toUpperCase) where each String element has the method called on it.
 
-    default String greetPolitely(String name) {  // default
-        return "Dear " + greet(name);
-    }
+3. Instance method on a specific object — System.out::println, myList::contains. Here "myList" is a specific instance I already have. Equivalent lambda: x -> myList.contains(x)
 
-    static Greeting formal() {  // static factory
-        return name -> "Mr./Ms. " + name;
-    }
-}
+4. Constructor reference — ArrayList::new, Employee::new. Equivalent lambda: () -> new ArrayList<>()
 
-// Implementation — can override or inherit default
-class SimpleGreeting implements Greeting {
-    @Override
-    public String greet(String name) { return "Hello, " + name; }
-    // greetPolitely() inherited — works without override
-}
+In my projects I use method references constantly. String::toUpperCase in map(), System.out::println in forEach(), Collectors.groupingBy(Employee::getDepartment) — all method references.`,
+      code: `// 1. Static method reference
+// Lambda:           x -> String.valueOf(x)
+// Method reference: String::valueOf
+List<String> strs = numbers.stream()
+    .map(String::valueOf)       // static method on String
+    .collect(Collectors.toList());
 
-// Diamond problem
-interface A { default String hello() { return "A"; } }
-interface B { default String hello() { return "B"; } }
+// 2. Instance method on arbitrary object (type's instance method)
+// Lambda:           s -> s.toUpperCase()
+// Method reference: String::toUpperCase
+List<String> upper = names.stream()
+    .map(String::toUpperCase)   // toUpperCase called on each element
+    .collect(Collectors.toList());
 
-class C implements A, B {
-    @Override
-    public String hello() {
-        return A.super.hello();  // explicit resolution
-    }
-}
+// 3. Instance method on a specific object
+// Lambda:           x -> System.out.println(x)
+// Method reference: System.out::println
+names.forEach(System.out::println);
 
-// Real Java 8 additions to existing interfaces:
-List<String> list = Arrays.asList("a", "b", "c");
-list.forEach(System.out::println);        // forEach — default in Iterable
-list.replaceAll(String::toUpperCase);     // replaceAll — default in List
-list.sort(Comparator.naturalOrder());     // sort — default in List
-list.removeIf(s -> s.equals("b"));       // removeIf — default in Collection
+Set<String> validNames = new HashSet<>(Arrays.asList("Alice", "Bob"));
+// Lambda:           name -> validNames.contains(name)
+// Method reference: validNames::contains
+List<String> filtered = names.stream()
+    .filter(validNames::contains)  // specific object's method
+    .collect(Collectors.toList());
 
-// Map new defaults
-map.getOrDefault("key", "fallback");
-map.putIfAbsent("key", "value");
-map.computeIfAbsent("key", k -> new ArrayList<>());
-map.merge("key", "new", (old, n) -> old + "," + n);`,
+// 4. Constructor reference
+// Lambda:           () -> new ArrayList<>()
+// Method reference: ArrayList::new
+Supplier<List<String>> listFactory = ArrayList::new;
+List<String> newList = listFactory.get();
+
+// Constructor with parameter:
+// Lambda:           name -> new Employee(name)
+// Method reference: Employee::new
+List<Employee> employees = names.stream()
+    .map(Employee::new)
+    .collect(Collectors.toList());`,
       followUp: [
-        { question: 'What is the difference between default methods in interfaces and abstract methods in abstract classes?', answer: `Abstract class: Can have state (instance fields), constructors, any method type. Single inheritance only (a class extends only one abstract class). Interface with defaults: No state (no instance fields), no constructors, only constants. Multiple inheritance possible (a class implements many interfaces). Use abstract class when you need shared state. Use interface+defaults when defining behavior contracts across multiple unrelated types.` },
-        { question: 'Can you call a specific interface\'s default method when there\'s a conflict?', answer: `Yes: InterfaceName.super.methodName(). Example: A.super.hello(). This is how you resolve diamond problems — explicitly delegate to the specific interface's default implementation.` },
+        { question: 'When should you use a method reference vs a lambda?', answer: `I use a method reference when the lambda body is ONLY a method call with no extra logic. If the lambda is just x -> x.someMethod() or x -> SomeClass.staticMethod(x), convert it to a method reference — it's cleaner and more readable. But if the lambda has any extra logic — conditions, multiple statements, variable manipulation — keep it as a lambda. Never use a method reference just to look smart if a lambda is clearer.` },
       ],
-      tip: 'Default methods were added to enable interface evolution without breaking existing implementations — key design motivation for Java 8 Stream API additions.',
+      tip: 'Type 2 (String::toUpperCase) is the most commonly confused. The method is called on each STREAM ELEMENT as the object — the element IS the receiver.',
     },
 
     {
       id: 5,
-      question: 'What is the Optional class in Java 8? Why was it introduced? How do you use it correctly?',
+      question: 'What are Default Methods in interfaces? Why were they introduced in Java 8?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 8', 'Optional', 'Null Safety'],
-      answer: `Optional<T> is a container that may or may not hold a non-null value. Introduced to:
-1. Eliminate NullPointerException from method return values
-2. Force callers to handle the "no value" case explicitly
-3. Make the API's intent clear — "this might not have a value"
+      tags: ['Java 8', 'Default Methods', 'Interface'],
+      answer: `A default method is a method with a concrete implementation defined directly in an interface, using the "default" keyword.
 
-When to use: ONLY as a method return type when the value may be absent.
-When NOT to use: Method parameters, fields, collections.
+The reason they were introduced is very specific: when the Java team designed the Stream API for Java 8, they needed to add new methods to existing interfaces like Collection, List, and Iterable — methods like forEach(), stream(), and spliterator(). But if you add a new abstract method to an existing interface, you break every class that implements it, because now they all need to implement the new method. That would have broken millions of existing Java programs.
 
-Key methods:
-— Optional.of(value)          → wraps value, throws NPE if null
-— Optional.ofNullable(value)  → wraps value, returns empty if null
-— Optional.empty()            → empty container singleton
-— isPresent() / isEmpty()     → check if value exists (Java 11)
-— get()                       → get value, throws if empty (AVOID)
-— orElse(default)             → return default (always evaluated)
-— orElseGet(() -> default)    → lazy default (only computed if empty)
-— orElseThrow()               → throw NoSuchElementException
-— ifPresent(consumer)         → run action if present
-— map(function)               → transform if present
-— filter(predicate)           → filter, return empty if doesn't match
-— flatMap(f)                  → when f returns Optional (avoid nested)`,
-      code: `// Don't do this — defeats the purpose
-Optional<User> opt = userRepo.findById(id);
-if (opt.isPresent()) {
-    User u = opt.get();  // same as null check
+Default methods solve this — you can add new methods to an interface with a default implementation, and existing implementors don't have to change anything. They just inherit the default behavior.
+
+There's a diamond problem if a class implements two interfaces that both have a default method with the same signature. In that case, the class MUST override it. You can still call a specific interface's default using InterfaceName.super.methodName().
+
+One thing I clarify in interviews: default methods can be overridden by implementing classes, and the class always wins over the interface's default.`,
+      code: `// Default method in interface
+interface Notifiable {
+    void sendEmail(String message);  // abstract — must be implemented
+
+    default void sendWithLog(String message) {  // default — optional to override
+        System.out.println("Sending: " + message);
+        sendEmail(message);
+    }
+
+    static Notifiable noOp() {  // static factory method
+        return msg -> System.out.println("NO-OP: " + msg);
+    }
 }
 
-// Do this — chain operations
-String name = userRepo.findById(id)
-    .map(User::getName)
-    .map(String::toUpperCase)
-    .orElse("UNKNOWN");
+// Implementing class — inherits sendWithLog for free
+class EmailService implements Notifiable {
+    @Override
+    public void sendEmail(String message) {
+        // actual email sending logic
+    }
+    // sendWithLog() inherited, no need to override
+}
 
-// orElse vs orElseGet
-// orElse: ALWAYS evaluates the default (even if value is present)
-User user = userRepo.findById(id)
-    .orElse(new User("default"));  // new User() called always — BAD if expensive
+// Diamond problem — two interfaces with same default method name
+interface A { default String hello() { return "Hello from A"; } }
+interface B { default String hello() { return "Hello from B"; } }
 
-// orElseGet: LAZY — only called if empty (PREFER for expensive defaults)
-User user = userRepo.findById(id)
-    .orElseGet(() -> createDefaultUser());  // createDefaultUser() called only if empty
+class C implements A, B {
+    @Override
+    public String hello() {
+        return A.super.hello();  // explicit — resolve diamond
+    }
+}
 
-// orElseThrow — throw specific exception
+// Real Java 8 additions to existing interfaces via default methods:
+list.forEach(item -> process(item));           // Iterable.forEach()
+list.removeIf(item -> item.isExpired());       // Collection.removeIf()
+list.replaceAll(String::toUpperCase);          // List.replaceAll()
+map.getOrDefault("key", "fallback");           // Map.getOrDefault()
+map.computeIfAbsent("key", k -> new ArrayList<>());  // Map.computeIfAbsent()`,
+      followUp: [
+        { question: 'What is the difference between default methods and abstract class methods?', answer: `Abstract class can have state (instance fields), constructors, and access modifiers. A class can only extend ONE abstract class. Interface with default methods: no state, no constructors, everything is implicitly public. A class can implement MANY interfaces. Use abstract class when subtypes share state (fields) or you want constructor-based initialization. Use interface with defaults when you want to add reusable behavior that can be mixed into multiple unrelated classes.` },
+        { question: 'Can you have static methods in interfaces?', answer: `Yes, since Java 8. Interface static methods work exactly like class static methods — you call them on the interface name directly (e.g., Comparator.naturalOrder(), Notifiable.noOp()). They cannot be overridden or inherited. They're useful as factory methods or utilities closely related to the interface. In Java 9, interfaces can also have private methods, which are used to share helper logic between default methods without exposing it.` },
+      ],
+      tip: 'The WHY is the most important thing here: default methods were added to allow Java 8 Stream API additions (forEach, stream, spliterator) to existing Collection interfaces without breaking all existing implementations.',
+    },
+
+    {
+      id: 6,
+      question: 'What is Optional in Java 8? Why was it introduced and how do you use it correctly?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java 8', 'Optional', 'NullPointerException'],
+      answer: `Optional is a container object that may or may not contain a non-null value. It was introduced to make the "this method might return nothing" case explicit at the API level — instead of returning null and hoping the caller checks it.
+
+Before Optional, you'd return null, the caller might forget to check, and you'd get a NullPointerException at runtime. Optional forces the caller to handle both cases — value present and value absent.
+
+When to use it: Only as a return type of methods that might not return a value. Don't use it as method parameters, and don't use it for fields.
+
+The methods I use most:
+- orElse(default) — returns default if empty. But the default is always evaluated even if value is present — so if the default is expensive, use orElseGet.
+- orElseGet(() -> compute()) — lazy — only evaluated if empty. I prefer this for DB calls or object creation.
+- orElseThrow(() -> new Exception()) — throw if empty. I use this in services when the entity must exist.
+- map(f) — transform if present, stays empty if absent.
+- ifPresent(consumer) — run action if present.
+
+In my Spring Boot projects, JPA repository methods like findById() return Optional<Entity>. I chain .orElseThrow(() -> new EntityNotFoundException()) in service methods.`,
+      code: `// Creating Optional
+Optional<String> present = Optional.of("Hello");          // throws NPE if null
+Optional<String> maybe   = Optional.ofNullable(getValue()); // safe with null
+Optional<String> empty   = Optional.empty();               // explicitly empty
+
+// orElse vs orElseGet — IMPORTANT distinction
+User user1 = userRepo.findById(id)
+    .orElse(createDefaultUser());  // BAD: createDefaultUser() called ALWAYS, even if found!
+
+User user2 = userRepo.findById(id)
+    .orElseGet(() -> createDefaultUser());  // GOOD: only called if empty
+
+// orElseThrow — in service layer
 User user = userRepo.findById(id)
     .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
 
-// filter + map pipeline
-Optional<String> activeEmail = userRepo.findById(id)
-    .filter(u -> u.getStatus() == Status.ACTIVE)
-    .filter(u -> u.getEmail() != null)
-    .map(User::getEmail);
+// map — transform if present
+String email = userRepo.findById(id)
+    .map(User::getEmail)           // if user exists, get email
+    .map(String::toLowerCase)      // if email exists, lowercase it
+    .orElse("unknown@example.com");
 
-// ifPresent — side effect only
+// ifPresent — side effects
 userRepo.findById(id)
-    .ifPresent(u -> auditLog.log("User accessed: " + u.getId()));
+    .ifPresent(u -> auditLog.record("Accessed user: " + u.getId()));
 
 // Java 9: ifPresentOrElse
 userRepo.findById(id)
     .ifPresentOrElse(
         u -> processUser(u),
-        () -> log.warn("User not found")
+        () -> log.warn("User not found: " + id)
     );
 
-// Java 9: or() — return another Optional if empty
+// Java 9: or() — chain Optional fallbacks
 Optional<User> user = userRepo.findByEmail(email)
-    .or(() -> userRepo.findByPhone(phone));  // fallback Optional`,
+    .or(() -> userRepo.findByPhone(phone));  // try phone if email fails
+
+// filter — conditional unwrapping
+Optional<User> activeUser = userRepo.findById(id)
+    .filter(u -> u.getStatus() == Status.ACTIVE);`,
       followUp: [
-        { question: 'What is the difference between orElse() and orElseGet()?', answer: `orElse(T): The argument is evaluated EAGERLY — even if Optional has a value. If the default involves a database call or object creation, it happens regardless. orElseGet(Supplier<T>): LAZY — the Supplier is only called if the Optional is empty. Always prefer orElseGet() when the default is expensive (DB call, API call, complex object construction). For simple constants: orElse("default") is fine.` },
-        { question: 'Why should you not use Optional as a method parameter?', answer: `(1) Forces callers to wrap their values in Optional unnecessarily. (2) Callers can still pass Optional.empty() or null, so null safety isn't guaranteed. (3) Makes the API awkward: findUser(Optional.of("john")). Better: provide overloaded methods or use nullable + @Nullable annotation.` },
+        { question: 'What is the difference between orElse() and orElseGet()?', answer: `orElse(value): The value is computed EAGERLY — always, regardless of whether Optional is empty or not. If value is an expensive operation like a database call or object construction, it happens every time. orElseGet(Supplier): LAZY — the Supplier is only called when Optional is empty. For constants like orElse("unknown") it doesn't matter. For anything that involves computation — DB call, object creation — always use orElseGet(() -> ...). This is one of the most common Optional mistakes in code reviews.` },
+        { question: 'When should you NOT use Optional?', answer: `Three clear cases: (1) Method parameters — it forces callers to wrap values unnecessarily. Just overload the method or accept nullable. (2) Class fields — Optional doesn't serialize well with Jackson or JPA, and it adds overhead. Use @Nullable annotation instead. (3) Collection return types — returning Optional<List<T>> is wrong. An empty list already communicates absence. Return an empty list, never null, never Optional<List>. Optional was designed specifically to signal "this method might not return a value" — use it only for that.` },
       ],
-      tip: 'Never use Optional.get() without isPresent() check — it can throw NoSuchElementException just like NPE. Always use orElse/orElseGet/orElseThrow.',
+      tip: 'Never use Optional.get() without isPresent() check. It throws NoSuchElementException just like NPE. The whole point of Optional is to use the safe methods: orElse, orElseGet, orElseThrow, ifPresent.',
     },
 
     {
-      id: 6,
+      id: 7,
       question: 'What is the new Date/Time API in Java 8? How is it better than java.util.Date?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 8', 'Date/Time API', 'LocalDate', 'ZonedDateTime'],
-      answer: `Java 8 introduced java.time package (based on Joda-Time). Problems with old java.util.Date:
-— Mutable (thread-unsafe) — Date is not thread-safe
-— Design flaws: Date.getYear() returns year - 1900, months 0-indexed
-— No timezone handling — TimeZone class is cumbersome
-— Calendar API was verbose and error-prone
+      tags: ['Java 8', 'Date/Time API', 'LocalDate', 'LocalDateTime'],
+      answer: `The old java.util.Date class was notoriously bad. It was mutable — so not thread-safe, which caused bugs in multi-threaded applications. It had design mistakes like getYear() returning year - 1900 and months being 0-indexed. Calendar was verbose and error-prone. SimpleDateFormat was not thread-safe either — I've seen production bugs caused by sharing a SimpleDateFormat instance across threads.
 
-New java.time classes:
+Java 8 introduced the java.time package — based on Joda-Time — which fixed all of this. All classes are immutable and thread-safe.
 
-LocalDate       — date only (2024-01-15), no time, no timezone
-LocalTime       — time only (14:30:00), no date, no timezone
-LocalDateTime   — date + time (2024-01-15T14:30:00), no timezone
-ZonedDateTime   — date + time + timezone (full representation)
-Instant         — machine-readable UTC timestamp (epoch milliseconds)
-Duration        — amount of time in seconds/nanoseconds (time-based)
-Period          — amount of time in years/months/days (date-based)
-DateTimeFormatter — thread-safe formatting (unlike SimpleDateFormat)
+The main classes:
 
-All classes are IMMUTABLE and THREAD-SAFE.`,
+LocalDate — date only (2024-01-15), no time, no timezone. I use this for things like policy effective dates, birthdays, deadlines.
+
+LocalTime — time only, no date, no timezone.
+
+LocalDateTime — date + time, but no timezone. I use this for meeting schedules or log timestamps in single-timezone apps.
+
+ZonedDateTime — date + time + timezone. I use this for user-facing timestamps when the app serves multiple timezones.
+
+Instant — a UTC timestamp — just a point on the timeline in seconds + nanoseconds. I use this for storing timestamps in databases — always store as UTC Instant, display in user's timezone.
+
+Duration — amount of time in seconds/nanoseconds. I use this for measuring elapsed time.
+
+Period — amount of time in years/months/days. I use this to calculate age or days between dates.
+
+DateTimeFormatter is immutable and thread-safe — unlike SimpleDateFormat.`,
       code: `// LocalDate — date without time
 LocalDate today = LocalDate.now();
-LocalDate birthday = LocalDate.of(1995, Month.JULY, 15);
-LocalDate nextWeek = today.plusWeeks(1);
-LocalDate prevMonth = today.minusMonths(1);
+LocalDate dob   = LocalDate.of(1995, Month.JULY, 15);
+LocalDate next  = today.plusDays(30);  // all operations return NEW objects — immutable
 
-System.out.println(today);           // 2024-01-15
-System.out.println(today.getDayOfWeek()); // MONDAY
-System.out.println(today.isLeapYear());   // false
+System.out.println(today.getDayOfWeek());  // MONDAY
+System.out.println(today.isLeapYear());    // false
 
 // Period — difference in dates
-Period age = Period.between(birthday, today);
+Period age = Period.between(dob, today);
 System.out.println(age.getYears() + " years old");
 
 // LocalDateTime
 LocalDateTime meeting = LocalDateTime.of(2024, 6, 15, 14, 30);
-LocalDateTime oneHourLater = meeting.plusHours(1);
+LocalDateTime extended = meeting.plusHours(2);  // doesn't modify meeting!
 
 // ZonedDateTime — with timezone
-ZoneId india = ZoneId.of("Asia/Kolkata");
-ZonedDateTime istNow = ZonedDateTime.now(india);
-ZonedDateTime utcNow = istNow.withZoneSameInstant(ZoneId.of("UTC"));
+ZonedDateTime istTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+ZonedDateTime utcTime = istTime.withZoneSameInstant(ZoneId.of("UTC"));
 
-// Instant — for timestamps in logs/databases
+// Instant — for DB storage and duration measurement
 Instant start = Instant.now();
 // ... do work ...
-Instant end = Instant.now();
+Instant end  = Instant.now();
 Duration elapsed = Duration.between(start, end);
-System.out.println("Elapsed: " + elapsed.toMillis() + "ms");
+System.out.println("Took: " + elapsed.toMillis() + "ms");
 
 // DateTimeFormatter — thread-safe (unlike SimpleDateFormat!)
 DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 String formatted = LocalDateTime.now().format(fmt);
 LocalDateTime parsed = LocalDateTime.parse("15-01-2024 14:30", fmt);
 
-// Production: audit timestamps
+// Production pattern: store as Instant, display in user timezone
 @Entity
-public class AuditableEntity {
-    private Instant createdAt = Instant.now();
-    private LocalDate effectiveDate;
+class AuditLog {
+    private Instant createdAt = Instant.now(); // always UTC
 
-    // Store in DB as UTC, display in user's timezone
-    public ZonedDateTime getCreatedAtForUser(String timezone) {
-        return createdAt.atZone(ZoneId.of(timezone));
+    public String getDisplayTime(String userTimezone) {
+        return createdAt.atZone(ZoneId.of(userTimezone))
+                        .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
     }
 }`,
       followUp: [
-        { question: 'What is the difference between LocalDate, LocalDateTime, and ZonedDateTime? When to use which?', answer: `LocalDate: Use for dates without a time component — birthdays, deadlines, effective dates. "On 2024-01-15" — no time needed. LocalDateTime: Use for date+time without timezone — meeting schedules, log entries in a single-timezone app. ZonedDateTime: Use when timezone matters — user-facing timestamps, scheduling across timezones, storing events that need to be displayed in the user's local time. Instant: Use for machine timestamps — database storage, event sourcing, measuring elapsed time. Always store Instants in DB, convert to ZonedDateTime for display.` },
-        { question: 'Why is SimpleDateFormat not thread-safe? How does DateTimeFormatter solve it?', answer: `SimpleDateFormat maintains internal state (parse position, calendar fields) — when multiple threads share one instance and call format()/parse() simultaneously, they corrupt each other's state, causing wrong results or exceptions. DateTimeFormatter is IMMUTABLE — all state is set at construction and never modified. Safe to share a single instance across threads without synchronization.` },
+        { question: 'What is the difference between LocalDate, LocalDateTime, and ZonedDateTime?', answer: `LocalDate: use when time doesn't matter — birthdays, effective dates, holidays. LocalDateTime: use for date + time in a single timezone context — meeting schedules, log entries in a single-timezone application. ZonedDateTime: use when timezone is important — user-facing timestamps, calendar events that span timezones. Instant: use for machine timestamps — store in DB as UTC, measure elapsed time. My rule: store Instants in the database, convert to ZonedDateTime only when displaying to the user.` },
+        { question: 'Why is SimpleDateFormat not thread-safe?', answer: `SimpleDateFormat maintains internal state in fields — a Calendar instance and a NumberFormat. When two threads simultaneously call format() or parse() on the same SimpleDateFormat instance, they corrupt each other's internal state, producing wrong dates or throwing exceptions. The fix in old code was to use ThreadLocal<SimpleDateFormat>. Java 8's DateTimeFormatter is completely immutable — no mutable state — so it's safe to share a single static instance across all threads.` },
       ],
-      tip: 'Key interview point: java.time classes are IMMUTABLE and THREAD-SAFE. plus/minus methods return NEW objects — they do not modify the original.',
+      tip: 'Key phrase: all java.time classes are IMMUTABLE. Methods like plusDays() return a NEW object — they do not modify the original. This is the most important property for thread safety.',
     },
 
     {
-      id: 7,
-      question: 'What is CompletableFuture? How does it improve on Future<T>?',
+      id: 8,
+      question: 'What is CompletableFuture in Java 8? How is it better than Future?',
       difficulty: 'advanced',
       asked: true,
-      tags: ['Java 8', 'CompletableFuture', 'Async', 'Concurrency'],
-      answer: `Future<T> (Java 5) problems:
-— future.get() BLOCKS the calling thread — can't compose
-— No callback mechanism — no "when done, do this"
-— Cannot combine multiple futures
-— Cannot manually complete a future
-— No exception handling chain
+      tags: ['Java 8', 'CompletableFuture', 'Async', 'Future'],
+      answer: `Future was introduced in Java 5 for async programming, but it had a big problem — to get the result, you had to call future.get() which blocks the calling thread. You couldn't say "when this finishes, do the next thing" — there was no callback. You also couldn't combine multiple futures easily.
 
-CompletableFuture<T> (Java 8) solves all of these:
-— Non-blocking: thenApply(), thenAccept(), thenRun() — callbacks
-— Composable: thenCompose() chains, thenCombine() merges
-— Combinators: allOf(), anyOf() for parallel tasks
-— Exception handling: exceptionally(), handle()
-— Can be manually completed: complete(), completeExceptionally()
-— Runs on ForkJoinPool.commonPool() by default (or custom Executor)
+CompletableFuture in Java 8 solved all of this. It gives you a non-blocking, composable async pipeline.
 
-Key method categories:
-Creating: supplyAsync(), runAsync(), completedFuture()
-Transforming: thenApply() (like map), thenCompose() (like flatMap)
-Consuming: thenAccept() (no return), thenRun() (no input, no return)
-Combining: thenCombine(), allOf(), anyOf()
-Error handling: exceptionally(), handle(), whenComplete()`,
-      code: `// Old Future — blocking, not composable
-ExecutorService exec = Executors.newSingleThreadExecutor();
-Future<String> future = exec.submit(() -> fetchUserName(123L));
-String name = future.get();  // BLOCKS until done — bad!
+The key methods I use:
+
+supplyAsync() — runs a task asynchronously in the ForkJoinPool and returns a CompletableFuture.
+
+thenApply() — like map in streams — transforms the result when it's ready. This is non-blocking.
+
+thenCompose() — like flatMap — use this when the next step also returns a CompletableFuture. Without it you'd get a CompletableFuture<CompletableFuture<T>>.
+
+thenAccept() — like forEach — consume the result, no return value.
+
+exceptionally() — handle exceptions and return a fallback value.
+
+allOf() — run multiple futures in parallel, wait for all to complete.
+
+anyOf() — return as soon as ANY one completes — useful for racing multiple sources.
+
+In my MetLife project, I used CompletableFuture.allOf() to fetch user data, policy data, and payment history in parallel, then combined them for a dashboard response. That reduced latency by about 60% compared to calling them sequentially.`,
+      code: `// Old Future — blocks the thread
+Future<String> future = executor.submit(() -> fetchData());
+String result = future.get();  // BLOCKS until done — bad for high concurrency!
 
 // CompletableFuture — non-blocking chain
-CompletableFuture<String> cf = CompletableFuture
-    .supplyAsync(() -> fetchUserById(123L))           // runs on ForkJoinPool
-    .thenApply(user -> user.getName())                // transform (like map)
-    .thenApply(String::toUpperCase);                  // chain another transform
+CompletableFuture<User> userCF = CompletableFuture
+    .supplyAsync(() -> userRepo.findById(userId))   // async on ForkJoinPool
+    .thenApply(user -> enrichUser(user))            // non-blocking transform
+    .thenApply(user -> { log("Found: " + user); return user; });
 
-// thenCompose — when next step also returns a CompletableFuture (flatMap)
+// thenCompose — when next step also returns CompletableFuture
 CompletableFuture<Order> orderCF = CompletableFuture
-    .supplyAsync(() -> fetchUser(id))
-    .thenCompose(user -> fetchLatestOrder(user));     // flatMap equivalent
+    .supplyAsync(() -> findUser(id))               // returns User
+    .thenCompose(user -> findLatestOrder(user));   // returns CompletableFuture<Order>
+    // NOT thenApply — that would give CompletableFuture<CompletableFuture<Order>>
 
 // Exception handling
-CompletableFuture<User> safeCF = CompletableFuture
-    .supplyAsync(() -> riskyFetchUser(id))
+CompletableFuture<User> safe = CompletableFuture
+    .supplyAsync(() -> riskyFetch(id))
     .exceptionally(ex -> {
-        log.error("Failed to fetch user", ex);
+        log.error("Fetch failed: " + ex.getMessage());
         return User.defaultUser();  // fallback
     });
 
 // handle() — runs for both success AND failure
 CompletableFuture<String> result = CompletableFuture
     .supplyAsync(() -> fetchData())
-    .handle((data, ex) -> {
-        if (ex != null) return "ERROR: " + ex.getMessage();
-        return "OK: " + data;
-    });
+    .handle((data, ex) -> ex != null ? "ERROR: " + ex.getMessage() : "OK: " + data);
 
-// Run 3 tasks in parallel, wait for ALL
-CompletableFuture<User> userCF  = CompletableFuture.supplyAsync(() -> fetchUser(id));
-CompletableFuture<Order> orderCF = CompletableFuture.supplyAsync(() -> fetchOrder(id));
-CompletableFuture<Void> allDone = CompletableFuture.allOf(userCF, orderCF);
-allDone.thenRun(() -> {
-    User user = userCF.join();    // join() = get() without checked exception
-    Order order = orderCF.join();
-    process(user, order);
-});
+// allOf — run 3 tasks in parallel, wait for all
+CompletableFuture<User>             userF    = CompletableFuture.supplyAsync(() -> fetchUser(id));
+CompletableFuture<List<Policy>>     policiesF = CompletableFuture.supplyAsync(() -> fetchPolicies(id));
+CompletableFuture<PaymentHistory>   paymentF  = CompletableFuture.supplyAsync(() -> fetchPayments(id));
 
-// anyOf — race condition: use fastest response
-CompletableFuture<Object> fastest = CompletableFuture.anyOf(cf1, cf2, cf3);
-
-// Production: Spring Boot async service
-@Service
-public class UserService {
-    @Async("taskExecutor")
-    public CompletableFuture<User> findUserAsync(Long id) {
-        return CompletableFuture.completedFuture(userRepo.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id)));
-    }
-}`,
+CompletableFuture.allOf(userF, policiesF, paymentF)
+    .thenRun(() -> {
+        User user = userF.join();           // join() = get() without checked exception
+        List<Policy> policies = policiesF.join();
+        PaymentHistory payment = paymentF.join();
+        buildDashboard(user, policies, payment);
+    });`,
       followUp: [
-        { question: 'What is the difference between thenApply() and thenCompose()?', answer: `thenApply(f): the function f returns a PLAIN VALUE. If f returns a CompletableFuture, you get CompletableFuture<CompletableFuture<T>> — nested. thenCompose(f): the function f returns a CompletableFuture. thenCompose automatically flattens it to CompletableFuture<T>. Rule: thenApply = map, thenCompose = flatMap. Use thenCompose when the next step is also async (returns a CompletableFuture).` },
-        { question: 'What is the difference between get() and join() in CompletableFuture?', answer: `get(): throws checked exceptions — InterruptedException and ExecutionException. Must be in try-catch. join(): throws unchecked CompletionException. No try-catch required. Preferred in lambda chains. Both BLOCK until the future completes. Note: In Java 21 with Virtual Threads, blocking is cheap — using join() in a virtual thread doesn't waste a platform thread.` },
+        { question: 'What is the difference between thenApply() and thenCompose()?', answer: `thenApply(f): f is a Function<T, R> — it returns a PLAIN VALUE. Use when the next step is a simple synchronous transformation. thenCompose(f): f is a Function<T, CompletableFuture<R>> — it returns a CompletableFuture. thenCompose automatically flattens it. Use when the next step is also async. If you use thenApply with a function that returns a CompletableFuture, you get CompletableFuture<CompletableFuture<R>> — nested, which is almost never what you want. Rule: thenApply = map, thenCompose = flatMap.` },
+        { question: 'What is the difference between get() and join() in CompletableFuture?', answer: `get() throws checked exceptions — InterruptedException and ExecutionException. You must put it in a try-catch. join() throws unchecked CompletionException — no try-catch required. In lambda chains, join() is cleaner because checked exceptions don't work well inside lambdas. Both BLOCK the calling thread until the result is available. In Java 21 with virtual threads, blocking is cheap — but it's still a synchronous wait.` },
       ],
-      tip: 'thenApply = map (returns value), thenCompose = flatMap (returns CompletableFuture). Mixing them up is the #1 CompletableFuture interview mistake.',
+      tip: 'The most common mistake: using thenApply when the next step returns a CompletableFuture. Always use thenCompose in that case — otherwise you get nested CompletableFutures.',
     },
 
-    // ═══════════════════════════════════════════════════
-    //  JAVA 11  (Released September 2018 — LTS)
-    // ═══════════════════════════════════════════════════
-
-    {
-      id: 8,
-      question: 'Java 11 Overview — What are the key features? Why is it the most popular LTS after Java 8?',
-      difficulty: 'beginner',
-      asked: true,
-      tags: ['Java 11', 'LTS', 'Overview'],
-      answer: `Java 11 (September 2018) is an LTS release and the next major milestone after Java 8 for enterprise adoption. It's the most popular Java version after Java 8.
-
-Key reasons for adoption:
-— First LTS with the "Modern Java" feel (lambdas now established)
-— New HttpClient API replaces the outdated HttpURLConnection
-— Useful String and Files API additions
-— var keyword (from Java 10) now usable in lambda parameters
-— Java Flight Recorder (monitoring) made free (was commercial)
-— Removed: Java EE modules (moved to Jakarta EE), Nashorn JS engine
-
-Changes between Java 8 and 11 also include:
-Java 9: Module system (JPMS), Process API, jshell REPL, Collection factory methods
-Java 10: Local variable type inference (var), List.copyOf(), Map.copyOf()
-Java 11: New String methods, HttpClient, Files.readString/writeString
-
-Enterprise adoption: Java 11 is used by ~25% of production systems. Spring Boot 3.x requires Java 17 minimum, but many projects targeting Spring Boot 2.x still use Java 11.`,
-      code: `// Java 9: Collection factory methods (immutable)
-List<String> list = List.of("a", "b", "c");         // immutable
-Set<String> set   = Set.of("x", "y", "z");          // immutable, no duplicates
-Map<String, Integer> map = Map.of("one", 1, "two", 2); // immutable
-
-// Java 9: Stream improvements
-Stream.of(1, 2, null, 3, null, 4)
-    .flatMap(Optional::stream)  // Optional.stream() — Java 9
-    .forEach(System.out::println);
-
-// Java 10: var — local variable type inference
-var list2 = new ArrayList<String>();  // inferred as ArrayList<String>
-var user = userRepo.findById(1L);     // inferred as Optional<User>
-
-// Java 11: var in lambda
-// Before Java 11
-list.stream().filter((String s) -> s.length() > 3);
-// Java 11: var in lambda (needed for annotations)
-list.stream().filter((@NonNull var s) -> s.length() > 3);`,
-      tip: 'Java 9-10-11 features are often grouped in interviews. Know the LTS versions: Java 8, 11, 17, 21, 25. Non-LTS versions (9, 10, 12-16, 18-20) are skipped in enterprise.',
-    },
+    // ═══════════════════════════════════
+    //  JAVA 11
+    // ═══════════════════════════════════
 
     {
       id: 9,
-      question: 'What are the new String methods added in Java 11?',
+      question: 'What are the key features in Java 11? Why is it important?',
       difficulty: 'beginner',
       asked: true,
-      tags: ['Java 11', 'String Methods'],
-      answer: `Java 11 added 6 very useful String methods that eliminate boilerplate.
+      tags: ['Java 11', 'Overview', 'LTS'],
+      answer: `Java 11 was released in September 2018 and it's an LTS — Long-Term Support — release, which is why enterprises adopted it as the next step after Java 8. It's the second most widely used Java version today.
 
-isBlank()    — true if empty or contains only whitespace (better than isEmpty())
-strip()      — removes leading/trailing whitespace, UNICODE-aware (better than trim())
-stripLeading() — removes only leading whitespace
-stripTrailing() — removes only trailing whitespace
-lines()      — splits string by line terminators, returns Stream<String>
-repeat(n)    — repeats the string n times
+The most important additions in Java 11:
 
-Key difference: strip() vs trim():
-— trim() removes characters with ASCII code ≤ 32 (not all Unicode whitespace)
-— strip() uses Character.isWhitespace() — handles all Unicode whitespace characters
-— Always prefer strip() over trim() in new code`,
-      code: `// isBlank() — better than isEmpty()
-"".isBlank()       // true
-" ".isBlank()      // true  (trim would give "", isEmpty would be false — isBlank is better)
-"  ".isBlank()     // true
-"hi".isBlank()     // false
+New String methods — isBlank(), strip(), lines(), repeat(n). These seem small but I use them constantly. strip() is better than trim() because it handles Unicode whitespace correctly.
 
-// Was needed before Java 11:
-str == null || str.trim().isEmpty();  // clunky
-// Java 11:
-str == null || str.isBlank();         // clean
+HttpClient API — a modern built-in HTTP client with HTTP/2 support. Before this, if you didn't use a library like Apache HttpClient or OkHttp, you were stuck with HttpURLConnection which was very verbose.
 
-// strip() — Unicode-aware (trim() is not)
-" Hello ".trim()    // might not remove Unicode space
-" Hello ".strip()   // correctly removes it → "Hello"
+var in lambda parameters — you could now use var in lambda parameter types, mainly useful when you need to add an annotation like @NonNull to a lambda parameter.
 
-// lines() — great for processing multiline text
-String multiline = "Java 8\nJava 11\nJava 17\nJava 21";
-multiline.lines()
-    .filter(line -> !line.isBlank())
-    .map(String::strip)
+Files.readString() and Files.writeString() — read/write a whole file in one line instead of multiple stream operations.
+
+Java 9-10 features that enterprise teams got together with 11: Collection factory methods (List.of, Set.of, Map.of), local variable type inference with var, and the jshell REPL.`,
+      code: `// Java 9: Immutable collection factories
+List<String> list = List.of("Java", "Python", "Go");    // immutable
+Set<String> set   = Set.of("a", "b", "c");              // immutable, no duplicates
+Map<String, Integer> map = Map.of("one", 1, "two", 2);  // immutable
+
+// Java 10: var — local variable type inference
+var user = userRepo.findById(1L);     // Optional<User>
+var names = new ArrayList<String>();  // ArrayList<String>
+// var i = 10;  — works for primitives too
+
+// Java 11: var in lambda (needed for annotations)
+list.stream()
+    .filter((@NonNull var s) -> s.length() > 3)  // var needed to add annotation
     .forEach(System.out::println);
 
-// Processing config files or CSV line by line
-Files.readString(Path.of("config.txt")).lines()
-    .filter(line -> !line.startsWith("#"))  // skip comments
-    .map(line -> line.split("="))
-    .filter(parts -> parts.length == 2)
-    .forEach(parts -> config.put(parts[0].strip(), parts[1].strip()));
-
-// repeat(n) — simple but useful
-String divider = "-".repeat(50);         // "---...---"
-String padding = " ".repeat(indent * 2); // dynamic indentation
-String csv = "Java,Python,Go\n".repeat(3); // test data generation`,
-      followUp: [
-        { question: 'What is the difference between isBlank() and isEmpty()?', answer: `isEmpty() returns true only for zero-length strings: "".isEmpty() = true, " ".isEmpty() = false. isBlank() returns true for zero-length AND whitespace-only strings: "".isBlank() = true, " ".isBlank() = true, "  ".isBlank() = true. For user input validation, isBlank() is almost always what you want.` },
-      ],
-      tip: 'strip() is Unicode-aware; trim() is not. Always use strip() in Java 11+ code. isBlank() is better than isEmpty() for user input validation.',
+// Java 11: Files API
+String content = Files.readString(Path.of("config.txt"));
+Files.writeString(Path.of("output.txt"), "Hello World");`,
+      tip: 'LTS versions are Java 8, 11, 17, 21, 25. Always mention this timeline in interviews — it shows you understand how enterprises choose Java versions.',
     },
 
     {
       id: 10,
-      question: 'What is the new HttpClient API in Java 11? How does it improve on HttpURLConnection?',
+      question: 'What are the new String methods added in Java 11?',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['Java 11', 'String', 'isBlank', 'strip', 'lines', 'repeat'],
+      answer: `Java 11 added 6 very useful String methods. They seem minor but they eliminate a lot of boilerplate.
+
+isBlank() — returns true if the string is empty or contains only whitespace. Before this, I had to write str.trim().isEmpty() which is clunky. isBlank() does it in one call.
+
+strip() — removes leading and trailing whitespace, but unlike trim(), it's Unicode-aware. trim() only removes characters with ASCII code ≤ 32. strip() uses Character.isWhitespace() which handles Unicode whitespace characters too. I always use strip() in new code.
+
+stripLeading() and stripTrailing() — strip only from one side.
+
+lines() — splits a string by line terminators and returns Stream<String>. This is really useful for processing multiline text — config files, CSV data, API responses with newlines.
+
+repeat(n) — repeats the string n times. Useful for generating test data, padding, or dividers.`,
+      code: `// isBlank() — better than isEmpty() for validation
+"".isBlank()        // true
+" ".isBlank()       // true   (trim().isEmpty() would work too, but isBlank is cleaner)
+"  \t\n".isBlank()  // true
+"hello".isBlank()   // false
+
+// Real usage: validating user input
+if (name == null || name.isBlank()) {
+    throw new ValidationException("Name is required");
+}
+
+// strip() — Unicode-aware whitespace removal
+String messy = "  Hello World  ";
+messy.strip()          // "Hello World"
+messy.stripLeading()   // "Hello World  "
+messy.stripTrailing()  // "  Hello World"
+
+// strip() vs trim() — why strip() is better
+String unicodeSpace = " Hello "; // Em space (Unicode whitespace)
+unicodeSpace.trim();   // " Hello " — trim() MISSED IT!
+unicodeSpace.strip();  // "Hello"            — strip() got it right
+
+// lines() — process multiline strings as a stream
+String config = "# comment\nserver.port=8080\nserver.host=localhost";
+Map<String, String> props = config.lines()
+    .filter(line -> !line.startsWith("#"))  // skip comments
+    .filter(line -> line.contains("="))
+    .map(line -> line.split("=", 2))
+    .collect(Collectors.toMap(parts -> parts[0].strip(), parts -> parts[1].strip()));
+
+// repeat(n) — simple and useful
+String divider  = "=".repeat(50);     // "==...=="
+String indented = " ".repeat(4 * depth) + code;
+String testData = "row\n".repeat(100); // generate 100 CSV rows for tests`,
+      followUp: [
+        { question: 'What is the difference between isBlank() and isEmpty()?', answer: `isEmpty() returns true only for zero-length strings — "".isEmpty() is true, " ".isEmpty() is false. isBlank() returns true for zero-length AND whitespace-only strings — "".isBlank() is true, " ".isBlank() is true, "\t\n".isBlank() is true. For user input validation, isBlank() is almost always what you want — an input of only spaces is as bad as an empty input.` },
+      ],
+      tip: 'Always use strip() instead of trim() in Java 11+. strip() is Unicode-aware; trim() is not. This is a quick win to show you write modern Java.',
+    },
+
+    {
+      id: 11,
+      question: 'What is the Java 11 HttpClient API? Why is it better than HttpURLConnection?',
       difficulty: 'intermediate',
       asked: true,
       tags: ['Java 11', 'HttpClient', 'HTTP/2'],
-      answer: `Java 11 introduced java.net.http.HttpClient — a modern HTTP client built in. Before this, developers had to use HttpURLConnection (verbose, no HTTP/2) or add libraries like Apache HttpClient or OkHttp.
+      answer: `Before Java 11, if you wanted to make HTTP calls without adding a dependency, you had to use HttpURLConnection — which was painful. You needed 15-20 lines just for a simple GET request, there was no HTTP/2 support, no async support, and timeout configuration was tricky.
 
-Java 11 HttpClient features:
-— HTTP/1.1 AND HTTP/2 support
-— Synchronous and Asynchronous calls
-— WebSocket support
-— Immutable builder pattern
-— Reactive Streams support (request/response bodies as publishers/subscribers)
-— Built-in timeout support
-— Automatic redirect handling
+Java 11 added java.net.http.HttpClient — a proper, modern HTTP client built into the JDK. Key features:
 
-Problems with old HttpURLConnection:
-— No HTTP/2 support
-— Very verbose API — many lines for a simple GET
-— No async support
-— No built-in JSON handling
-— Difficult to configure timeouts properly`,
-      code: `// Java 11 HttpClient — synchronous GET
+HTTP/1.1 and HTTP/2 support out of the box.
+
+Both synchronous and asynchronous calls — send() blocks, sendAsync() returns a CompletableFuture.
+
+Immutable, builder pattern — you create one HttpClient and reuse it everywhere, like OkHttpClient.
+
+Built-in timeout support at both the request and connection level.
+
+In practice, most Spring Boot projects use RestTemplate or WebClient for HTTP calls. But in non-Spring projects, or when you want zero external dependencies, the Java 11 HttpClient is the go-to.`,
+      code: `// Create one client and reuse it (immutable, thread-safe)
 HttpClient client = HttpClient.newBuilder()
     .version(HttpClient.Version.HTTP_2)
     .connectTimeout(Duration.ofSeconds(10))
     .followRedirects(HttpClient.Redirect.NORMAL)
     .build();
 
+// Synchronous GET
 HttpRequest request = HttpRequest.newBuilder()
     .uri(URI.create("https://api.example.com/users/1"))
     .header("Authorization", "Bearer " + token)
-    .header("Accept", "application/json")
-    .GET()
     .timeout(Duration.ofSeconds(30))
+    .GET()
     .build();
 
-HttpResponse<String> response = client.send(request,
-    HttpResponse.BodyHandlers.ofString());
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.statusCode());  // 200
+System.out.println(response.body());        // {"id":1,"name":"Alice"}
 
-System.out.println("Status: " + response.statusCode());
-System.out.println("Body: " + response.body());
-
-// Async GET — non-blocking
-CompletableFuture<HttpResponse<String>> asyncResponse = client
-    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-    .thenApply(r -> {
-        System.out.println("Got response: " + r.statusCode());
-        return r;
-    });
+// Asynchronous GET — returns CompletableFuture
+client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+    .thenApply(HttpResponse::body)
+    .thenAccept(body -> System.out.println("Got: " + body))
+    .exceptionally(ex -> { log.error("Failed", ex); return null; });
 
 // POST with JSON body
 HttpRequest postRequest = HttpRequest.newBuilder()
     .uri(URI.create("https://api.example.com/users"))
     .header("Content-Type", "application/json")
-    .POST(HttpRequest.BodyPublishers.ofString(
-        "{\"name\": \"John\", \"email\": \"john@example.com\"}"
-    ))
+    .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"Bob\"}"))
     .build();
 
-// Production pattern with retry
-public <T> T callWithRetry(HttpRequest req,
-                           HttpResponse.BodyHandler<T> handler,
-                           int maxRetries) throws Exception {
-    for (int i = 0; i < maxRetries; i++) {
-        try {
-            HttpResponse<T> resp = client.send(req, handler);
-            if (resp.statusCode() < 500) return resp.body();
-        } catch (IOException e) {
-            if (i == maxRetries - 1) throw e;
-            Thread.sleep(1000L * (i + 1));  // exponential backoff
-        }
-    }
-    throw new RuntimeException("Max retries exceeded");
-}`,
+HttpResponse<String> postResponse = client.send(postRequest, HttpResponse.BodyHandlers.ofString());`,
       followUp: [
-        { question: 'When would you use the Java 11 HttpClient vs RestTemplate vs WebClient?', answer: `Java 11 HttpClient: Simple projects with no Spring dependency, or when you need a lightweight client without framework overhead. RestTemplate (Spring): Synchronous REST calls in Spring MVC applications — familiar, simple, but deprecated in Spring 5.x in favor of WebClient. WebClient (Spring WebFlux): Reactive/non-blocking HTTP calls — preferred for new Spring applications, reactive streams support. For most Spring Boot microservices: WebClient. For non-Spring: Java 11 HttpClient. RestTemplate is legacy.` },
+        { question: 'When would you use Java 11 HttpClient vs RestTemplate vs WebClient?', answer: `Java 11 HttpClient: Simple projects with no Spring dependency, utilities, command-line tools. RestTemplate: Legacy Spring MVC code — it works fine but is deprecated in favor of WebClient for new code. WebClient (Spring WebFlux): Preferred for new Spring Boot projects — reactive, non-blocking, better suited for microservices that make many outgoing calls. For a new Spring Boot 3.x service, I use WebClient. For a non-Spring project, I use Java 11 HttpClient. I avoid RestTemplate for new projects.` },
       ],
-      tip: 'Java 11 HttpClient is immutable and thread-safe — create ONE instance and reuse it (like OkHttpClient). Creating per-request is wasteful.',
+      tip: 'Create ONE HttpClient instance and reuse it — same pattern as OkHttpClient. Creating per-request wastes resources and doesn\'t use HTTP/2 connection pooling.',
     },
 
-    // ═══════════════════════════════════════════════════
-    //  JAVA 17  (Released September 2021 — LTS)
-    // ═══════════════════════════════════════════════════
-
-    {
-      id: 11,
-      question: 'Java 17 Overview — What are the major features? Why is it significant?',
-      difficulty: 'beginner',
-      asked: true,
-      tags: ['Java 17', 'LTS', 'Overview'],
-      answer: `Java 17 (September 2021) is an LTS release and the baseline for Spring Boot 3.x and Jakarta EE 10. It includes features that accumulated from Java 9 to 17.
-
-Key features that FINALIZED in Java 17:
-— Records (finalized Java 16, available 17)
-— Sealed Classes (finalized Java 17)
-— Pattern Matching for instanceof (finalized Java 16)
-— Switch Expressions (finalized Java 14)
-— Text Blocks (finalized Java 15)
-— Strong Encapsulation of JDK internals
-— New macOS rendering pipeline
-— Enhanced RandomGenerator API
-
-Why it matters:
-— Spring Boot 3.x requires Java 17 minimum
-— Significant productivity improvements: Records replace POJOs, sealed classes replace enums for complex hierarchies
-— Pattern matching eliminates boilerplate casting
-— Performance: ZGC and G1 GC improvements
-
-Adoption: Growing rapidly as teams migrate Spring Boot 2 → 3.`,
-      code: `// Java 14: Switch Expression (finalized)
-String day = "MONDAY";
-int numLetters = switch (day) {
-    case "MONDAY", "FRIDAY", "SUNDAY" -> 6;
-    case "TUESDAY"                     -> 7;
-    case "THURSDAY", "SATURDAY"        -> 8;
-    case "WEDNESDAY"                   -> 9;
-    default                            -> throw new IllegalArgumentException("Invalid day: " + day);
-};
-
-// Java 15: Text Blocks (finalized)
-String json = """
-    {
-        "name": "Randhir",
-        "role": "Java Backend Engineer",
-        "experience": 5
-    }
-    """;
-
-String sql = """
-    SELECT u.name, u.email, o.order_id
-    FROM users u
-    JOIN orders o ON u.id = o.user_id
-    WHERE u.status = 'ACTIVE'
-    ORDER BY o.created_at DESC
-    """;`,
-      tip: 'For Spring Boot 3.x interviews: "Java 17 is the minimum. I use Records for DTOs, Sealed Classes for domain models, and Pattern Matching to eliminate instanceof casts."',
-    },
+    // ═══════════════════════════════════
+    //  JAVA 17
+    // ═══════════════════════════════════
 
     {
       id: 12,
-      question: 'What are Records in Java 16/17? How do they replace boilerplate POJOs?',
+      question: 'What are the key features in Java 17? Why do Spring Boot 3.x projects require it?',
+      difficulty: 'beginner',
+      asked: true,
+      tags: ['Java 17', 'Overview', 'LTS'],
+      answer: `Java 17 was released in September 2021 and it's the LTS release after Java 11. The Spring Boot team set Java 17 as the minimum for Spring Boot 3.x, which forced a lot of enterprise migration.
+
+The main features that finalized in Java 17 are:
+
+Records — immutable data classes in one line. Replaces DTOs that used to need Lombok or 30 lines of boilerplate.
+
+Sealed Classes — you declare exactly which classes can implement or extend an interface or class. Great for domain modeling.
+
+Pattern Matching for instanceof — you do the instanceof check and the cast in one statement. No more redundant casts.
+
+Switch Expressions — switch can now return a value, with cleaner arrow syntax. Finalized in Java 14 but included in Java 17 LTS.
+
+Text Blocks — multi-line strings with proper indentation. Finalized in Java 15. Huge improvement for SQL, JSON, HTML in Java code.
+
+In practice, the Records feature alone was worth upgrading for me — in my Spring Boot projects, I replaced all DTO classes (which needed Lombok's @Data or 30 lines of getters/setters/equals/hashCode) with one-line records.`,
+      code: `// Text Blocks — multi-line strings (Java 15, final in 17)
+// Before
+String sql = "SELECT u.name, u.email " +
+             "FROM users u " +
+             "JOIN orders o ON u.id = o.user_id " +
+             "WHERE u.status = 'ACTIVE'";
+
+// Java 17 Text Block — much cleaner
+String sql = """
+    SELECT u.name, u.email
+    FROM users u
+    JOIN orders o ON u.id = o.user_id
+    WHERE u.status = 'ACTIVE'
+    """;
+
+// Switch Expression — returns a value, arrow syntax (Java 14, final in 17)
+// Before: switch statement (no return value, fallthrough)
+String result;
+switch (status) {
+    case ACTIVE: result = "Active User"; break;
+    case PENDING: result = "Pending Approval"; break;
+    default: result = "Unknown";
+}
+
+// Java 17: switch expression
+String result = switch (status) {
+    case ACTIVE   -> "Active User";
+    case PENDING  -> "Pending Approval";
+    case INACTIVE -> "Inactive";  // no fall-through, no break needed
+};`,
+      tip: 'Spring Boot 3.x requires Java 17 minimum. If asked why: "Spring Boot 3 moved to Jakarta EE 9+ which required Java 17." Know this — it\'s a common follow-up.',
+    },
+
+    {
+      id: 13,
+      question: 'What are Records in Java 16/17? How do they reduce boilerplate?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 17', 'Records', 'POJO', 'Immutable'],
-      answer: `Records are a new kind of class for immutable data carriers. They automatically generate:
-— private final fields for each component
-— Public accessor methods (not getters with "get" prefix — just name())
-— Canonical constructor (all fields)
-— equals() based on all components
-— hashCode() based on all components
-— toString() with all component values
+      tags: ['Java 17', 'Records', 'DTO', 'Immutable'],
+      answer: `Records are a special kind of class for immutable data. They automatically generate: private final fields, a canonical constructor that takes all fields, public accessor methods that match the field names, and correct equals(), hashCode(), and toString() based on all fields.
 
-Restrictions:
-— Records are implicitly FINAL — cannot be extended
-— All fields are implicitly private and final — immutable
-— Cannot declare instance fields (only record components)
-— Can implement interfaces
-— Can have custom constructors, methods, and static fields
+Before records, if I needed a simple DTO — say UserResponse with an id, name, and email — I'd either write 30 lines of boilerplate or use Lombok. With records, it's literally one line.
 
-Perfect for:
-— DTOs (Data Transfer Objects) in REST APIs
-— Value objects in Domain-Driven Design
-— Database query results
-— Configuration data
-— Event objects in event-driven systems`,
-      code: `// Before Records — 30+ lines of boilerplate POJO
-public class UserDTO {
+One important thing: the accessors are name(), not getName(). So for a record with a field "name", you call user.name(), not user.getName(). This trips people up.
+
+Records are also implicitly final — you can't extend them. And all fields are private and final — they're immutable by design. You can add a compact constructor for validation, custom methods, and static factory methods.
+
+I use records heavily in Spring Boot for DTOs — both request and response objects. They work perfectly with Jackson 2.12+ for JSON serialization without any additional annotations.`,
+      code: `// Before Records — 30+ lines of POJO
+public class UserResponse {
     private final Long id;
     private final String name;
     private final String email;
-
-    public UserDTO(Long id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
+    public UserResponse(Long id, String name, String email) {
+        this.id = id; this.name = name; this.email = email;
     }
-    public Long getId()     { return id; }
+    public Long getId() { return id; }
     public String getName() { return name; }
-    public String getEmail(){ return email; }
-
-    @Override
-    public boolean equals(Object o) { /* ... 10 lines ... */ }
-    @Override
-    public int hashCode() { /* ... */ }
-    @Override
-    public String toString() { /* ... */ }
+    public String getEmail() { return email; }
+    // equals(), hashCode(), toString()... 20 more lines
 }
 
-// Java Record — 1 line!
-public record UserDTO(Long id, String name, String email) {}
+// Java 17 Record — one line!
+public record UserResponse(Long id, String name, String email) {}
 
-// Usage — accessors are name(), not getName()
-UserDTO user = new UserDTO(1L, "Randhir", "r@example.com");
+// Usage — accessor is name(), NOT getName()
+UserResponse user = new UserResponse(1L, "Randhir", "r@email.com");
 System.out.println(user.id());     // 1
 System.out.println(user.name());   // "Randhir"
-System.out.println(user.email());  // "r@example.com"
-System.out.println(user);          // UserDTO[id=1, name=Randhir, email=r@example.com]
+System.out.println(user);          // UserResponse[id=1, name=Randhir, email=r@email.com]
 
 // Compact constructor — for validation
-public record UserDTO(Long id, String name, String email) {
-    public UserDTO {  // compact constructor (no parameter list)
-        Objects.requireNonNull(name, "Name cannot be null");
-        if (email == null || !email.contains("@"))
-            throw new IllegalArgumentException("Invalid email: " + email);
-        name = name.strip();  // can modify before assignment
+public record UserRequest(String name, String email, int age) {
+    public UserRequest {  // compact constructor — no parameter list
+        Objects.requireNonNull(name, "Name required");
+        if (!email.contains("@")) throw new IllegalArgumentException("Bad email");
+        name = name.strip();     // can transform before assignment
         email = email.toLowerCase();
     }
 }
 
 // Custom methods are fine
-public record Point(double x, double y) {
-    public double distance(Point other) {
-        return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
+public record Money(BigDecimal amount, String currency) {
+    public Money add(Money other) {
+        if (!this.currency.equals(other.currency)) throw new IllegalArgumentException("Currency mismatch");
+        return new Money(this.amount.add(other.amount), this.currency);
     }
-    public static Point origin() { return new Point(0, 0); }
-}
-
-// Records work great as DTOs in Spring Boot
-@RestController
-public class UserController {
-    @GetMapping("/users/{id}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable Long id) {
-        return userService.findById(id)
-            .map(u -> ResponseEntity.ok(new UserDTO(u.getId(), u.getName(), u.getEmail())))
-            .orElse(ResponseEntity.notFound().build());
+    public static Money of(double amount, String currency) {
+        return new Money(BigDecimal.valueOf(amount), currency);
     }
 }
 
-// Records as Map keys (correct hashCode/equals)
-Map<UserDTO, List<Order>> ordersByUser = orders.stream()
-    .collect(Collectors.groupingBy(o -> new UserDTO(o.getUserId(), o.getUserName(), o.getEmail())));`,
+// Spring Boot: Records as DTOs
+@PostMapping("/orders")
+public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
+    // request.productId(), request.quantity() — no getters!
+    Order order = orderService.create(request.productId(), request.quantity());
+    return ResponseEntity.ok(new OrderResponse(order.getId(), order.getTotal()));
+}`,
       followUp: [
-        { question: 'Can a Record extend another class or be extended?', answer: `No on both. Records implicitly extend java.lang.Record and are implicitly final. They cannot extend another class (already extending Record). They cannot be extended by another class (they're final). But Records CAN implement interfaces — which makes them useful for polymorphism in sealed class hierarchies. Example: sealed interface Shape permits Circle, Rectangle; record Circle(double radius) implements Shape; record Rectangle(double width, double height) implements Shape.` },
-        { question: 'How do Records interact with Jackson for JSON serialization?', answer: `Jackson 2.12+ fully supports Records. It can serialize/deserialize Records automatically — the component names become JSON field names. But Records use foo() not getFoo(), so older Jackson versions may not detect the accessors. Ensure you use @JsonProperty or Jackson >= 2.12 which auto-detects record components. With Spring Boot 3.x and Jackson 2.14+, Records just work out of the box.` },
+        { question: 'Can a Record extend another class or be extended?', answer: `No on both sides. Records implicitly extend java.lang.Record and are implicitly final. They cannot extend any other class since they already extend Record. And since they're final, no class can extend them. However, records CAN implement interfaces — this makes them very useful with sealed class hierarchies: sealed interface Shape permits Circle, Rectangle; record Circle(double radius) implements Shape {}; record Rectangle(double w, double h) implements Shape {}. This combination is very powerful.` },
+        { question: 'How do Records work with Jackson for JSON?', answer: `Jackson 2.12+ fully supports Records automatically — it serializes/deserializes record components as JSON fields. Jackson detects the constructor arguments by name and maps JSON fields to them. With Spring Boot 2.6+ which bundles Jackson 2.13+, Records just work with @RequestBody and @ResponseBody without any extra annotations. One gotcha: Jackson uses the component name as the JSON field name — so the field "firstName" in the record becomes "firstName" in JSON. If you need a different JSON name, use @JsonProperty("first_name") on the record component.` },
       ],
-      tip: 'Record accessors are name() not getName(). Records are implicitly final. They work perfectly for DTOs — mention this in Spring Boot REST API interviews.',
+      tip: 'Record accessors match the component name exactly: name(), not getName(). This is the #1 trap. Records are final and implicitly extend java.lang.Record.',
     },
 
     {
-      id: 13,
+      id: 14,
       question: 'What are Sealed Classes in Java 17? When would you use them?',
       difficulty: 'intermediate',
       asked: true,
       tags: ['Java 17', 'Sealed Classes', 'Domain Modeling'],
-      answer: `Sealed classes restrict which classes can extend or implement them. They give the author CONTROL over the inheritance hierarchy.
+      answer: `Sealed classes let you control exactly which classes can extend or implement a class or interface. You declare the permitted subtypes explicitly using the "permits" keyword.
 
-Keywords:
-— sealed: declares the restricted class/interface
-— permits: lists the allowed subtypes
-— final: the subtype cannot be extended further
-— non-sealed: the subtype can be freely extended
-— sealed: the subtype is itself sealed (restricts further)
+Before sealed classes, anyone could extend your abstract class or implement your interface. Sealed classes let you say "only THESE specific classes are allowed to be subtypes." This is useful for domain modeling where you know the complete set of variants.
 
-Why use sealed classes?
-1. Exhaustive pattern matching — compiler knows ALL possible subtypes → can warn about missing switch cases
-2. Domain modeling — explicitly model a closed set of types
-3. Better than enums — when subtypes need different data fields
-4. Better than abstract class — without sealed, anyone can add subtypes
+A practical example: a Payment interface. In my application, the only valid payment types are CreditCard, UPI, and NetBanking — nothing else. With a sealed interface, I can express that constraint in the type system.
 
-Use cases:
-— Payment types: CreditCard, DebitCard, UPI, NetBanking
-— Shape hierarchy: Circle, Rectangle, Triangle
-— Result types: Success, Failure, Pending
-— Event types: UserCreated, UserUpdated, UserDeleted`,
-      code: `// Sealed interface — payment types
+Each permitted subtype must be declared as either:
+- final — cannot be further extended
+- sealed — can be extended but only by its own permitted types
+- non-sealed — can be freely extended by anyone
+
+The real power comes when you combine sealed classes with pattern matching switch in Java 21. Because the compiler knows all the permitted subtypes, it can warn you when your switch is not exhaustive — you don't need a default case.`,
+      code: `// Sealed interface — only 3 payment types allowed
 public sealed interface Payment
     permits CreditCardPayment, UPIPayment, NetBankingPayment {
+
     double getAmount();
     String getPaymentId();
 }
 
 // Each subtype must be final, sealed, or non-sealed
 public record CreditCardPayment(String cardNumber, double amount, String paymentId)
-    implements Payment {
-    public double getAmount() { return amount; }
-    public String getPaymentId() { return paymentId; }
-}
+    implements Payment {}  // record is implicitly final — OK
 
 public record UPIPayment(String upiId, double amount, String paymentId)
-    implements Payment {
-    public double getAmount() { return amount; }
-    public String getPaymentId() { return paymentId; }
-}
+    implements Payment {}
 
 public record NetBankingPayment(String bankCode, String accountNo, double amount, String paymentId)
-    implements Payment {
-    public double getAmount() { return amount; }
-    public String getPaymentId() { return paymentId; }
-}
+    implements Payment {}
 
-// Exhaustive switch (Java 21 pattern matching)
-double processFee = switch (payment) {
+// Processing — compiler knows ALL possible types
+// No default needed — compiler enforces exhaustiveness!
+double fee = switch (payment) {
     case CreditCardPayment cc -> cc.getAmount() * 0.02;   // 2% fee
     case UPIPayment upi       -> 0.0;                      // free
-    case NetBankingPayment nb -> 5.0;                      // flat ₹5
-    // No default needed — compiler knows all subtypes!
+    case NetBankingPayment nb -> 5.0;                      // flat fee
 };
 
-// Real-world: API result type
+// Real-world: Result type pattern
 public sealed interface ApiResult<T>
     permits ApiResult.Success, ApiResult.Failure {
 
-    record Success<T>(T data, int statusCode) implements ApiResult<T> {}
+    record Success<T>(T data) implements ApiResult<T> {}
     record Failure<T>(String error, int statusCode) implements ApiResult<T> {}
 }
 
 // Usage
 ApiResult<User> result = userService.findUser(id);
-String response = switch (result) {
-    case ApiResult.Success<User> s -> "Found: " + s.data().getName();
-    case ApiResult.Failure<User> f -> "Error: " + f.error();
+return switch (result) {
+    case ApiResult.Success<User>(var user)   -> ResponseEntity.ok(user);
+    case ApiResult.Failure<User>(var error, var code) -> ResponseEntity.status(code).body(error);
 };`,
       followUp: [
-        { question: 'What is the difference between sealed classes and enums?', answer: `Enums: All instances are singletons, cannot have different field structures per variant (well, technically they can via abstract methods but it's clunky), always a VALUE type with no generics. Sealed classes: Each subtype is a full class — can have different constructors, fields, generics, and behavior. Records as sealed subtypes = perfect combination. Use enum when you need a small, fixed set of constants (NORTH/SOUTH/EAST/WEST). Use sealed classes when subtypes need different data structures (CreditCard has cardNumber, UPI has upiId).` },
-        { question: 'What does "permits" do if I don\'t specify it?', answer: `If you mark a class as sealed but don't use permits, the compiler infers the permitted subtypes from the same compilation unit (same file or same package with Java 16 preview). In Java 17, the explicit permits clause is required for classes in different files. Always specify permits explicitly for clarity — don't rely on inference.` },
+        { question: 'What is the difference between sealed classes and enums?', answer: `Enums: each constant is a singleton with the same class type. All enum constants share the same fields (declared in enum body). Good for simple value sets like NORTH/SOUTH/EAST/WEST or PENDING/ACTIVE/INACTIVE. Sealed classes: each subtype is a full class — can have different fields, different constructors, generics, and behavior. Good when different variants have different data. CreditCardPayment has a cardNumber, UPIPayment has a upiId — they need different structure, so sealed + records is the right tool, not enum.` },
       ],
-      tip: 'Sealed classes + Records + Pattern Matching switch = the "modern Java" trifecta. Together they enable exhaustive type-safe modeling without boilerplate.',
+      tip: 'Sealed classes + Records + Java 21 switch = the modern Java trifecta. The switch becomes exhaustive — no default case needed because the compiler knows all subtypes.',
     },
 
     {
-      id: 14,
+      id: 15,
       question: 'What is Pattern Matching for instanceof in Java 16? How does it reduce boilerplate?',
       difficulty: 'intermediate',
       asked: true,
       tags: ['Java 17', 'Pattern Matching', 'instanceof'],
-      answer: `Pattern matching for instanceof eliminates the explicit cast after an instanceof check. Before Java 16, you'd check the type and then immediately cast — which was repetitive.
+      answer: `Before Java 16, whenever I did an instanceof check I immediately followed it with a cast. It's the most repetitive pattern in Java:
 
-Java 16 finalized this feature. The pattern variable is automatically scoped — it's only in scope where the compiler can prove the test was true.
+if (shape instanceof Circle) {
+    Circle c = (Circle) shape;  // redundant cast
+    // use c
+}
 
-Benefits:
-— Eliminates "check and cast" boilerplate
-— Reduces chance of ClassCastException
-— Makes code more readable
-— Compiler ensures pattern variable is only used when safe
+Java 16 finalized pattern matching for instanceof. Now the check and the cast happen in one step — you declare a "pattern variable" right in the instanceof expression:
 
-Java 21 extended this to switch statements (Pattern Matching for switch).`,
-      code: `// Before Java 16 — verbose and repetitive
+if (shape instanceof Circle c) {
+    // c is already a Circle here, no cast needed
+}
+
+The pattern variable c is in scope only where the compiler can prove the type test was true. So you can't accidentally use c where the instanceof returned false.
+
+You can also combine it with && for guard conditions:
+if (obj instanceof String s && s.length() > 5) { ... }
+
+I use this a lot in equals() implementations and anywhere I need to downcast safely. In my experience it reduces bugs because you can't do the instanceof check and then forget to cast to the correct type.`,
+      code: `// Before Java 16 — check then cast (redundant)
 Object obj = getShape();
 if (obj instanceof Circle) {
-    Circle c = (Circle) obj;  // redundant cast!
-    System.out.println("Circle radius: " + c.getRadius());
+    Circle c = (Circle) obj;  // already know it's Circle, but must cast
+    System.out.println("Radius: " + c.getRadius());
 } else if (obj instanceof Rectangle) {
-    Rectangle r = (Rectangle) obj;  // redundant cast!
-    System.out.println("Rectangle area: " + r.getWidth() * r.getHeight());
+    Rectangle r = (Rectangle) obj;
+    System.out.println("Area: " + r.getWidth() * r.getHeight());
 }
 
-// Java 16+ — pattern variable declared inline
-Object obj = getShape();
-if (obj instanceof Circle c) {         // c is Circle, no explicit cast
-    System.out.println("Circle radius: " + c.getRadius());
+// Java 16+ — pattern variable, no separate cast
+if (obj instanceof Circle c) {
+    System.out.println("Radius: " + c.getRadius());  // c is Circle, ready to use
 } else if (obj instanceof Rectangle r) {
-    System.out.println("Rectangle area: " + r.getWidth() * r.getHeight());
+    System.out.println("Area: " + r.getWidth() * r.getHeight());
 }
 
-// Can combine with && for guard conditions
+// With guard condition (&&)
 if (obj instanceof String s && s.length() > 5) {
     System.out.println("Long string: " + s.toUpperCase());
 }
 
-// Pattern variable scope — compiler enforces safety
+// Scope is tracked by control flow
 if (!(obj instanceof String s)) {
-    return;  // early exit if not String
+    return;  // early exit for non-strings
 }
-// s IS in scope here — compiler knows we didn't return
+// s IS in scope here — compiler knows we survived the check
 System.out.println(s.toUpperCase());
 
-// Production: equals() implementation (classic use case)
-public record Point(int x, int y) {
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof Point p && x == p.x && y == p.y;
-    }
-}
-
-// Java 21: Pattern Matching for switch
-double area = switch (shape) {
-    case Circle c       -> Math.PI * c.radius() * c.radius();
-    case Rectangle r    -> r.width() * r.height();
-    case Triangle t     -> 0.5 * t.base() * t.height();
-    case null           -> throw new NullPointerException("Shape is null");
-};`,
-      followUp: [
-        { question: 'What is the scope of the pattern variable?', answer: `The pattern variable is in scope only where the compiler can prove the type test succeeded. In "if (obj instanceof String s) { // s in scope } else { // s NOT in scope }". With negation: "if (!(obj instanceof String s)) { return; } // s IS in scope after the if block because we know we didn't return". The compiler tracks the scope through the control flow.` },
-      ],
-      tip: 'Pattern matching for instanceof combines the type check and cast into one step — the pattern variable is automatically typed without an explicit cast.',
+// Classic use case — equals() method
+@Override
+public boolean equals(Object obj) {
+    return obj instanceof UserDTO other
+        && this.id.equals(other.id)
+        && this.email.equals(other.email);
+}`,
+      tip: 'Pattern variable scope is enforced by the compiler using flow analysis. The variable is only usable where the instanceof test MUST be true — the compiler tracks this through if/else branches.',
     },
 
-    // ═══════════════════════════════════════════════════
-    //  JAVA 21  (Released September 2023 — LTS)
-    // ═══════════════════════════════════════════════════
+    // ═══════════════════════════════════
+    //  JAVA 21
+    // ═══════════════════════════════════
 
     {
-      id: 15,
-      question: 'Java 21 Overview — What are the key features? Why is it the most exciting LTS in years?',
+      id: 16,
+      question: 'What are the key features in Java 21? Why is it considered the most exciting LTS?',
       difficulty: 'beginner',
       asked: true,
-      tags: ['Java 21', 'LTS', 'Overview', 'Virtual Threads'],
-      answer: `Java 21 (September 2023) is an LTS release and the most significant since Java 8. It finalizes several major features from Project Loom (concurrency) and Project Amber (language).
+      tags: ['Java 21', 'Overview', 'LTS'],
+      answer: `Java 21 was released in September 2023 and it's the LTS after Java 17. It's being called the most impactful LTS since Java 8 — and the main reason is Virtual Threads.
 
-Key finalized features:
-— Virtual Threads (Project Loom) — massive scalability improvement
-— Sequenced Collections — consistent ordering for collections
-— Record Patterns — extends pattern matching to records
-— Pattern Matching for switch — exhaustive switch on types
-— String Templates (preview — Java 21)
-— Structured Concurrency (preview)
+The key finalized features:
 
-Why it's significant:
-Virtual Threads alone can change how Java microservices are written. A Tomcat server can handle 10x more concurrent requests with virtual threads — without changing application code.
+Virtual Threads (Project Loom) — lightweight threads managed by the JVM. A single JVM can now have millions of virtual threads. For I/O-bound microservices, this changes the scalability equation completely without requiring you to change to reactive programming.
 
-Enterprise trajectory:
-Spring Boot 3.2+ supports virtual threads natively. For new projects in 2024+, Java 21 is the recommended LTS. Payara, JBoss, and other Jakarta EE servers support Java 21.`,
-      code: `// Java 21: Virtual Threads — one line change!
-// Old Tomcat thread pool (limited to ~200 platform threads)
-// New: Virtual Thread per request
-SpringApplication.run(MyApp.class, args);
-// In application.properties:
+Sequenced Collections — consistent API to access the first and last element of any ordered collection (List, Deque, LinkedHashSet) via getFirst(), getLast(), reversed().
+
+Record Patterns — extends pattern matching to destructure records in instanceof and switch. You can pull out the individual fields directly in the pattern.
+
+Pattern Matching for switch — you can switch on the type of an object, not just values. Combined with sealed classes, the switch becomes exhaustive.
+
+For Spring Boot projects: Spring Boot 3.2 supports Java 21 Virtual Threads natively. Enabling them is one property: spring.threads.virtual.enabled=true. No code changes. Tomcat will use a virtual thread per request instead of a platform thread.`,
+      code: `// Java 21: Virtual Threads — enable in Spring Boot
+// application.properties
 // spring.threads.virtual.enabled=true
-// That's it! No code changes needed.
+// That's literally it — Tomcat switches to virtual threads per request
 
-// Sequenced Collections — new interface in Java 21
+// Sequenced Collections
 List<String> list = new ArrayList<>(List.of("a", "b", "c", "d"));
-String first = list.getFirst();  // new — no more list.get(0)
-String last  = list.getLast();   // new — no more list.get(list.size()-1)
-list.addFirst("z");              // new
-list.addLast("e");               // new
-list.removeFirst();              // new
-List<String> reversed = list.reversed(); // new — reversed view
+String first = list.getFirst();   // "a" — was list.get(0)
+String last  = list.getLast();    // "d" — was list.get(list.size()-1)
+list.addFirst("z");               // add to front
+List<String> reversed = list.reversed(); // reversed VIEW of the list
 
 // Record Patterns (Java 21)
 record Point(int x, int y) {}
 record Line(Point start, Point end) {}
 
-Object obj = new Line(new Point(0, 0), new Point(3, 4));
 if (obj instanceof Line(Point(var x1, var y1), Point(var x2, var y2))) {
-    double length = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
-    System.out.println("Line length: " + length);  // 5.0
-}`,
-      tip: 'Virtual Threads are the headline Java 21 feature. One-liner for Spring Boot: spring.threads.virtual.enabled=true. Know the difference between Virtual Threads and Platform Threads.',
-    },
-
-    {
-      id: 16,
-      question: 'What are Virtual Threads in Java 21? How do they solve the thread-per-request problem?',
-      difficulty: 'advanced',
-      asked: true,
-      tags: ['Java 21', 'Virtual Threads', 'Project Loom', 'Concurrency', 'Scalability'],
-      answer: `Virtual Threads (Project Loom) are lightweight threads managed by the JVM — not the OS. They solve the fundamental scalability problem of traditional Java servers.
-
-Traditional Platform Threads:
-— Each Java thread maps 1:1 to an OS thread
-— OS thread = 1MB+ stack memory
-— Context switching between OS threads is expensive
-— Typical server: limited to ~200-500 concurrent threads
-— Thread BLOCKS during I/O (database, HTTP calls) — wastes CPU
-
-Virtual Threads:
-— Managed by JVM, not OS — much lighter (a few KB)
-— Millions of virtual threads possible
-— Mapped to a small pool of carrier (platform) threads
-— When a virtual thread BLOCKS (I/O), JVM unmounts it, carrier thread does other work
-— I/O blocking is CHEAP — virtual thread is parked, not wasting an OS thread
-
-Impact: A server that handles 200 concurrent requests with platform threads can handle 100,000+ with virtual threads — same code, same blocking style.
-
-This is the key insight: Virtual threads let you write simple blocking code that scales like reactive/async code.`,
-      code: `// Platform threads — limited, expensive
-Thread platformThread = new Thread(() -> {
-    // This thread holds an OS thread — expensive!
-    User user = db.findUser(id);          // blocks OS thread
-    Order order = orderApi.fetch(userId); // blocks OS thread
-    process(user, order);
-});
-platformThread.start();
-
-// Virtual threads — lightweight, scalable
-Thread virtualThread = Thread.ofVirtual().start(() -> {
-    // When this blocks on I/O, JVM parks it — carrier thread is freed!
-    User user = db.findUser(id);          // carrier thread reused while waiting
-    Order order = orderApi.fetch(userId); // carrier thread reused while waiting
-    process(user, order);
-});
-
-// ExecutorService with virtual threads
-try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
-    // Spawn 100,000 virtual threads — no problem!
-    List<Future<String>> futures = IntStream.range(0, 100_000)
-        .mapToObj(i -> exec.submit(() -> {
-            Thread.sleep(1000);  // blocking sleep is fine in virtual thread
-            return "Task " + i + " done";
-        }))
-        .collect(Collectors.toList());
-
-    futures.forEach(f -> {
-        try { System.out.println(f.get()); }
-        catch (Exception e) { e.printStackTrace(); }
-    });
-}  // auto-close: ExecutorService shuts down after all tasks complete
-
-// Spring Boot 3.2+: enable virtual threads
-// application.properties:
-// spring.threads.virtual.enabled=true
-// This makes Tomcat use virtual threads per request — one line change!
-
-// What DOESN'T work well with virtual threads:
-// 1. CPU-intensive tasks (compute-bound — not I/O bound)
-//    Virtual threads shine for I/O. For CPU work, use platform thread pools.
-// 2. Synchronized blocks with I/O inside (thread pinning — JDK 21 limitation)
-//    Virtual thread is PINNED to carrier thread during synchronized block.
-//    Use ReentrantLock instead of synchronized.
-// 3. ThreadLocal state management (if pool-sized assumptions)
-
-// Avoid synchronized + I/O (pinning)
-synchronized (lock) {
-    db.save(entity);  // BAD — virtual thread is pinned here in Java 21
+    double length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-// Use ReentrantLock instead
-lock.lock();
-try {
-    db.save(entity);  // GOOD — virtual thread can yield to carrier
-} finally {
-    lock.unlock();
-}`,
-      followUp: [
-        { question: 'What is thread pinning in Virtual Threads?', answer: `Thread pinning: A virtual thread is "pinned" to its carrier platform thread when it's inside a synchronized block OR a native method. During pinning, the carrier thread CANNOT be shared with other virtual threads — defeating the purpose of virtual threads. In Java 21, this is a known limitation. Fix: Replace synchronized blocks with ReentrantLock (which is virtual-thread-friendly). Java 22+ has improved synchronized to reduce pinning.` },
-        { question: 'Should I always use Virtual Threads? When are Platform Threads better?', answer: `Use Virtual Threads for: I/O-bound workloads (REST APIs, database calls, Kafka consumers), server applications handling many concurrent requests. Use Platform Threads for: CPU-intensive tasks (compression, encryption, image processing) — virtual threads bring no benefit since they're not blocked on I/O; parallel computation with ForkJoinPool. Rule: If your thread spends most time WAITING (I/O), use virtual. If it spends most time COMPUTING, use platform threads.` },
-        { question: 'What is Structured Concurrency in Java 21?', answer: `A preview feature that treats multiple concurrent tasks as a unit. Instead of managing individual futures, you group related tasks: try (var scope = new StructuredTaskScope.ShutdownOnFailure()) { Future<User> user = scope.fork(() -> fetchUser(id)); Future<Order> order = scope.fork(() -> fetchOrder(id)); scope.join(); scope.throwIfFailed(); // process user.resultNow() and order.resultNow() } If either task fails, the other is cancelled. This prevents orphaned threads — a key problem with unstructured CompletableFuture chains.` },
-      ],
-      tip: 'Virtual Threads shine for I/O-bound work. The key insight: blocking is now CHEAP. Don\'t use virtual threads for CPU-intensive tasks — they don\'t help there.',
+// Pattern Matching for switch (Java 21)
+String desc = switch (shape) {
+    case Circle c       -> "Circle with radius " + c.radius();
+    case Rectangle r    -> "Rectangle " + r.width() + "x" + r.height();
+    case null           -> "No shape provided";
+};`,
+      tip: 'For Java 21 interviews: Virtual Threads is the headline. Know the one-liner to enable in Spring Boot and know the difference between I/O-bound (good for VT) and CPU-bound (still use platform threads).',
     },
 
     {
       id: 17,
+      question: 'What are Virtual Threads in Java 21? How do they solve the scalability problem?',
+      difficulty: 'advanced',
+      asked: true,
+      tags: ['Java 21', 'Virtual Threads', 'Project Loom', 'Concurrency', 'Scalability'],
+      answer: `To understand Virtual Threads, I need to explain the problem first.
+
+Traditional Java threads (called Platform Threads) map 1:1 to OS threads. Each OS thread uses about 1MB of stack memory. So if my Tomcat server uses a thread pool of 200 threads, it can handle 200 concurrent requests — after that, requests queue up. And the real waste is that most of these threads are just waiting — waiting for a database response, waiting for an external API — they're not computing anything, but they're still blocking an OS thread.
+
+Virtual Threads are lightweight threads managed by the JVM — not the OS. They use only a few KB of memory. When a virtual thread blocks on I/O (database call, HTTP call, Thread.sleep), the JVM parks it and frees the underlying carrier thread to do other work. When the I/O completes, the virtual thread is resumed on a carrier thread.
+
+So with virtual threads I can have millions of threads, and the JVM multiplexes them over a small pool of OS threads. I can write simple blocking code — no callback hell, no reactive programming — and still get the scalability of async code.
+
+The important caveat: virtual threads help for I/O-bound work, not CPU-bound. If my thread is computing something complex (compression, encryption, image processing), virtual threads don't help. Also, in Java 21, synchronized blocks with I/O inside can pin the virtual thread to the carrier thread — defeating the purpose. I use ReentrantLock instead of synchronized for that reason.
+
+In Spring Boot 3.2+, one property enables it: spring.threads.virtual.enabled=true. Tomcat uses a virtual thread per request. No application code changes needed.`,
+      code: `// Platform thread — limited to ~200, each uses 1MB stack
+ExecutorService pool = Executors.newFixedThreadPool(200);
+pool.submit(() -> {
+    User user = db.findUser(id);     // BLOCKS platform thread while waiting
+    Order order = api.fetch(userId); // BLOCKS platform thread while waiting
+    return process(user, order);
+});
+
+// Virtual thread — lightweight, millions possible
+Thread vt = Thread.ofVirtual().start(() -> {
+    User user = db.findUser(id);     // blocks virtual thread, frees carrier thread!
+    Order order = api.fetch(userId); // blocks virtual thread, frees carrier thread!
+    return process(user, order);
+});
+
+// ExecutorService — virtual thread per task
+try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
+    List<Future<String>> results = IntStream.range(0, 10_000)
+        .mapToObj(i -> exec.submit(() -> {
+            Thread.sleep(1000);  // fine — virtual thread parks, doesn't block OS thread
+            return "Task " + i;
+        }))
+        .collect(Collectors.toList());
+    // All 10,000 tasks run "concurrently" with very few OS threads
+}
+
+// Spring Boot 3.2+ — just one property
+// application.properties:
+// spring.threads.virtual.enabled=true
+
+// WRONG: synchronized + I/O = thread pinning (avoid!)
+synchronized (lock) {
+    db.save(entity);  // virtual thread is PINNED to carrier here — bad!
+}
+
+// RIGHT: ReentrantLock + I/O = virtual thread friendly
+ReentrantLock lock = new ReentrantLock();
+lock.lock();
+try {
+    db.save(entity);  // virtual thread can yield to carrier while waiting
+} finally {
+    lock.unlock();
+}`,
+      followUp: [
+        { question: 'What is thread pinning in Virtual Threads?', answer: `Thread pinning is when a virtual thread gets stuck to its carrier platform thread and cannot be unmounted — even when it blocks on I/O. This happens in two cases in Java 21: (1) inside a synchronized block, and (2) inside native methods. When a virtual thread is pinned, the carrier thread is blocked just like an old platform thread, destroying the benefit of virtual threads. The fix: replace synchronized blocks (especially ones that contain I/O) with ReentrantLock. Java 22 improved this — synchronized blocks no longer cause pinning in most cases.` },
+        { question: 'Should I always use Virtual Threads? Are there cases where platform threads are better?', answer: `Virtual threads are perfect for I/O-bound tasks — REST API handlers, database calls, Kafka consumers, any code that waits on external resources. For CPU-intensive work — compression, encryption, image processing, number crunching — virtual threads offer no benefit. The thread isn't blocking, it's computing. In those cases, platform thread pools sized to the number of CPU cores (Runtime.getRuntime().availableProcessors()) is the right approach. Also, avoid putting VTs in synchronized blocks with I/O — pinning negates the advantage.` },
+      ],
+      tip: 'Key phrase: "Virtual threads make blocking cheap — I can write simple, readable blocking code and get async-level scalability." This is the one-line interview answer for Virtual Threads.',
+    },
+
+    {
+      id: 18,
       question: 'What are Sequenced Collections in Java 21?',
       difficulty: 'intermediate',
-      tags: ['Java 21', 'Sequenced Collections', 'Collections API'],
-      answer: `Java 21 added three new interfaces to the collections hierarchy to provide consistent access to the first and last elements across different collection types.
+      asked: true,
+      tags: ['Java 21', 'Sequenced Collections'],
+      answer: `Before Java 21, there was no consistent way to access the first or last element of an ordered collection. Each type had its own API:
 
-Problem before Java 21: No consistent way to get first/last element:
-— List: list.get(0), list.get(list.size()-1)
-— Deque: deque.peekFirst(), deque.peekLast()
-— SortedSet: sortedSet.first(), sortedSet.last()
-— No common API — had to know the specific type
+For List: list.get(0) for first, list.get(list.size()-1) for last.
+For Deque: deque.peekFirst(), deque.peekLast().
+For SortedSet: sortedSet.first(), sortedSet.last().
 
-New interfaces:
-— SequencedCollection<E>: Collection with defined encounter order
-— SequencedSet<E>: SequencedCollection with no duplicates
-— SequencedMap<K,V>: Map with defined encounter order for entries
+No common interface meant you had to know which collection type you were working with.
 
-New methods: getFirst(), getLast(), addFirst(), addLast(), removeFirst(), removeLast(), reversed()`,
-      code: `// Java 21: Sequenced Collections
+Java 21 introduced three new interfaces — SequencedCollection, SequencedSet, and SequencedMap — that add consistent methods to all ordered collections:
+
+getFirst(), getLast() — access first and last element.
+addFirst(), addLast() — insert at front or back.
+removeFirst(), removeLast() — remove from front or back.
+reversed() — get a reversed view of the collection.
+
+These are now available on ArrayList, LinkedList, ArrayDeque, LinkedHashSet, and LinkedHashMap. It's a small addition but makes working with ordered collections much cleaner.`,
+      code: `// Before Java 21 — inconsistent API
 List<String> list = new ArrayList<>(List.of("a", "b", "c", "d"));
+String first = list.get(0);                  // only way for ArrayList
+String last  = list.get(list.size() - 1);   // verbose
 
-// Before Java 21 — inconsistent and verbose
-String first = list.get(0);
-String last  = list.get(list.size() - 1);
-
-// Java 21 — consistent API
+// Java 21 — consistent
 String first = list.getFirst();  // "a"
 String last  = list.getLast();   // "d"
 
-list.addFirst("z");   // ["z", "a", "b", "c", "d"]
-list.addLast("e");    // ["z", "a", "b", "c", "d", "e"]
-list.removeFirst();   // removes "z"
-list.removeLast();    // removes "e"
+list.addFirst("z");  // ["z", "a", "b", "c", "d"]
+list.addLast("e");   // ["z", "a", "b", "c", "d", "e"]
+list.removeFirst();  // removes "z"
 
-// reversed() — returns a REVERSED VIEW (not a copy)
-List<String> reversed = list.reversed();
-System.out.println(reversed.getFirst());  // "d" (was last)
+// reversed() — returns a VIEW (not a copy)
+List<String> rev = list.reversed();
+System.out.println(rev.getFirst()); // "e" (was last)
+// Modifying rev affects the original list and vice versa
 
-// Works on LinkedHashSet too!
-LinkedHashSet<String> set = new LinkedHashSet<>(Set.of("x", "y", "z"));
-String setFirst = set.getFirst();
-String setLast  = set.getLast();
+// Works on LinkedHashSet too
+LinkedHashSet<String> set = new LinkedHashSet<>();
+set.add("Java"); set.add("Python"); set.add("Go");
+System.out.println(set.getFirst()); // "Java"
+System.out.println(set.getLast());  // "Go"
 
 // LinkedHashMap — SequencedMap
 LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
 map.put("a", 1); map.put("b", 2); map.put("c", 3);
-
-Map.Entry<String, Integer> firstEntry = map.firstEntry();  // {a=1}
-Map.Entry<String, Integer> lastEntry  = map.lastEntry();   // {c=3}
-map.putFirst("z", 0);   // insert at beginning
-SequencedMap<String, Integer> reversedMap = map.reversed();`,
-      tip: 'Sequenced Collections unify first/last access across List, Deque, LinkedHashSet, LinkedHashMap. reversed() returns a VIEW — modifications to the view affect the original.',
+Map.Entry<String, Integer> firstEntry = map.firstEntry(); // {a=1}
+Map.Entry<String, Integer> lastEntry  = map.lastEntry();  // {c=3}`,
+      tip: 'reversed() returns a LIVE VIEW — modifications to the reversed view affect the original. It is not a copy. This is an important distinction for correctness.',
     },
 
-    // ═══════════════════════════════════════════════════
-    //  COMPARISONS
-    // ═══════════════════════════════════════════════════
-
-    {
-      id: 18,
-      question: 'Java 8 vs Java 17 vs Java 21 — Create a comparison of major improvements.',
-      difficulty: 'intermediate',
-      asked: true,
-      tags: ['Java 8', 'Java 17', 'Java 21', 'Comparison'],
-      answer: `Here's a structured comparison across key dimensions:
-
-LANGUAGE FEATURES:
-Java 8:  Lambda, Stream, Optional, Functional Interfaces
-Java 11: var in lambdas, String methods (isBlank, strip, lines, repeat)
-Java 17: Records, Sealed Classes, Pattern Matching instanceof, Switch Expressions, Text Blocks
-Java 21: Pattern Matching switch, Record Patterns, Sequenced Collections, String Templates (preview)
-
-CONCURRENCY:
-Java 8:  CompletableFuture (async pipelines), Parallel Streams
-Java 11: No major changes
-Java 17: No major changes
-Java 21: Virtual Threads (Project Loom) — GAME CHANGER for scalability
-
-DATA MODELING:
-Java 8:  POJOs + Lombok for boilerplate reduction
-Java 17: Records (built-in immutable data classes, no Lombok needed)
-Java 21: Record Patterns (destructure records in pattern matching)
-
-SWITCH:
-Java 8:  Traditional switch statement (only int, String, enum)
-Java 14: Switch expression (yields values, arrow syntax) — finalized
-Java 21: Pattern Matching switch (match on types, guards, exhaustiveness)
-
-APIS:
-Java 8:  Stream API, Date/Time API, Optional
-Java 11: HttpClient, String methods, Files.readString/writeString
-Java 17: Enhanced RandomGenerator, Stronger JDK encapsulation
-Java 21: SequencedCollection, FFM API (preview), Vector API (incubator)
-
-PERFORMANCE:
-Java 8:  G1GC became default (Java 9)
-Java 11: Epsilon GC (no-op for benchmarks), ZGC (experimental)
-Java 17: ZGC production-ready, G1GC improvements
-Java 21: Virtual Threads (massive throughput), Generational ZGC`,
-      code: `// Side-by-side code comparison
-
-// 1. IMMUTABLE DATA CLASS
-// Java 8 (with Lombok):
-@Value
-public class UserDTO { Long id; String name; String email; }
-
-// Java 17+ (Record):
-public record UserDTO(Long id, String name, String email) {}
-
-// 2. TYPE-SAFE SHAPE PROCESSING
-// Java 8:
-if (shape instanceof Circle) {
-    Circle c = (Circle) shape;       // manual cast
-    return Math.PI * c.getRadius() * c.getRadius();
-} else if (shape instanceof Rectangle) {
-    Rectangle r = (Rectangle) shape; // manual cast
-    return r.getWidth() * r.getHeight();
-}
-
-// Java 21:
-return switch (shape) {
-    case Circle c    -> Math.PI * c.radius() * c.radius();
-    case Rectangle r -> r.width() * r.height();
-};  // compiler ensures exhaustiveness with sealed classes!
-
-// 3. HIGH-CONCURRENCY SERVER
-// Java 8-17: Thread pool (limited to ~200 threads):
-@Bean
-public ExecutorService executorService() {
-    return Executors.newFixedThreadPool(200);
-}
-
-// Java 21: Virtual threads (millions of threads):
-// application.properties: spring.threads.virtual.enabled=true
-// No code changes — Tomcat uses virtual threads automatically`,
-      followUp: [
-        { question: 'If you are starting a new project today, which Java version would you recommend?', answer: `Java 21 for new projects. Reasons: (1) LTS — supported until 2028+. (2) Virtual threads for high-concurrency microservices. (3) Records eliminate DTO boilerplate — no need for Lombok for data classes. (4) Sealed classes for better domain modeling. (5) Pattern matching switch for cleaner business logic. (6) Spring Boot 3.2+ supports Java 21 fully including virtual threads. If the project must use Spring Boot 2.x: Java 17 (it's the maximum supported). If legacy constraints force Java 11: upgrade ASAP, Java 11 is end of free support for Oracle.` },
-      ],
-      tip: 'Key interview answer: "Java 21 for new projects — Virtual Threads + Records + Sealed Classes + Pattern Matching make it the most productive Java version ever."',
-    },
+    // ═══════════════════════════════════
+    //  COMPARISON QUESTIONS
+    // ═══════════════════════════════════
 
     {
       id: 19,
-      question: 'Virtual Threads vs CompletableFuture vs Reactive (WebFlux) — When to use which?',
-      difficulty: 'advanced',
+      question: 'How would you compare Java 8, Java 17, and Java 21? What changed across versions?',
+      difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 21', 'Virtual Threads', 'CompletableFuture', 'Reactive', 'Architecture'],
-      answer: `Three approaches to async/concurrent Java — each suited for different problems:
+      tags: ['Java 8', 'Java 17', 'Java 21', 'Comparison'],
+      answer: `I think of it as three eras:
 
-TRADITIONAL BLOCKING + VIRTUAL THREADS (Java 21):
-— Write simple blocking code, get async scalability for free
-— Best for: NEW microservices with Java 21, REST APIs, Kafka consumers
-— Readable and debuggable — stack traces are normal
-— Works with JDBC, Hibernate, Spring JDBC out of the box
-— NOT reactive — just very cheap blocking
+Java 8 — "Functional Java": Lambda expressions and the Stream API fundamentally changed how we write Java. Instead of imperative for-loops and anonymous classes, we write declarative pipelines. Optional brought some null safety. CompletableFuture brought async programming. Date/Time fixed the broken java.util.Date. This is still the most widely deployed version.
 
-COMPLETABLEFUTURE (Java 8+):
-— Explicit async pipeline, callback-based
-— Best for: Combining multiple async calls (allOf, anyOf), conditional async flows
-— Works on any Java 8+ version
-— Stack traces are harder to read (deep in async chains)
-— Requires careful exception handling
+Java 11 — "Quality of Life": Added nice-to-have improvements. String methods like isBlank() and strip(). A proper built-in HttpClient. var keyword. But no major paradigm shift — just polish.
 
-REACTIVE (Project Reactor / WebFlux):
-— True reactive streams — backpressure support
-— Best for: Streaming data (SSE, WebSockets), integrating with reactive databases (R2DBC)
-— Steep learning curve — Mono/Flux mental model
-— Full backpressure propagation
-— Highest complexity — harder to debug, test, and maintain
+Java 17 — "Modern Java": Records eliminated DTO boilerplate in one line. Sealed classes let you model closed type hierarchies. Pattern matching instanceof removed redundant casts. Switch expressions became clean and value-producing. Text blocks made multi-line strings readable. Spring Boot 3 requires Java 17 minimum.
 
-Recommendation matrix:
-┌──────────────────────────────┬─────────────────────────┐
-│ Scenario                     │ Recommended Approach    │
-├──────────────────────────────┼─────────────────────────┤
-│ New REST API, Java 21        │ Virtual Threads         │
-│ Existing Java 8 async API    │ CompletableFuture       │
-│ SSE / WebSocket streaming    │ Reactive (WebFlux)      │
-│ Kafka consumers              │ Virtual Threads         │
-│ High-throughput pipelines    │ Reactive (WebFlux)      │
-│ Simple microservice          │ Virtual Threads         │
-│ Combine 3 parallel API calls │ CompletableFuture/allOf │
-└──────────────────────────────┴─────────────────────────┘`,
-      code: `// Scenario: Fetch user + orders + notifications for a dashboard
+Java 21 — "Scalability Revolution": Virtual Threads are the headline. You can now write simple blocking code that scales like reactive/async code — millions of threads without code complexity. Sequenced Collections unified the API for ordered collections. Pattern matching for switch (with sealed classes) makes exhaustive type-based switching possible.
 
-// APPROACH 1: Virtual Threads (Java 21) — simplest, blocking style
-@GetMapping("/dashboard/{userId}")
-public DashboardDTO getDashboard(@PathVariable Long id) {
-    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-        var user  = scope.fork(() -> userService.findUser(id));
-        var orders = scope.fork(() -> orderService.findByUser(id));
-        var notifs = scope.fork(() -> notifService.findUnread(id));
+If I were summing it up in one sentence: Java 8 made the language expressive. Java 17 made it concise. Java 21 made it scalable.`,
+      code: `// Writing the same "fetch and process user" across Java versions
 
-        scope.join().throwIfFailed();
-        return new DashboardDTO(user.resultNow(), orders.resultNow(), notifs.resultNow());
-    }
-}
+// Java 8 — CompletableFuture + Stream API
+CompletableFuture<List<OrderDTO>> result = CompletableFuture
+    .supplyAsync(() -> userRepo.findById(id).orElseThrow(UserNotFoundException::new))
+    .thenApply(user -> orderRepo.findByUser(user))
+    .thenApply(orders -> orders.stream()
+        .filter(o -> o.getStatus() == Status.ACTIVE)
+        .map(o -> new OrderDTO(o.getId(), o.getTotal()))  // DTO needs 20 lines elsewhere
+        .collect(Collectors.toList()));
 
-// APPROACH 2: CompletableFuture (Java 8+) — explicit async
-@GetMapping("/dashboard/{userId}")
-public CompletableFuture<DashboardDTO> getDashboard(@PathVariable Long id) {
-    CompletableFuture<User> userCF   = CompletableFuture.supplyAsync(() -> userService.findUser(id));
-    CompletableFuture<List<Order>> ordersCF = CompletableFuture.supplyAsync(() -> orderService.findByUser(id));
-    CompletableFuture<List<Notification>> notifsCF = CompletableFuture.supplyAsync(() -> notifService.findUnread(id));
+// Java 17 — Same logic, records replace DTO boilerplate
+record OrderDTO(Long id, BigDecimal total) {}  // one line!
+record UserOrdersResponse(String name, List<OrderDTO> orders) {}
 
-    return CompletableFuture.allOf(userCF, ordersCF, notifsCF)
-        .thenApply(v -> new DashboardDTO(userCF.join(), ordersCF.join(), notifsCF.join()));
-}
+CompletableFuture<UserOrdersResponse> result = CompletableFuture
+    .supplyAsync(() -> userRepo.findById(id).orElseThrow(UserNotFoundException::new))
+    .thenApply(user -> new UserOrdersResponse(
+        user.getName(),
+        orderRepo.findByUser(user).stream()
+            .filter(o -> o.getStatus() == Status.ACTIVE)
+            .map(o -> new OrderDTO(o.getId(), o.getTotal()))
+            .toList()  // Java 16+: .toList() instead of .collect(Collectors.toList())
+    ));
 
-// APPROACH 3: Reactive WebFlux (Project Reactor) — full reactive
-@GetMapping("/dashboard/{userId}")
-public Mono<DashboardDTO> getDashboard(@PathVariable Long id) {
-    return Mono.zip(
-        userService.findUserReactive(id),
-        orderService.findByUserReactive(id).collectList(),
-        notifService.findUnreadReactive(id).collectList()
-    ).map(tuple -> new DashboardDTO(tuple.getT1(), tuple.getT2(), tuple.getT3()));
-}`,
-      tip: 'Key message: Virtual Threads simplify async — write blocking code, get async scalability. CompletableFuture is for explicit async pipelines. Reactive is for streaming/backpressure scenarios.',
+// Java 21 — Virtual threads + records, blocking style, scales like async
+// In a virtual thread (via Spring Boot spring.threads.virtual.enabled=true):
+User user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+List<OrderDTO> orders = orderRepo.findByUser(user).stream()
+    .filter(o -> o.getStatus() == Status.ACTIVE)
+    .map(o -> new OrderDTO(o.getId(), o.getTotal()))
+    .toList();
+return new UserOrdersResponse(user.getName(), orders);
+// Simple blocking code — but handles 100,000+ concurrent requests via virtual threads`,
+      tip: '"Java 8 made Java expressive. Java 17 made it concise. Java 21 made it scalable." — a clean one-line summary for interviews.',
     },
-
-    // ═══════════════════════════════════════════════════
-    //  PRODUCTION SCENARIOS
-    // ═══════════════════════════════════════════════════
 
     {
       id: 20,
-      question: 'How would you design a high-concurrency REST API using Java 21 Virtual Threads?',
+      question: 'Virtual Threads vs CompletableFuture — When do you use each?',
       difficulty: 'advanced',
       asked: true,
-      tags: ['Java 21', 'Virtual Threads', 'Production', 'REST API', 'Performance'],
-      answer: `Banking/e-commerce APIs need to handle thousands of concurrent requests. Classic approach: thread pool of 200 threads + async programming. Java 21 approach: Virtual thread per request — simpler and more scalable.
+      tags: ['Java 21', 'Virtual Threads', 'CompletableFuture', 'Architecture'],
+      answer: `This is a question I get a lot and it's worth being precise.
 
-Architecture for a high-concurrency order processing API:
+CompletableFuture is still valuable even in Java 21. It's not obsolete. The scenarios where I still reach for it:
 
-1. Enable Virtual Threads in Spring Boot 3.2+
-2. Use blocking JDBC (Hibernate) — virtual threads make blocking cheap
-3. Use thread-local (or ScopedValue — Java 21 preview) for context propagation
-4. Avoid synchronized blocks with I/O — use ReentrantLock
-5. Database connection pool (HikariCP) — virtual threads wait on pool, don't waste OS threads
-6. Monitor with Java Flight Recorder
+Running multiple async operations in parallel and combining results — CompletableFuture.allOf() with thenApply. For example, fetching user data, order history, and notifications simultaneously for a dashboard endpoint. allOf waits for all and then I process the combined results.
 
-Key insight: With virtual threads, HikariCP pool of 20 connections can serve thousands of concurrent virtual threads — they queue and wait, but the OS only sees 20 active threads.`,
-      code: `// 1. application.properties — one line to enable
-spring.threads.virtual.enabled=true
+Error recovery pipelines — exceptionally() and handle() give you clean ways to return fallback values when something fails.
 
-// 2. HikariCP pool — SMALLER is better with virtual threads!
-spring.datasource.hikari.maximum-pool-size=20  // not 200!
-// Virtual threads queue up efficiently — 20 DB connections serve thousands of VT
+Racing multiple data sources — anyOf() to take whichever responds first.
 
-// 3. ReentrantLock instead of synchronized
-@Service
-public class OrderService {
-    private final ReentrantLock inventoryLock = new ReentrantLock();
+Virtual Threads, on the other hand, are about server scalability, not parallel task composition. With Virtual Threads I write simple blocking code and Tomcat handles 100k+ concurrent requests instead of 200. The code looks exactly like synchronous code — no callbacks, no thenApply chains.
 
-    public Order placeOrder(OrderRequest req) {
-        inventoryLock.lock();  // virtual thread-friendly
-        try {
-            // Check and reserve inventory atomically
-            Product product = productRepo.findById(req.productId())
-                .orElseThrow(ProductNotFoundException::new);
+The real difference: CompletableFuture makes parallel work COMPOSABLE. Virtual Threads make BLOCKING cheap.
 
-            if (product.getStock() < req.quantity())
-                throw new InsufficientStockException();
+I can also combine them — run CompletableFuture tasks inside a virtual thread. The virtual thread parks while waiting for the future to complete, which is perfectly fine.`,
+      code: `// CompletableFuture — best for: parallel tasks + combine results
+@GetMapping("/dashboard/{id}")
+public DashboardResponse getDashboard(@PathVariable Long id) throws Exception {
+    // Fire all 3 requests in parallel
+    CompletableFuture<User>              userF    = CompletableFuture.supplyAsync(() -> userService.find(id));
+    CompletableFuture<List<Order>>       ordersF  = CompletableFuture.supplyAsync(() -> orderService.findByUser(id));
+    CompletableFuture<List<Notification>> notifsF = CompletableFuture.supplyAsync(() -> notifService.findUnread(id));
 
-            product.setStock(product.getStock() - req.quantity());
-            productRepo.save(product);
+    // Wait for all 3
+    CompletableFuture.allOf(userF, ordersF, notifsF).join();
 
-            Order order = new Order(req, OrderStatus.PENDING);
-            Order saved = orderRepo.save(order);
-
-            // Async notifications (non-blocking)
-            notificationService.notifyAsync(saved);
-            return saved;
-        } finally {
-            inventoryLock.unlock();
-        }
-    }
+    return new DashboardResponse(userF.join(), ordersF.join(), notifsF.join());
 }
 
-// 4. Parallel I/O with StructuredTaskScope (Java 21 preview)
-@GetMapping("/checkout/{orderId}")
-public CheckoutDTO getCheckout(@PathVariable Long orderId) throws Exception {
+// Virtual Threads — best for: high concurrency server (Spring Boot 3.2+)
+// application.properties: spring.threads.virtual.enabled=true
+// No code change needed — Tomcat handles 100k+ concurrent requests
+@GetMapping("/orders/{id}")
+public Order getOrder(@PathVariable Long id) {
+    Order order = orderRepo.findById(id).orElseThrow();  // blocking — virtual thread parks here
+    return order;  // simple, readable, scales to tens of thousands of concurrent requests
+}
+
+// Java 21 StructuredTaskScope — parallel + virtual threads combined (preview)
+@GetMapping("/dashboard/{id}")
+public DashboardResponse getDashboard(@PathVariable Long id) throws Exception {
     try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-        var orderFuture   = scope.fork(() -> orderRepo.findById(orderId).orElseThrow());
-        var paymentFuture = scope.fork(() -> paymentService.getPaymentStatus(orderId));
-        var shippingFuture = scope.fork(() -> shippingService.getStatus(orderId));
+        var user   = scope.fork(() -> userService.find(id));
+        var orders = scope.fork(() -> orderService.findByUser(id));
+        var notifs = scope.fork(() -> notifService.findUnread(id));
 
-        scope.join().throwIfFailed();  // fails fast if any task throws
-
-        return new CheckoutDTO(
-            orderFuture.resultNow(),
-            paymentFuture.resultNow(),
-            shippingFuture.resultNow()
-        );
+        scope.join().throwIfFailed();  // fails fast if any subtask throws
+        return new DashboardResponse(user.resultNow(), orders.resultNow(), notifs.resultNow());
     }
-}
-
-// 5. Load test results comparison (same hardware):
-// Platform threads (200 pool): ~2,000 req/sec, 200 concurrent
-// Virtual threads:             ~15,000 req/sec, 50,000+ concurrent`,
-      tip: 'With virtual threads, reduce HikariCP pool size — you don\'t need 200 connections. 20-50 connections serve thousands of virtual threads efficiently.',
+}`,
+      tip: 'The one-liner: "CompletableFuture = composing parallel tasks. Virtual Threads = making blocking cheap for server throughput." You often want both in the same application.',
     },
 
     {
       id: 21,
-      question: 'How do you use Records as DTOs in a Spring Boot REST API? What are the gotchas?',
+      question: 'How do Records replace Lombok in Java 17? What are the differences?',
       difficulty: 'intermediate',
       asked: true,
-      tags: ['Java 17', 'Records', 'Spring Boot', 'REST API', 'DTOs'],
-      answer: `Records are ideal for DTOs — they're immutable, have equals/hashCode/toString auto-generated, and require zero boilerplate.
+      tags: ['Java 17', 'Records', 'Lombok'],
+      answer: `Lombok is a library that generates boilerplate via annotations — @Data gives you getters, setters, equals, hashCode, toString. @Value makes it immutable. @Builder gives you a builder pattern.
 
-Benefits for REST APIs:
-— Replace request/response POJO classes
-— Work with Jackson 2.12+ for JSON serialization
-— Perfect for read-only response objects
-— Can be used with Spring Data projections
+Java 17 Records replace Lombok for immutable data classes. For a plain DTO with all fields final and no business logic, a record is strictly better — zero dependency, compiler-generated, no annotation processor.
 
-Gotchas:
-1. Jackson: Use Jackson 2.12+ or add @JsonProperty if field names differ
-2. Validation: Use @Valid with @NotNull, @NotBlank etc — works on record components
-3. No default constructor: Jackson needs @JsonCreator or Jackson 2.12+
-4. Accessor names: name() not getName() — some older tools expect getX()`,
-      code: `// Request record — with validation
-public record CreateUserRequest(
-    @NotBlank(message = "Name is required")
-    String name,
+The key differences:
 
-    @Email(message = "Invalid email format")
-    @NotBlank
-    String email,
+1. Mutability: Lombok @Data gives you setters — mutable. Records are always immutable. If you need mutable fields (like for JPA entities), Lombok is still the tool.
 
-    @Min(value = 18, message = "Must be 18 or older")
-    int age
-) {}
+2. Accessor names: Lombok generates getName(), getAge(). Records generate name(), age(). Some older frameworks expect getX() conventions — Jackson 2.12+ handles records, but some others might not.
 
-// Response record — clean DTO
-public record UserResponse(
-    Long id,
-    String name,
-    String email,
-    LocalDate createdDate
-) {
-    // Factory method from entity
-    public static UserResponse from(User user) {
-        return new UserResponse(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getCreatedAt().toLocalDate()
-        );
+3. Inheritance: Lombok classes can extend other classes. Records cannot.
+
+4. JPA entities: Records cannot be JPA entities because JPA requires a no-arg constructor and mutable state. Use Lombok for your @Entity classes, records for your DTO/response classes.
+
+5. Builder: Records don't have a built-in builder — Lombok's @Builder is still useful when you have many optional fields.
+
+My pattern in Spring Boot: Records for request/response DTOs. Lombok on JPA entities. This gives me the best of both worlds.`,
+      code: `// Lombok @Value (immutable POJO) — needs dependency
+@Value
+public class UserDTO {
+    Long id;
+    String name;
+    String email;
+    // generates: constructor, getName(), equals(), hashCode(), toString()
+}
+userDTO.getName(); // Lombok style
+
+// Java 17 Record — no dependency, built-in
+public record UserDTO(Long id, String name, String email) {}
+userDTO.name(); // Record style — no "get" prefix
+
+// Lombok still needed for JPA entity (mutable, no-arg constructor)
+@Entity
+@Data
+@NoArgsConstructor
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+    private String name;
+    private String email;
+}
+
+// Record for DTO, Lombok for entity
+@Service
+public class UserService {
+    public UserDTO findUser(Long id) {
+        User entity = userRepo.findById(id)  // Lombok entity from DB
+            .orElseThrow(() -> new UserNotFoundException(id));
+        return new UserDTO(entity.getId(), entity.getName(), entity.getEmail()); // Record DTO
     }
 }
 
-// Controller
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(
-            @Valid @RequestBody CreateUserRequest request) {
-        User saved = userService.create(request.name(), request.email(), request.age());
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(UserResponse.from(saved));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable Long id) {
-        return userService.findById(id)
-            .map(UserResponse::from)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
-}
-
-// Paginated response with Records
-public record PagedResponse<T>(
-    List<T> content,
-    int page,
-    int size,
-    long totalElements,
-    int totalPages
-) {
-    public static <T> PagedResponse<T> from(Page<T> page) {
-        return new PagedResponse<>(
-            page.getContent(), page.getNumber(),
-            page.getSize(), page.getTotalElements(),
-            page.getTotalPages()
-        );
-    }
-}`,
-      tip: 'Records + Spring Boot 3.x = perfect for DTOs. Use compact constructors for validation. Use static factory methods like UserResponse.from(entity) for clean mapping.',
+// Lombok @Builder still useful for records with many optional fields
+// Records don't have a builder — need workaround
+public record SearchCriteria(String name, String email, Integer minAge, Integer maxAge, Status status) {}
+// Creating: new SearchCriteria("Alice", null, 18, null, Status.ACTIVE)  — nulls for optional
+// With Lombok builder: SearchCriteria.builder().name("Alice").minAge(18).build()`,
+      tip: 'Use Records for DTOs (request/response). Use Lombok for JPA entities (mutable, need @NoArgsConstructor). This is the clean separation in a Spring Boot 3.x project.',
     },
-
-    // ═══════════════════════════════════════════════════
-    //  COMMON INTERVIEW TRAPS & REVISION
-    // ═══════════════════════════════════════════════════
 
     {
       id: 22,
-      question: 'Common Java version interview traps and mistakes — What should you avoid saying?',
-      difficulty: 'intermediate',
+      question: 'What is Structured Concurrency in Java 21?',
+      difficulty: 'advanced',
       asked: true,
-      tags: ['Interview Tips', 'Java 8', 'Java 17', 'Java 21', 'Traps'],
-      answer: `Here are the classic mistakes that show shallow knowledge:
+      tags: ['Java 21', 'Structured Concurrency', 'Virtual Threads'],
+      answer: `Structured Concurrency is a preview feature in Java 21 that treats a group of concurrent tasks as a unit of work. The idea is borrowed from structured programming — just like an if-block or for-loop has a clear entry and exit, a structured concurrent task group has a clear start and end.
 
-TRAP 1: "this" in lambdas
-❌ Wrong: "this refers to the lambda itself"
-✅ Right: "this refers to the ENCLOSING class instance — unlike anonymous inner classes"
+The problem it solves: with CompletableFuture.allOf(), if one task fails, the other tasks don't automatically cancel. You end up with "orphaned" threads doing work that no one will use — wasting resources and potentially causing issues.
 
-TRAP 2: Optional.get() without check
-❌ Wrong: Optional<User> opt = ...; User u = opt.get();
-✅ Right: Always use orElse(), orElseGet(), orElseThrow(), or ifPresent()
+With StructuredTaskScope, you open a scope, fork subtasks into it, wait for them, and when the scope closes, everything is cleaned up. If you use ShutdownOnFailure, as soon as one subtask throws an exception, all other subtasks are cancelled automatically. If you use ShutdownOnSuccess, it returns as soon as the first subtask succeeds and cancels the rest.
 
-TRAP 3: Record accessor names
-❌ Wrong: "I call getName() on a record"
-✅ Right: "Record accessors match component names: name(), not getName()"
+This is cleaner than CompletableFuture for "do these N things in parallel and fail fast if any one fails" — which is a very common pattern in microservices when calling multiple downstream services.
 
-TRAP 4: Streams are reusable
-❌ Wrong: "I can call collect() twice on the same stream"
-✅ Right: "Streams can only be consumed once — second terminal op throws IllegalStateException"
+It's still a preview feature in Java 21 — meaning it could change in future versions — but it's direction Java is clearly heading.`,
+      code: `// Without StructuredTaskScope — orphaned tasks problem
+CompletableFuture<User>  userF  = CompletableFuture.supplyAsync(() -> fetchUser(id));
+CompletableFuture<Order> orderF = CompletableFuture.supplyAsync(() -> fetchOrder(id));
 
-TRAP 5: Virtual threads replace thread pools everywhere
-❌ Wrong: "I should always use virtual threads instead of thread pools"
-✅ Right: "Virtual threads shine for I/O-bound tasks. CPU-intensive work still uses platform thread pools. Never use virtual threads for CPU-bound computation."
+CompletableFuture.allOf(userF, orderF).join();
+// If fetchUser throws, fetchOrder keeps running — wasted work, no cleanup!
 
-TRAP 6: Sealed classes are like enums
-❌ Wrong: "Sealed classes are just better enums"
-✅ Right: "Sealed classes restrict subtyping hierarchy. Unlike enums, each subtype can be a full class with different constructors and fields. Records as sealed subtypes = best combination."
+// With StructuredTaskScope.ShutdownOnFailure — fail fast, clean up
+try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+    StructuredTaskScope.Subtask<User>  userTask  = scope.fork(() -> fetchUser(id));
+    StructuredTaskScope.Subtask<Order> orderTask = scope.fork(() -> fetchOrder(id));
 
-TRAP 7: orElse() vs orElseGet()
-❌ Wrong: "They're the same — just different syntax"
-✅ Right: "orElse() evaluates EAGERLY — always. orElseGet() is LAZY — only called if Optional is empty. For expensive defaults (DB calls), always use orElseGet()."
+    scope.join();           // wait for all subtasks
+    scope.throwIfFailed();  // if any threw, re-throw here
 
-RAPID REVISION CHECKLIST:
-— Java 8:  Lambda, FunctionalInterface, Stream API, Optional, Date/Time, CompletableFuture
-— Java 11: String methods (isBlank, strip, lines, repeat), HttpClient, var in lambda
-— Java 17: Records, Sealed Classes, Pattern Matching instanceof, Switch Expression, Text Blocks
-— Java 21: Virtual Threads, Sequenced Collections, Record Patterns, Pattern Matching switch`,
-      code: `// TRAP DEMONSTRATIONS
-
-// 1. this in lambda vs anonymous class
-class Service {
-    String name = "MyService";
-
-    Runnable lambdaExample = () ->
-        System.out.println(this.name);  // "MyService" — enclosing class
-
-    Runnable anonExample = new Runnable() {
-        String name = "AnonClass";
-        public void run() {
-            System.out.println(this.name);  // "AnonClass" — the anonymous class
-        }
-    };
+    // Both completed successfully
+    return new Dashboard(userTask.resultNow(), orderTask.resultNow());
 }
+// Scope auto-closes — any incomplete subtasks are cancelled
 
-// 2. orElse ALWAYS evaluates
-User user = optionalUser.orElse(expensiveUserCreation()); // expensiveUserCreation() CALLED EVERY TIME!
-User user = optionalUser.orElseGet(() -> expensiveUserCreation()); // ONLY called if empty
+// ShutdownOnSuccess — race multiple sources, take the fastest
+try (var scope = new StructuredTaskScope.ShutdownOnSuccess<User>()) {
+    scope.fork(() -> fetchFromPrimaryDB(id));
+    scope.fork(() -> fetchFromCache(id));
+    scope.fork(() -> fetchFromReplica(id));
 
-// 3. Stream reuse
-Stream<Integer> stream = list.stream().filter(n -> n > 0);
-long count = stream.count();          // OK — first terminal op
-List<Integer> list2 = stream.collect(...); // IllegalStateException!
-
-// 4. Record accessors
-record User(String name, int age) {}
-User u = new User("Alice", 30);
-u.name();  // CORRECT — component name
-u.age();   // CORRECT
-// u.getName(); // WRONG — records don't generate getX() methods
-
-// 5. Virtual threads — don't use for CPU work
-// BAD: Using VT for CPU-intensive compression
-ExecutorService vtExec = Executors.newVirtualThreadPerTaskExecutor();
-vtExec.submit(() -> compressLargeFile(file));  // VT doesn't help — CPU bound!
-
-// GOOD: Regular thread pool for CPU work
-ExecutorService cpuPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-cpuPool.submit(() -> compressLargeFile(file));  // Matches CPU cores`,
-      tip: 'The #1 interview differentiator: show you know the WHY behind each feature, not just the syntax. "Records were introduced to eliminate POJO boilerplate for immutable data" beats just writing the syntax.',
+    scope.join();
+    return scope.result(); // whichever finished first
+}`,
+      tip: 'Structured Concurrency is still preview in Java 21 — mention this. It solves orphaned thread leaks that CompletableFuture allOf() has. The ShutdownOnFailure scope is the most common pattern.',
     },
 
     {
       id: 23,
-      question: 'Rapid Revision — 5-minute cheat sheet for Java version interview questions',
-      difficulty: 'beginner',
-      tags: ['Revision', 'Java 8', 'Java 11', 'Java 17', 'Java 21', 'Cheat Sheet'],
-      answer: `━━━ JAVA 8 (2014, LTS) — Foundation ━━━
-Lambda:           (a, b) -> a + b
-Functional IF:    Predicate<T>, Function<T,R>, Consumer<T>, Supplier<T>
-Method Ref:       String::toUpperCase, System.out::println, ArrayList::new
-Streams:          .filter().map().sorted().collect(Collectors.toList())
-Optional:         .orElse() .orElseGet() .orElseThrow() .ifPresent() .map()
-Date/Time:        LocalDate, LocalDateTime, ZonedDateTime, Instant, Duration, Period
-CompletableFuture: .supplyAsync().thenApply().thenCompose().allOf().exceptionally()
-Default Methods:  Solve interface evolution without breaking implementations
-Gotcha:           Streams consumed once; orElse() eagerly evaluated; lambda "this" = enclosing class
+      question: 'What is Pattern Matching for switch in Java 21? How does it combine with sealed classes?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java 21', 'Pattern Matching', 'Switch', 'Sealed Classes'],
+      answer: `Pattern Matching for switch lets you match on the TYPE of an object in a switch statement, not just its value. This was finalized in Java 21.
 
-━━━ JAVA 11 (2018, LTS) — Quality of Life ━━━
-String:           isBlank(), strip(), stripLeading(), stripTrailing(), lines(), repeat(n)
-HttpClient:       Built-in HTTP/2, sync+async, replaces HttpURLConnection
-var in lambda:    (@NonNull var s) -> s.toUpperCase() — for annotations on parameters
-Files:            Files.readString(path), Files.writeString(path, content)
-List.of:          Immutable factory methods (Java 9)  List.of("a","b","c")
-Gotcha:           strip() is Unicode-aware; trim() is not. Use strip() always.
+Before this, if I wanted to handle different subtypes of a hierarchy, I had to use a chain of if-instanceof-cast blocks. Now I can use a clean switch where each case checks the type and binds a typed variable — all in one step.
 
-━━━ JAVA 17 (2021, LTS) — Modern Java ━━━
-Records:          public record UserDTO(Long id, String name) {} — auto equals/hashCode/toString
-Sealed Classes:   sealed interface Shape permits Circle, Rectangle — closed hierarchy
-Pattern Matching: if (obj instanceof String s) { use s directly — no cast }
-Switch Expression: return switch(day) { case MONDAY -> 1; case TUESDAY -> 2; };
-Text Blocks:      String sql = """ SELECT * FROM users """;
-Gotcha:           Record accessors = name() not getName(); Records are final (no extension)
+The combination with sealed classes is where it really shines. Because sealed classes restrict exactly which subtypes exist, the compiler knows when the switch is exhaustive. If I forget a case, the compiler warns me. I don't need a default case — the compiler proves I've covered every possible type.
 
-━━━ JAVA 21 (2023, LTS) — Game Changer ━━━
-Virtual Threads:  Thread.ofVirtual().start(task); millions possible, managed by JVM
-VT Enable:        spring.threads.virtual.enabled=true (Spring Boot 3.2+)
-Sequenced Coll:   list.getFirst(), list.getLast(), list.reversed()
-Record Patterns:  if (obj instanceof Line(Point(var x,var y), Point end)) — destructure
-Pattern Match sw: switch(shape) { case Circle c -> ...; case Rectangle r -> ...; }
-Gotcha:           VT + synchronized = pinning; use ReentrantLock. VT for I/O, not CPU.
+You can also add guard conditions using when — like case Circle c when c.radius() > 10 -> ... — to filter within a type case.
 
-━━━ LTS TIMELINE ━━━
-Java 8  (Mar 2014) — Still dominant (~40% enterprise)
-Java 11 (Sep 2018) — Most common LTS after Java 8 (~25%)
-Java 17 (Sep 2021) — Spring Boot 3.x minimum
-Java 21 (Sep 2023) — Recommended for new projects
-Java 25 (Sep 2025) — Next LTS (forthcoming)`,
-      code: `// Quick reference code snippets
-
-// Java 8 — Stream pipeline
-List<String> names = employees.stream()
-    .filter(e -> e.getSalary() > 50000)
-    .map(Employee::getName)
-    .sorted()
-    .collect(Collectors.toList());
-
-// Java 17 — Record + Sealed
-sealed interface Result<T> permits Result.Ok, Result.Err {
-    record Ok<T>(T value) implements Result<T> {}
-    record Err<T>(String message) implements Result<T> {}
+This is perfect for processing polymorphic domain objects — payments, shapes, events — where you need different behavior per subtype.`,
+      code: `// Before Java 21 — if-instanceof chain
+Object shape = getShape();
+double area;
+if (shape instanceof Circle c) {
+    area = Math.PI * c.radius() * c.radius();
+} else if (shape instanceof Rectangle r) {
+    area = r.width() * r.height();
+} else if (shape instanceof Triangle t) {
+    area = 0.5 * t.base() * t.height();
+} else {
+    throw new IllegalArgumentException("Unknown shape");
 }
-// Usage:
-Result<User> result = findUser(id);
-String msg = switch (result) {
-    case Result.Ok<User>(var u) -> "Found: " + u.name();
-    case Result.Err<User>(var m) -> "Error: " + m;
+
+// Java 21 — Pattern Matching for switch
+double area = switch (shape) {
+    case Circle c    -> Math.PI * c.radius() * c.radius();
+    case Rectangle r -> r.width() * r.height();
+    case Triangle t  -> 0.5 * t.base() * t.height();
+    case null        -> throw new NullPointerException("Shape cannot be null");
 };
 
-// Java 21 — Virtual threads
-try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
-    IntStream.range(0, 10_000)
-        .forEach(i -> exec.submit(() -> processTask(i)));
-}  // waits for all tasks
+// With sealed classes — exhaustive switch (no default needed!)
+sealed interface Payment permits CreditCardPayment, UPIPayment, NetBankingPayment {}
 
-// Spring Boot 3.2 + Java 21
-// application.properties:
-// spring.threads.virtual.enabled=true
-// spring.datasource.hikari.maximum-pool-size=20`,
-      tip: 'For experienced developers (3-7 yrs): The expectation is you know Java 8 thoroughly, are aware of Java 11/17 improvements, and can discuss Virtual Threads impact on microservices architecture.',
+String process(Payment payment) {
+    return switch (payment) {
+        case CreditCardPayment cc -> "CC charge: " + cc.getAmount() * 0.98;
+        case UPIPayment upi       -> "UPI: " + upi.getAmount() + " via " + upi.upiId();
+        case NetBankingPayment nb -> "NB: " + nb.getAmount() + " from " + nb.bankCode();
+        // No default — compiler knows these are ALL possible types!
+    };
+}
+
+// Guard conditions with 'when'
+String classify(Object obj) {
+    return switch (obj) {
+        case Integer i when i < 0    -> "Negative number";
+        case Integer i when i == 0   -> "Zero";
+        case Integer i               -> "Positive: " + i;
+        case String s when s.isBlank() -> "Blank string";
+        case String s                -> "String: " + s;
+        default                      -> "Other: " + obj.getClass().getSimpleName();
+    };
+}`,
+      tip: 'Sealed classes + Pattern Matching switch = exhaustive, compiler-checked type dispatching. No default case needed when all subtypes are covered — the compiler enforces it.',
+    },
+
+    {
+      id: 24,
+      question: 'Which Java version would you use for a new project in 2024 and why?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Java 21', 'Java 17', 'Architecture', 'Production'],
+      answer: `For any new project starting today, I'd choose Java 21 — no question.
+
+Here's my reasoning:
+
+It's an LTS release — supported until at least 2028, so long-term production stability is guaranteed.
+
+Virtual Threads are a game changer for microservices. If we're building a REST API or Kafka consumer that does I/O — database calls, external API calls — virtual threads let us handle tens of thousands of concurrent requests without complex reactive programming. We get the scalability of async code with the readability of blocking code.
+
+Records mean our DTOs are one-liners instead of needing Lombok or 30 lines of boilerplate. This alone saves significant code volume in a REST API project with many request/response types.
+
+Sealed classes give us better domain modeling — we can define closed type hierarchies and get exhaustive pattern matching in switch expressions.
+
+Spring Boot 3.2+ supports Java 21 fully, including virtual threads with a single property flag.
+
+The only reason I'd choose Java 17 instead of 21 is if the team is using a framework that hasn't certified Java 21 support yet — some older enterprise tools are only tested on Java 17. But for a typical Spring Boot microservice, Java 21 is the clear choice.
+
+I'd avoid Java 11 for new projects — it's approaching end of free Oracle support and lacks Records, Virtual Threads, and all the Java 17+ improvements.`,
+      followUp: [
+        { question: 'What if the team is still on Java 8 and you need to migrate?', answer: `Migration strategy: First, upgrade to Java 11 — it's source-compatible with Java 8 code (with minor exceptions around removed APIs like javax.xml). Then Java 17 — some JVM flags and internal APIs changed (strong encapsulation), so run with --add-opens as needed, then fix the underlying issues. Then Java 21. The hardest step is usually Java 9+ module system changes — many libraries that used JDK internals via reflection had to be updated. Using libraries that are maintained and up-to-date (Spring, Hibernate, Kafka) makes this smooth. Always upgrade incrementally, not in one jump from 8 to 21.` },
+      ],
+      tip: 'For interviews: "Java 21 for new projects — LTS, Virtual Threads for scalability, Records for conciseness, sealed classes for domain modeling, Spring Boot 3.2 support." Have a concrete reason for each point.',
+    },
+
+    {
+      id: 25,
+      question: 'What are common Java interview traps and mistakes you should avoid?',
+      difficulty: 'intermediate',
+      asked: true,
+      tags: ['Interview Tips', 'Common Mistakes', 'Java 8', 'Java 17', 'Java 21'],
+      answer: `Here are the ones that trip people up most often in interviews:
+
+Trap 1 — "this" in a lambda: People say "this refers to the lambda." Wrong. "this" in a lambda refers to the ENCLOSING CLASS. In an anonymous inner class, "this" refers to the anonymous class itself. This is a classic distinction.
+
+Trap 2 — Optional.get() without check: Using opt.get() can throw NoSuchElementException just like NPE can throw. The whole point of Optional is to use orElse, orElseGet, orElseThrow, ifPresent — not get().
+
+Trap 3 — orElse vs orElseGet: orElse(createExpensiveObject()) — createExpensiveObject() is ALWAYS called, even if the Optional has a value. For expensive defaults, always use orElseGet(() -> createExpensiveObject()).
+
+Trap 4 — Stream reuse: A stream can only be consumed once. Calling count() and then collect() on the same stream throws IllegalStateException. Create the stream again from the source.
+
+Trap 5 — Record accessors: People call user.getName() on a record. Records generate name(), not getName(). No "get" prefix.
+
+Trap 6 — Virtual threads for CPU work: Virtual threads solve I/O-bound scalability. If the thread is doing computation — not blocking — virtual threads offer zero benefit. Use a fixed thread pool sized to CPU cores for CPU-intensive work.
+
+Trap 7 — synchronized + I/O with virtual threads: In Java 21, if you have I/O inside a synchronized block, the virtual thread gets pinned to the carrier thread — defeating the purpose. Use ReentrantLock instead.`,
+      code: `// TRAP 1: this in lambda
+class OrderService {
+    String name = "OrderService";
+    void setup() {
+        Runnable r = () -> System.out.println(this.name); // "OrderService" — enclosing class
+        // vs anonymous class:
+        Runnable r2 = new Runnable() {
+            String name = "Anonymous";
+            public void run() {
+                System.out.println(this.name); // "Anonymous" — the anonymous class
+            }
+        };
+    }
+}
+
+// TRAP 2: Never use Optional.get() without isPresent()
+Optional<User> opt = userRepo.findById(id);
+User user = opt.get(); // DANGEROUS — throws NoSuchElementException if empty!
+User user = opt.orElseThrow(() -> new UserNotFoundException(id)); // SAFE
+
+// TRAP 3: orElse is always evaluated
+User u = opt.orElse(new User("default")); // new User() called EVERY TIME — even if opt has value!
+User u = opt.orElseGet(() -> new User("default")); // only called if opt is empty
+
+// TRAP 4: Stream reuse
+Stream<String> stream = list.stream().filter(s -> s.length() > 3);
+long count = stream.count();           // OK
+List<String> result = stream.collect(...); // THROWS IllegalStateException!
+
+// TRAP 5: Record accessor naming
+record User(String name, int age) {}
+User u = new User("Alice", 30);
+u.name();      // CORRECT
+u.getName();   // COMPILE ERROR — records don't generate getX()
+
+// TRAP 6: VT for CPU work — doesn't help
+try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
+    exec.submit(() -> compressFile(file));  // CPU-bound — VT gives NO benefit here!
+}
+// For CPU work: Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+
+// TRAP 7: synchronized + I/O in virtual threads
+synchronized (this) {
+    result = db.query(sql); // virtual thread PINNED here — bad!
+}
+// Fix:
+lock.lock(); try { result = db.query(sql); } finally { lock.unlock(); }`,
+      tip: 'Knowing the traps separates a good candidate from a great one. Mentioning the orElse/orElseGet distinction unprompted shows you understand performance implications, not just syntax.',
     },
   ],
 }
