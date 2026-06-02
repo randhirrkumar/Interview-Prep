@@ -26,7 +26,7 @@ The main features are:
 7. Default and Static methods in interfaces
 8. CompletableFuture — async programming without blocking threads
 
-In my daily work, I use streams and lambdas constantly. In my EPLMS project, I used streams to filter and process vehicle events. In MetLife, I used CompletableFuture for async policy processing. Java 8 is still the most asked Java version in interviews because most companies still run it.`,
+In my daily work, I use streams and lambdas constantly. In my EPLMS project, I used streams to filter and process vehicle events. In MetLife, I used CompletableFuture for async policy processing.`,
       code: `// Before Java 8 — verbose anonymous class
 List<String> names = Arrays.asList("Charlie", "Alice", "Bob");
 Collections.sort(names, new Comparator<String>() {
@@ -53,7 +53,7 @@ List<String> result = names.stream()
     .map(String::toUpperCase)
     .collect(Collectors.toList());`,
       followUp: [
-        { question: 'Why is Java 8 still so widely used?', answer: `Java 8 became an LTS (Long-Term Support) release and Oracle extended free support until December 2030. When it came out, most enterprises migrated to it and it solved enough problems that many teams never felt the urgency to upgrade. The Stream API and lambdas were so big that teams spent years learning and adopting them. Today about 35-40% of enterprise Java is still on Java 8. That's why it's asked in almost every interview.` },
+        { question: 'Why is Java 8 still so widely used?', answer: `Java 8 became an LTS (Long-Term Support) release and Oracle extended free support until December 2030. When it came out, most enterprises migrated to it and it solved enough problems that many teams never felt the urgency to upgrade. The Stream API and lambdas were so big that teams spent years learning and adopting them. Today about 35-40% of enterprise Java is still on Java 8, and migrating away is not a priority when the system works.` },
       ],
       tip: 'Java 8 LTS support extended until 2030. Always mention this — it explains why companies are still on Java 8 even though Java 21 is out.',
     },
