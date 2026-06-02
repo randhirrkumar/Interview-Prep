@@ -5,7 +5,8 @@ import QuestionCard from '../common/QuestionCard'
 import { useProgress } from '../../contexts/ProgressContext'
 
 import javaCore from '../../data/javaCore'
-import java8 from '../../data/java8Streams'
+import streamCoding from '../../data/streamCoding'
+import javaVersions from '../../data/javaVersions'
 import springBoot from '../../data/springBoot'
 import microservices from '../../data/microservices'
 import kafka from '../../data/kafka'
@@ -22,7 +23,8 @@ import testing from '../../data/testing'
 
 const TOPICS = {
   'java-core': javaCore,
-  'java8': java8,
+  'java8': streamCoding,
+  'java-versions': javaVersions,
   'spring-boot': springBoot,
   'microservices': microservices,
   'kafka': kafka,

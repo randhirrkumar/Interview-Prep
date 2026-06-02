@@ -21,10 +21,11 @@ const SECTIONS = [
   {
     id: 'java', label: 'Java Topics',
     items: [
-      { label: 'Java Core & OOP',   icon: Code2,  to: '/topics/java-core' },
-      { label: 'Java 8 & Streams',  icon: Zap,    to: '/topics/java8' },
-      { label: 'Multithreading',    icon: Cpu,    to: '/topics/multithreading' },
-      { label: 'Collections & DS',  icon: Layers, to: '/topics/collections' },
+      { label: 'Java Core & OOP',    icon: Code2,    to: '/topics/java-core' },
+      { label: 'Java Versions 8–21', icon: Zap,      to: '/topics/java-versions' },
+      { label: 'Stream API Coding',  icon: GitBranch, to: '/topics/java8' },
+      { label: 'Multithreading',     icon: Cpu,      to: '/topics/multithreading' },
+      { label: 'Collections & DS',   icon: Layers,   to: '/topics/collections' },
     ]
   },
   {
