@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import QuestionCard from '../common/QuestionCard'
@@ -45,15 +45,26 @@ export default function TopicPage() {
   const topicData = TOPICS[topicId] || { title: 'Topic', description: '', questions: [] }
   const [search, setSearch] = useState('')
   const [diffFilter, setDiffFilter] = useState('all')
+  const [tagFilter, setTagFilter] = useState(null)
   const { completed } = useProgress()
+
+  // Reset filters when topic changes
+  const prevTopicId = useRef(topicId)
+  if (prevTopicId.current !== topicId) {
+    prevTopicId.current = topicId
+    setSearch('')
+    setDiffFilter('all')
+    setTagFilter(null)
+  }
 
   const questions = useMemo(() => {
     return topicData.questions.filter(q => {
       const matchSearch = !search || q.question.toLowerCase().includes(search.toLowerCase())
       const matchDiff = diffFilter === 'all' || q.difficulty === diffFilter
-      return matchSearch && matchDiff
+      const matchTag = !tagFilter || (q.tags && q.tags.includes(tagFilter))
+      return matchSearch && matchDiff && matchTag
     })
-  }, [topicData, search, diffFilter])
+  }, [topicData, search, diffFilter, tagFilter])
 
   const done = completed.filter(c => c.startsWith(topicId + '_')).length
   const pct = topicData.questions.length ? Math.round((done / topicData.questions.length) * 100) : 0
@@ -68,7 +79,17 @@ export default function TopicPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{topicData.description}</p>
             <div className="flex flex-wrap gap-2">
               {topicData.tags?.map(tag => (
-                <span key={tag} className="tag bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{tag}</span>
+                <button
+                  key={tag}
+                  onClick={() => setTagFilter(prev => prev === tag ? null : tag)}
+                  className={`tag cursor-pointer transition-all ${
+                    tagFilter === tag
+                      ? 'bg-blue-600 text-white border-blue-500'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/60'
+                  }`}
+                >
+                  {tag}
+                </button>
               ))}
             </div>
           </div>
