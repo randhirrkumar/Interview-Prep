@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
@@ -6,6 +6,11 @@ import Header from './Header'
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const mainRef = useRef(null)
+
+  useEffect(() => {
+    if (mainRef.current) mainRef.current.scrollTop = 0
+  }, [location.pathname])
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
@@ -39,7 +44,7 @@ export default function Layout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ position: 'relative', zIndex: 1 }}>
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-scroll p-4 lg:p-6" style={{ scrollbarGutter: 'stable' }}>
+        <main ref={mainRef} className="flex-1 overflow-y-scroll p-4 lg:p-6" style={{ scrollbarGutter: 'stable' }}>
           <div key={location.pathname} className="animate-page-in h-full">
             <Outlet />
           </div>
