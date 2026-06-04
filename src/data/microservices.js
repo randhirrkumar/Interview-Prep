@@ -1,7 +1,7 @@
 const microservices = {
   title: 'Microservices',
   description: 'Microservices patterns, API Gateway, Service Discovery, Circuit Breaker, and distributed systems.',
-  tags: ['Microservices', 'Spring Cloud', 'Docker', 'API Gateway'],
+  tags: ['Microservices', 'API Gateway', 'Circuit Breaker', 'Service Discovery'],
   questions: [
     {
       id: 1,

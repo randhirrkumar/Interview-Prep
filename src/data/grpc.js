@@ -1,7 +1,7 @@
 const grpc = {
   title: 'gRPC',
   description: 'gRPC fundamentals, Protocol Buffers, streaming patterns, Spring Boot integration, interceptors, and when to choose gRPC over REST or GraphQL for microservices communication.',
-  tags: ['gRPC', 'Protocol Buffers', 'Protobuf', 'Streaming', 'Microservices'],
+  tags: ['gRPC', 'Protocol Buffers', 'Spring Boot', 'TLS', 'Error Handling'],
   questions: [
     {
       id: 'grpc_q1',

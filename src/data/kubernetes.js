@@ -1,7 +1,7 @@
 const kubernetes = {
   title: 'Kubernetes (K8s)',
   description: 'Kubernetes architecture, core objects (Pods, Deployments, Services, ConfigMaps), scaling, health checks, Helm, and deploying Spring Boot microservices on K8s.',
-  tags: ['Kubernetes', 'K8s', 'Pods', 'Deployments', 'Helm', 'EKS', 'Docker'],
+  tags: ['Kubernetes', 'Helm', 'Services', 'Health Checks', 'HPA', 'Deployment'],
   questions: [
     {
       id: 'k8s_q1',

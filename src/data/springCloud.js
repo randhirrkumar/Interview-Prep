@@ -1,7 +1,7 @@
 const springCloud = {
   title: 'Spring Cloud',
   description: 'Spring Cloud ecosystem for microservices — Config Server, Service Discovery, Feign Client, API Gateway, Circuit Breaker with Resilience4j, and distributed tracing.',
-  tags: ['Spring Cloud', 'Config Server', 'Eureka', 'Feign', 'Resilience4j', 'Gateway', 'Tracing'],
+  tags: ['Spring Cloud', 'Config Server', 'Feign', 'Resilience4j', 'API Gateway', 'Tracing'],
   questions: [
     {
       id: 'springcloud_q1',

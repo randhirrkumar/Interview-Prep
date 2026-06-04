@@ -1,7 +1,7 @@
 const rabbitmq = {
   title: 'RabbitMQ & AMQP',
   description: 'RabbitMQ concepts, exchange types, Spring AMQP integration, message acknowledgment, dead-letter queues, and when to choose RabbitMQ vs Kafka.',
-  tags: ['RabbitMQ', 'AMQP', 'Messaging', 'Spring AMQP', 'Message Queue'],
+  tags: ['RabbitMQ', 'Spring AMQP', 'Exchange Types', 'DLQ', 'Durability'],
   questions: [
     {
       id: 'rabbit_q1',

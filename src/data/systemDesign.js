@@ -1,7 +1,7 @@
 const systemDesign = {
   title: 'System Design',
   description: 'In-depth system design for senior Java developers — HLD & LLD, CAP theorem, consistent hashing, CQRS, event sourcing, rate limiting, URL shortener, notification service, and real-world design trade-offs.',
-  tags: ['System Design', 'HLD', 'LLD', 'CAP Theorem', 'CQRS', 'Scalability', 'Microservices'],
+  tags: ['System Design', 'HLD', 'CAP Theorem', 'CQRS', 'Scalability', 'Consistent Hashing'],
   questions: [
     {
       id: 'sd_q1',

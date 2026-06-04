@@ -1,7 +1,7 @@
 const security = {
   title: 'Spring Security & JWT',
   description: 'Spring Security, JWT authentication, OAuth2, and API security best practices.',
-  tags: ['Spring Security', 'JWT', 'OAuth2', 'Authentication'],
+  tags: ['Spring Security', 'JWT'],
   questions: [
     {
       id: 1,

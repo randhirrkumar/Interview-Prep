@@ -1,7 +1,7 @@
 const streamCoding = {
   title: 'Stream API Coding Problems',
   description: 'Hands-on Java 8 Stream coding challenges — filter, map, reduce, collect, Optional, and real interview problems.',
-  tags: ['Streams', 'Lambda', 'Collectors', 'Optional', 'Coding'],
+  tags: ['streams', 'Optional', 'groupingBy', 'flatMap', 'reduce'],
   questions: [
     {
       id: 1,

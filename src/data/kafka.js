@@ -1,7 +1,7 @@
 const kafka = {
   title: 'Apache Kafka',
   description: 'Kafka fundamentals, producer/consumer, partitions, consumer groups, and Spring Kafka integration.',
-  tags: ['Kafka', 'Event-Driven', 'Messaging', 'Spring Kafka'],
+  tags: ['Kafka', 'Partitions', 'Consumer Groups', 'Delivery'],
   questions: [
     {
       id: 1,

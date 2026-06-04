@@ -1,7 +1,7 @@
 const sql = {
   title: 'SQL & MySQL',
   description: 'SQL queries, joins, indexing, query optimization, and common interview problems.',
-  tags: ['SQL', 'MySQL', 'Query Optimization', 'Indexing'],
+  tags: ['SQL', 'MySQL', 'Index', 'Performance'],
   questions: [
     {
       id: 1,

@@ -1,7 +1,7 @@
 const aws = {
   title: 'AWS Core',
   description: 'Core AWS services for Java backend developers — EC2, S3, RDS, SQS/SNS, Lambda, ECS/EKS, IAM, and VPC essentials for cloud-native microservices.',
-  tags: ['AWS', 'EC2', 'S3', 'Lambda', 'ECS', 'IAM', 'SQS', 'RDS'],
+  tags: ['AWS', 'S3', 'Lambda', 'ECS', 'IAM', 'SQS', 'RDS'],
   questions: [
     {
       id: 'aws_q1',

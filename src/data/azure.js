@@ -1,7 +1,7 @@
 const azure = {
   title: 'Azure Basics',
   description: 'Azure services for Java developers — deployment, configuration, monitoring, HTTP/HTTPS, environment variables.',
-  tags: ['Azure', 'Cloud', 'DevOps', 'Deployment'],
+  tags: ['Azure', 'Deployment', 'Azure DevOps', 'Application Insights'],
   questions: [
     {
       id: 1,

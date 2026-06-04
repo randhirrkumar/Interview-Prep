@@ -1,7 +1,7 @@
 const docker = {
   title: 'Docker & Kubernetes',
   description: 'Containerization with Docker and orchestration with Kubernetes — essentials for modern Java backend roles.',
-  tags: ['Docker', 'Kubernetes', 'Containers', 'DevOps', 'Microservices'],
+  tags: ['Docker', 'Kubernetes', 'Containers', 'DevOps'],
   questions: [
     {
       id: 1,

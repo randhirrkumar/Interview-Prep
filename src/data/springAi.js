@@ -1,7 +1,7 @@
 const springAi = {
   title: 'Spring AI & AI Integration',
   description: 'Integrating AI capabilities into Java applications using Spring AI — ChatClient, RAG patterns, vector stores, embeddings, prompt engineering, and LLM integration with OpenAI and Gemini.',
-  tags: ['Spring AI', 'LLM', 'RAG', 'OpenAI', 'Embeddings', 'Vector Store', 'AI'],
+  tags: ['Spring AI', 'LLM', 'RAG', 'Embeddings', 'Vector Store', 'Prompt Engineering'],
   questions: [
     {
       id: 'springai_q1',

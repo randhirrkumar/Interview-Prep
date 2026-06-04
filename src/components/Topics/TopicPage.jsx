@@ -85,7 +85,7 @@ export default function TopicPage() {
     return topicData.questions.filter(q => {
       const matchSearch = !search || q.question.toLowerCase().includes(search.toLowerCase())
       const matchDiff = diffFilter === 'all' || q.difficulty === diffFilter
-      const matchTag = !tagFilter || (q.tags && q.tags.includes(tagFilter))
+      const matchTag = !tagFilter || (q.tags && q.tags.some(t => t.toLowerCase() === tagFilter.toLowerCase()))
       return matchSearch && matchDiff && matchTag
     })
   }, [topicData, search, diffFilter, tagFilter])

@@ -1,7 +1,7 @@
 const hibernate = {
   title: 'Hibernate & JPA',
   description: 'JPA, Hibernate ORM, entity relationships, JPQL, and N+1 problem.',
-  tags: ['Hibernate', 'JPA', 'ORM', 'Spring Data JPA'],
+  tags: ['Hibernate', 'JPA', 'N+1', 'Performance'],
   questions: [
     {
       id: 1,

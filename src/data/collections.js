@@ -1,7 +1,7 @@
 const collections = {
   title: 'Collections & Data Structures',
   description: 'Java Collections Framework, HashMap internals, ArrayList vs LinkedList, and when to use which.',
-  tags: ['Collections', 'HashMap', 'Java', 'Data Structures'],
+  tags: ['Collections', 'HashMap', 'Java', 'ArrayList'],
   questions: [
     {
       id: 1,
