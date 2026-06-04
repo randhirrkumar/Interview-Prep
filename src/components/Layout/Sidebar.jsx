@@ -14,7 +14,7 @@ const SECTIONS = [
     id: 'main', label: null,
     items: [
       { label: 'Dashboard',          icon: LayoutDashboard, to: '/' },
-      { label: '30-Day Roadmap',     icon: Map,             to: '/roadmap' },
+      { label: '42-Day Roadmap',     icon: Map,             to: '/roadmap' },
       { label: 'Analytics',          icon: BarChart2,       to: '/analytics' },
       { label: 'Revision Scheduler', icon: CalendarClock,   to: '/revision' },
     ]
@@ -220,7 +220,7 @@ export default function Sidebar({ open, onClose }) {
             <Rocket size={20} style={{ color: '#818cf8' }} />
           </div>
           <div>
-            <div className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Crack it in 30 days</div>
+            <div className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Crack it in 42 days</div>
             <div className="text-xs" style={{ color: 'var(--text-dim)' }}>Stay consistent 💪</div>
           </div>
         </div>

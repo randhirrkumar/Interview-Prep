@@ -70,8 +70,8 @@ export default function Dashboard() {
   const firstName = user?.displayName?.split(' ')[0] || 'there'
 
   const daysLeft = startDate
-    ? Math.max(0, 30 - Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000))
-    : 30
+    ? Math.max(0, 42 - Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000))
+    : 42
 
   const readiness = Math.min(100, Math.round((completed.length / TOTAL_QUESTIONS) * 100))
 
@@ -108,7 +108,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-sm max-w-lg" style={{ color: 'var(--text-muted)' }}>
             Java Backend Engineer · Targeting Product &amp; Service Companies ·&nbsp;
-            <span style={{ color: 'var(--hero-accent)' }}>30-Day Mission to Crack It 🚀</span>
+            <span style={{ color: 'var(--hero-accent)' }}>42-Day Mission to Crack It 🚀</span>
           </p>
         </div>
       </div>
@@ -293,7 +293,7 @@ export default function Dashboard() {
         <div>
           <div className="text-sm font-semibold mb-1.5" style={{ color: '#a5b4fc' }}>Daily Reminder</div>
           <div className="text-sm italic leading-relaxed" style={{ color: 'var(--text-dim)' }}>
-            "Consistency beats talent. One focused hour daily for 30 days is better than 10 unfocused hours in one day.
+            "Consistency beats talent. One focused hour daily for 42 days is better than 10 unfocused hours in one day.
             {firstName !== 'there' ? ` ${firstName} —` : ''} you have the experience, you just need to structure it well. Let's go!"
           </div>
         </div>

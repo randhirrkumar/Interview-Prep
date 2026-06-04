@@ -10,8 +10,8 @@ export default function Roadmap() {
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
       <div className="card">
-        <h1 className="section-title">30-Day Interview Preparation Roadmap</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Structured daily plan to crack Java Backend Developer interviews in 1 month. Consistent daily effort beats random preparation.</p>
+        <h1 className="section-title">42-Day Interview Preparation Roadmap</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Structured 7-week daily plan covering all 28 topics demanded by the Indian tech market. Consistent daily effort beats random preparation.</p>
       </div>
 
       {/* Week tabs */}
