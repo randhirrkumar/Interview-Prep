@@ -1,7 +1,7 @@
 const springBoot = {
   title: 'Spring Boot',
-  description: 'Spring Boot, Spring Core, DI, Bean Lifecycle, REST APIs, AOP, and Spring MVC.',
-  tags: ['Spring Boot', 'Spring Core', 'DI', 'REST API', 'AOP'],
+  description: 'Spring Boot, Spring Core, DI, Bean Lifecycle, REST APIs, AOP, Spring MVC, and API Versioning (Spring Boot 4.0).',
+  tags: ['Spring Boot', 'Spring Core', 'DI', 'REST API', 'AOP', 'API Versioning'],
   questions: [
     {
       id: 1,
@@ -814,6 +814,515 @@ public ResponseEntity<OrderResponse> createOrder(
 // PUT    /orders/1   → idempotent (same PUT = same state)
 // DELETE /orders/1   → idempotent (second delete = still deleted)
 // POST   /orders     → NOT idempotent → add idempotency key`,
+    },
+
+    // ═══════════════════════════════════
+    //  API VERSIONING — SPRING BOOT 4.0
+    // ═══════════════════════════════════
+
+    {
+      id: 15,
+      question: 'Why does API Versioning matter in REST APIs?',
+      difficulty: 'beginner',
+      asked: false,
+      tags: ['API Versioning', 'REST API', 'Spring Boot'],
+      answer: `API versioning is something every production REST API eventually needs, and I learned this the hard way in my MetLife project.
+
+The core problem: once you publish an API and clients are using it, you cannot change it without breaking those clients. If I rename a field, remove a response property, change a type from String to List, or restructure the payload — any client relying on the old contract will fail.
+
+Real scenarios where versioning saves you:
+
+First — client diversity. My REST APIs in MetLife served both the mobile app team and the web team. Mobile apps can't be force-updated overnight — users might be running App v1.2 for months. The web team wanted v2 with a cleaner contract. Without versioning, I'd either be stuck with the old API forever or break mobile clients.
+
+Second — breaking vs non-breaking changes. Adding a new field is non-breaking — old clients just ignore it. Removing a field, renaming it, or changing its type is breaking. Versioning gives me a safe path to make breaking changes without impacting existing consumers.
+
+Third — deprecation path. With versioning I can say "v1 is deprecated, migrate to v2 by March 2025" and give clients time to migrate. Without it, breaking changes happen suddenly or never.
+
+Before Spring Boot 4.0, there was no built-in framework support for versioning — we built it ourselves using path prefixes, custom interceptors, or Accept headers. Spring Boot 4.0 changes this by providing first-class versioning support at the framework level.`,
+      code: `// Why versioning matters — a breaking change example
+
+// v1 response — client built around this
+{
+  "id": 1001,
+  "userName": "randhir.kumar",
+  "emailAddress": "randhir@example.com"
+}
+
+// v2 — renamed fields + nested structure (BREAKING for v1 clients!)
+{
+  "id": 1001,
+  "name": "Randhir Kumar",
+  "contact": {
+    "email": "randhir@example.com",
+    "phone": "+91-9876543210"
+  }
+}
+
+// WITHOUT versioning: you either break all v1 clients OR
+// you maintain ugly backward-compatible bloat forever
+
+// WITH versioning: v1 and v2 co-exist
+// GET /api/users/1   + Header: X-API-Version: 1  → old contract
+// GET /api/users/1   + Header: X-API-Version: 2  → new contract
+
+// Non-breaking changes (safe, no version bump needed):
+// ✅ Adding new optional fields
+// ✅ Adding new endpoints
+// ✅ Relaxing validation
+
+// Breaking changes (require new version):
+// ❌ Renaming fields
+// ❌ Removing fields
+// ❌ Changing field types (String → Number)
+// ❌ Restructuring response shape
+// ❌ Changing HTTP status codes`,
+      followUp: [
+        { question: 'What is semantic versioning and how does it apply to APIs?', answer: `Semantic versioning (SemVer) is MAJOR.MINOR.PATCH — but for APIs we typically only version on MAJOR breaking changes, not every minor or patch update. A MAJOR version (v1 → v2) means breaking changes exist and clients must migrate. MINOR and PATCH changes (new optional fields, bug fixes) are backward-compatible and don't require a new API version. This keeps versioning manageable — if every bug fix required a new version, you'd have v47 in a year.` },
+      ],
+      tip: 'In interviews: "We version APIs when we need to make breaking changes while keeping existing clients running. Non-breaking changes (adding optional fields) don\'t need a version bump." — shows you understand when versioning is actually needed.',
+    },
+
+    {
+      id: 16,
+      question: 'How was API versioning done before Spring Boot 4.0? What were the problems?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Versioning', 'REST API', 'Spring Boot'],
+      answer: `Before Spring Boot 4.0, there was no built-in versioning support. We had to implement it manually, and each approach had trade-offs.
+
+Approach 1 — URL Path Versioning: /api/v1/users, /api/v2/users. This is the most common approach and the one I used in my EPLMS project. It's simple, visible, and easy to test in a browser. But it has a problem: it violates REST principles because the URL should identify a resource, not its version. Also, it leads to code duplication — you end up copying controllers and changing a few things.
+
+Approach 2 — Request Header Versioning: X-API-Version: 1 header. Keeps URLs clean. But harder to test (can't just paste URL in browser), and you need custom HandlerMapping or interceptors to route based on headers.
+
+Approach 3 — Accept Header (Media Type) Versioning: Accept: application/vnd.myapp.v1+json. Most REST-purist approach — the client declares what representation they want. But very verbose and complex to implement with custom content negotiation in Spring.
+
+Approach 4 — Query Parameter: GET /users?version=1. Simple but pollutes the URL, and caching is harder (query params affect cache keys differently).
+
+The real problem with all these: Spring had no built-in awareness of versions. You had to write custom HandlerMapping, interceptors, or duplicate controllers per version. Testing was purely manual — write your own MockMvc helpers. Deprecation notices had to be added manually to each response. Everything was boilerplate.
+
+Spring Boot 4.0 solved all of this at the framework level.`,
+      code: `// Approach 1 — URL Path Versioning (most common pre-4.0)
+// Separate controller classes per version:
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserControllerV1 {
+    @GetMapping("/{id}")
+    public UserV1Response getUser(@PathVariable Long id) {
+        // v1 contract
+    }
+}
+
+@RestController
+@RequestMapping("/api/v2/users")
+public class UserControllerV2 {
+    @GetMapping("/{id}")
+    public UserV2Response getUser(@PathVariable Long id) {
+        // v2 contract — duplicated controller, code smell!
+    }
+}
+
+// Approach 2 — Header Versioning (manual routing)
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    @GetMapping(value = "/{id}", headers = "X-API-Version=1")
+    public UserV1Response getUserV1(@PathVariable Long id) { ... }
+
+    @GetMapping(value = "/{id}", headers = "X-API-Version=2")
+    public UserV2Response getUserV2(@PathVariable Long id) { ... }
+}
+
+// Approach 3 — Accept Header / Media Type Versioning
+@GetMapping(value = "/{id}", produces = "application/vnd.myapp.v1+json")
+public UserV1Response getUserV1(@PathVariable Long id) { ... }
+
+@GetMapping(value = "/{id}", produces = "application/vnd.myapp.v2+json")
+public UserV2Response getUserV2(@PathVariable Long id) { ... }
+
+// Approach 4 — Query Parameter
+@GetMapping("/users")
+public ResponseEntity<?> getUser(
+    @PathVariable Long id,
+    @RequestParam(defaultValue = "1") int version) {
+    return switch (version) {
+        case 1 -> ResponseEntity.ok(userService.getUserV1(id));
+        case 2 -> ResponseEntity.ok(userService.getUserV2(id));
+        default -> ResponseEntity.badRequest().body("Unknown version: " + version);
+    };
+}
+
+// Problems with all approaches:
+// ❌ No framework support — all boilerplate
+// ❌ No built-in deprecation headers
+// ❌ No test helpers
+// ❌ No client-side versioning utilities
+// ❌ Version routing logic scattered across controllers`,
+      followUp: [
+        { question: 'Which versioning strategy did you prefer before Spring Boot 4.0 and why?', answer: `I preferred URL path versioning (/api/v1/, /api/v2/) for most projects because it's explicit, easy to test, and familiar to all API consumers — you can test it in a browser or curl without special headers. For internal APIs between microservices, I used header versioning (X-API-Version) because it keeps URLs clean and the consumers are controlled services that we can update. I avoided query param versioning because it complicates caching — some CDNs and proxies ignore query params in cache keys.` },
+      ],
+      tip: 'When asked which approach is best: "URL path is most widely used and easiest to work with. Header versioning is cleaner but harder to test. Media type versioning is most REST-pure but complex to implement. Spring Boot 4.0 supports all three natively."',
+    },
+
+    {
+      id: 17,
+      question: 'What is the new API Versioning support in Spring Boot 4.0? How do you configure it on the server side?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Versioning', 'Spring Boot 4.0', 'Server Configuration'],
+      answer: `Spring Boot 4.0 introduces first-class API versioning support — something the community has wanted for years. Instead of writing custom interceptors and routing logic, the framework now handles it natively.
+
+The core idea: you declare a versioning strategy once, and then annotate your controllers with @HttpVersionMapping (or configure @ApiVersion on methods) to tell Spring which version each endpoint belongs to. Spring routes requests to the correct handler automatically.
+
+There are three versioning strategies supported out of the box:
+
+Header strategy — version sent in a request header (e.g., X-API-Version: 2). This is the cleanest approach because URLs stay stable. Best for internal service-to-service APIs where you control all consumers.
+
+Media type strategy — version embedded in the Accept header (e.g., Accept: application/vnd.myapp.v2+json). The most REST-purist approach — you're negotiating content representation. More complex to set up but aligns with HTTP spec.
+
+Path strategy — version in the URL path (/api/v2/users). Simple and backwards-compatible with existing Spring Boot 3.x patterns. Easy to test and most familiar.
+
+You configure the strategy globally in application.properties or via WebMvcConfigurer, and then individual controllers/methods declare which versions they handle. The framework validates that the requested version is supported and returns 400 Bad Request or 406 Not Acceptable automatically if the version is unknown.`,
+      code: `// ── application.properties (header strategy) ──────────────────
+spring.mvc.api-versioning.enabled=true
+spring.mvc.api-versioning.strategy=header
+spring.mvc.api-versioning.header-name=X-API-Version
+spring.mvc.api-versioning.default-version=1
+spring.mvc.api-versioning.supported-versions=1,2,3
+
+// ── application.properties (media-type strategy) ───────────────
+spring.mvc.api-versioning.strategy=media-type
+spring.mvc.api-versioning.media-type-prefix=application/vnd.myapp.v
+spring.mvc.api-versioning.default-version=1
+
+// ── Java-based configuration ───────────────────────────────────
+@Configuration
+public class ApiVersioningConfig implements WebMvcConfigurer {
+
+    @Override
+    public void configureApiVersioning(ApiVersionHandlerRegistry registry) {
+        registry
+            .useHeaderStrategy("X-API-Version")  // version comes from this header
+            .setDefaultVersion("1")               // baseline: no header = v1
+            .setSupportedVersions("1", "2", "3"); // 400 if unknown version requested
+    }
+}
+
+// ── Request examples ───────────────────────────────────────────
+// Header strategy:
+// GET /api/users/1
+// X-API-Version: 2
+// → routed to v2 handler
+
+// Media type strategy:
+// GET /api/users/1
+// Accept: application/vnd.myapp.v2+json
+// → routed to v2 handler
+
+// Path strategy:
+// GET /api/v2/users/1
+// → routed to v2 handler`,
+      followUp: [
+        { question: 'What happens if a client sends an unsupported version number?', answer: `With Spring Boot 4.0 native versioning, if a client requests version "5" and supported versions are "1", "2", "3", Spring automatically returns 400 Bad Request (for header/query-param strategies) or 406 Not Acceptable (for media-type strategy). You don't need to write any error handling code for this — the framework does it. Before Spring Boot 4.0, you had to write this validation yourself in an interceptor.` },
+        { question: 'Can you mix versioning strategies in the same application?', answer: `Generally no — you pick one strategy and apply it globally. Mixing header and path versioning in the same app creates ambiguity: which takes precedence when both are present? If you're migrating from URL path versioning (old style) to header versioning (new style), you can keep the old controllers as-is and gradually migrate endpoints to the new @ApiVersion annotation. During transition, both work — just be explicit about which routing each controller uses.` },
+      ],
+      tip: 'Spring Boot 4.0 versioning is configured once globally — strategy, header name, supported versions — then controllers just declare which version they belong to. The framework handles routing, validation, and error responses automatically.',
+    },
+
+    {
+      id: 18,
+      question: 'How do you use @ApiVersion on controllers in Spring Boot 4.0? What are Baseline Versions?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Versioning', 'Spring Boot 4.0', '@ApiVersion', 'Baseline Version'],
+      answer: `Once the versioning strategy is configured, you annotate controllers and methods with @ApiVersion to declare what they serve. This is where it gets elegant.
+
+Class-level @ApiVersion applies to all methods in the controller. Method-level @ApiVersion overrides the class-level one for that specific method. You can also declare a version range — from and to — so one method handles requests for v1, v2, and v3 without duplicating code.
+
+This is a huge improvement over the old approach where you duplicated entire controller classes. Now you can have a single controller with methods that say "this handler serves v1 and v2, that handler serves v3 and above."
+
+Baseline Versions — this is the concept of what version a client gets when they don't send a version at all. In the server config, you set a defaultVersion. When a client hits your API without any version header, Spring treats it as the baseline version request. This is critical for backward compatibility — existing clients that were never version-aware keep working because they implicitly get the baseline (usually v1).
+
+I use baseline version as "v1 forever" for public APIs — it means old clients never break even if they never update their code.
+
+The combination of class-level @ApiVersion + method-level overrides + baseline version gives you a clean way to evolve your API without code duplication.`,
+      code: `// ── Class-level versioning — all methods serve v1 ─────────────
+@RestController
+@RequestMapping("/api/users")
+@ApiVersion("1")
+public class UserControllerV1 {
+
+    @GetMapping("/{id}")
+    public UserV1Response getUser(@PathVariable Long id) {
+        return userService.getUserV1(id);
+    }
+
+    @PostMapping
+    public UserV1Response createUser(@RequestBody @Valid CreateUserV1Request req) {
+        return userService.createUserV1(req);
+    }
+}
+
+// ── Class-level with method-level override ─────────────────────
+@RestController
+@RequestMapping("/api/users")
+@ApiVersion("2")  // default for all methods: v2
+public class UserControllerV2 {
+
+    @GetMapping("/{id}")
+    public UserV2Response getUser(@PathVariable Long id) {
+        // handles X-API-Version: 2
+        return userService.getUserV2(id);
+    }
+
+    @GetMapping("/{id}/summary")
+    @ApiVersion("3")  // THIS method only: v3 (overrides class-level)
+    public UserSummaryResponse getUserSummary(@PathVariable Long id) {
+        return userService.getUserSummary(id);
+    }
+}
+
+// ── Version ranges — one method handles multiple versions ──────
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    // Serves v1 and v2 (stable contract, no change needed)
+    @GetMapping("/{id}")
+    @ApiVersion(from = "1", to = "2")
+    public OrderV1Response getOrderV1(@PathVariable Long id) {
+        return orderService.getOrder(id);
+    }
+
+    // v3 onwards: new enriched response structure
+    @GetMapping("/{id}")
+    @ApiVersion(from = "3")
+    public OrderV3Response getOrderV3(@PathVariable Long id) {
+        return orderService.getOrderEnriched(id);
+    }
+}
+
+// ── Baseline version — what unversioned clients get ───────────
+// application.properties:
+// spring.mvc.api-versioning.default-version=1
+
+// Client A (new, version-aware):
+// GET /api/users/1
+// X-API-Version: 2   → served by UserControllerV2.getUser()
+
+// Client B (old, never sent headers):
+// GET /api/users/1
+// (no X-API-Version header) → baseline kicks in → served by UserControllerV1.getUser()
+// Old client keeps working without any code change!`,
+      followUp: [
+        { question: 'How do you handle shared logic between v1 and v2 controllers without duplication?', answer: `The version-specific controllers are thin — they handle request/response DTOs for that version. All business logic lives in the service layer, which is version-agnostic. So UserControllerV1.getUser() and UserControllerV2.getUser() both call userService.getUser(id), but map the result to different response DTOs (UserV1Response vs UserV2Response). The service itself never changes. Only the request/response shapes differ between versions.` },
+        { question: 'What is the difference between @ApiVersion("2") and @ApiVersion(from="2")?', answer: `@ApiVersion("2") means EXACTLY version 2 — only requests with X-API-Version: 2 hit this handler. @ApiVersion(from="2") means version 2 AND ALL FUTURE VERSIONS — so v2, v3, v4 all route here until a more specific handler is registered. This is useful for endpoints that haven't changed since v2 — they don't need a new method per version, they just serve everything from v2 onwards.` },
+      ],
+      tip: '@ApiVersion(from="2") is the key to avoiding code duplication — it means "this handler serves v2 and all future versions unless something more specific is registered." Use it for stable endpoints that don\'t change between versions.',
+    },
+
+    {
+      id: 19,
+      question: 'How does Spring Boot 4.0 support API Versioning on the client side? What are Deprecation Hints?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Versioning', 'Spring Boot 4.0', 'RestClient', 'Deprecation'],
+      answer: `Spring Boot 4.0 API versioning support is not just server-side — the client-side HTTP clients (RestClient and WebClient) also get built-in versioning support.
+
+Client-Side Support:
+Before 4.0, if you wanted to set X-API-Version on every outgoing request from a service, you had to add a custom interceptor or default header to RestTemplate/RestClient. Now RestClient and WebClient have a native apiVersion() method that injects the version into every request according to the configured strategy.
+
+This is very useful in microservice environments — Service A calls Service B's v2 API, and you declare that once in the client configuration rather than adding a header to every individual call.
+
+Deprecation Hints:
+This is my favourite feature in Spring Boot 4.0 versioning. When you mark an API version as deprecated using @ApiVersion(deprecated = true) or @DeprecatedSince("2"), Spring Boot automatically adds standard HTTP deprecation response headers:
+
+Deprecation header — tells the client this version is deprecated. Can include the deprecation date.
+Sunset header — tells the client WHEN this version will be removed. Clients can programmatically check this.
+
+This is based on RFC 8594 (the Sunset HTTP Header). Before this, you had to manually add these headers in a filter or interceptor for every deprecated endpoint. Now you just annotate the controller method and Spring handles the headers.
+
+In a real project, I'd mark v1 as deprecated with a sunset date 6 months out, and any client that inspects headers would get a clear signal to migrate before the cutoff.`,
+      code: `// ── Client-side: RestClient with versioning ───────────────────
+// Build a version-aware RestClient
+RestClient userServiceClient = RestClient.builder()
+    .baseUrl("https://user-service.internal")
+    .apiVersion("2")  // all requests send X-API-Version: 2 automatically
+    .build();
+
+// Every call auto-sends X-API-Version: 2
+UserV2Response user = userServiceClient
+    .get()
+    .uri("/api/users/{id}", userId)
+    .retrieve()
+    .body(UserV2Response.class);
+
+// Override version for a specific request
+UserV3Response enriched = userServiceClient
+    .get()
+    .uri("/api/users/{id}/summary", userId)
+    .apiVersion("3")  // overrides the client-level default
+    .retrieve()
+    .body(UserV3Response.class);
+
+// ── WebClient with versioning (reactive) ──────────────────────
+WebClient webClient = WebClient.builder()
+    .baseUrl("https://order-service.internal")
+    .apiVersion("2")
+    .build();
+
+Mono<OrderV2Response> order = webClient
+    .get()
+    .uri("/api/orders/{id}", orderId)
+    .retrieve()
+    .bodyToMono(OrderV2Response.class);
+
+// ── Deprecation Hints — server side ───────────────────────────
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    // Mark v1 as deprecated — Spring auto-adds Deprecation + Sunset headers
+    @GetMapping("/{id}")
+    @ApiVersion(value = "1", deprecated = true)
+    @DeprecatedSince(version = "1", sunset = "2026-06-01")
+    public UserV1Response getUserV1(@PathVariable Long id) {
+        return userService.getUserV1(id);
+    }
+
+    @GetMapping("/{id}")
+    @ApiVersion(from = "2")
+    public UserV2Response getUserV2(@PathVariable Long id) {
+        return userService.getUserV2(id);
+    }
+}
+
+// Response headers Spring Boot 4.0 adds automatically for deprecated version:
+// HTTP/1.1 200 OK
+// Deprecation: true
+// Sunset: Sun, 01 Jun 2026 00:00:00 GMT
+// Link: </api/users/{id}>; rel="successor-version"
+
+// Client-side: detect deprecation and log warning
+RestClient.ResponseSpec spec = client.get().uri("/api/users/1").retrieve();
+spec.onStatus(HttpStatusCode::is2xxSuccessful, (request, response) -> {
+    if (response.getHeaders().containsKey("Deprecation")) {
+        String sunset = response.getHeaders().getFirst("Sunset");
+        log.warn("API version deprecated. Sunset date: {}", sunset);
+    }
+});`,
+      followUp: [
+        { question: 'What is the Sunset HTTP header and why does it matter?', answer: `Sunset (RFC 8594) is a standard HTTP response header that tells clients the date after which a resource or API version will no longer be available. Format: Sunset: Thu, 01 Jan 2026 00:00:00 GMT. When Spring Boot 4.0 adds this header automatically on deprecated endpoints, API consumers can build tooling to scan their HTTP responses and alert teams when they're calling APIs with an upcoming sunset date. This turns deprecation from a "hope someone reads the release notes" situation into a machine-readable signal that can trigger automated alerts.` },
+        { question: 'How do you communicate API deprecation to client teams in practice?', answer: `Three-layer approach I use: (1) Technical — HTTP Deprecation and Sunset headers on every response from deprecated endpoints (Spring Boot 4.0 adds these automatically). (2) Documentation — mark version as deprecated in OpenAPI/Swagger with the migration guide. (3) Operational — monitor which clients are still calling deprecated versions using Actuator metrics or API gateway logs — reach out to those teams directly before sunset date. Don't rely on teams self-discovering — proactively contact them when their calls show up in deprecation metrics.` },
+      ],
+      tip: 'Deprecation headers follow RFC 8594 — mention this in interviews. "Deprecation" header signals it\'s deprecated, "Sunset" header gives the removal date. Spring Boot 4.0 adds these automatically when you annotate with @DeprecatedSince — no filter boilerplate needed.',
+    },
+
+    {
+      id: 20,
+      question: 'How do you test versioned APIs in Spring Boot 4.0?',
+      difficulty: 'intermediate',
+      asked: false,
+      tags: ['API Versioning', 'Spring Boot 4.0', 'Testing', 'MockMvc'],
+      answer: `Testing versioned APIs properly was painful before Spring Boot 4.0 — you had to remember to add the right header to every test manually, and there were no utilities to help. Spring Boot 4.0 adds dedicated test support for API versioning that integrates with MockMvc and WebTestClient.
+
+The main improvement: MockMvc gets an apiVersion() request post-processor that injects the version according to whatever strategy is configured (header, media type, or path). This means your tests don't need to know if the app uses X-API-Version header or Accept header — the same test helper works regardless of strategy. If you switch strategies in configuration, your tests still work.
+
+For slice tests like @WebMvcTest, Spring Boot 4.0 also auto-configures the versioning strategy so you don't need to manually configure it in test context.
+
+I'd also write specific tests to verify:
+- Correct version routes to correct handler
+- Deprecated version returns Deprecation and Sunset headers
+- Unknown version returns 400 Bad Request
+- Baseline version (no header) routes to default version handler
+
+The last point is critical for regression testing — you must prove that existing clients (no version header) still get the baseline response unchanged. That's the contract you're protecting.`,
+      code: `// ── @WebMvcTest with versioning ───────────────────────────────
+@WebMvcTest(UserController.class)
+class UserControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    // Test v1 endpoint
+    @Test
+    void getUser_v1_returnsV1Response() throws Exception {
+        mockMvc.perform(get("/api/users/1")
+                    .with(apiVersion("1")))  // Spring Boot 4.0 MockMvc helper
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.userName").exists())   // v1 field name
+               .andExpect(jsonPath("$.contact").doesNotExist()); // v2 field not in v1
+    }
+
+    // Test v2 endpoint — different response shape
+    @Test
+    void getUser_v2_returnsV2Response() throws Exception {
+        mockMvc.perform(get("/api/users/1")
+                    .with(apiVersion("2")))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.name").exists())       // v2 field
+               .andExpect(jsonPath("$.contact.email").exists()); // nested v2 structure
+    }
+
+    // Test baseline — no version header → default version (v1)
+    @Test
+    void getUser_noVersionHeader_routesToBaseline() throws Exception {
+        mockMvc.perform(get("/api/users/1"))  // no apiVersion() — simulates old clients
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.userName").exists()); // v1 contract returned
+    }
+
+    // Test deprecated version returns deprecation headers
+    @Test
+    void getUser_v1_returnsDeprecationHeaders() throws Exception {
+        mockMvc.perform(get("/api/users/1")
+                    .with(apiVersion("1")))
+               .andExpect(status().isOk())
+               .andExpect(header().exists("Deprecation"))
+               .andExpect(header().exists("Sunset"));
+    }
+
+    // Test unsupported version → 400 Bad Request
+    @Test
+    void getUser_unknownVersion_returns400() throws Exception {
+        mockMvc.perform(get("/api/users/1")
+                    .with(apiVersion("99")))  // not a supported version
+               .andExpect(status().isBadRequest());
+    }
+}
+
+// ── Integration test — full context ───────────────────────────
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class UserApiIntegrationTest {
+
+    @Autowired
+    TestRestTemplate restTemplate;
+
+    @Test
+    void v2_and_v1_coexist() {
+        HttpHeaders headersV1 = new HttpHeaders();
+        headersV1.set("X-API-Version", "1");
+
+        HttpHeaders headersV2 = new HttpHeaders();
+        headersV2.set("X-API-Version", "2");
+
+        ResponseEntity<UserV1Response> v1 = restTemplate.exchange(
+            "/api/users/1", HttpMethod.GET, new HttpEntity<>(headersV1), UserV1Response.class);
+
+        ResponseEntity<UserV2Response> v2 = restTemplate.exchange(
+            "/api/users/1", HttpMethod.GET, new HttpEntity<>(headersV2), UserV2Response.class);
+
+        assertThat(v1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(v1.getBody().getUserName()).isEqualTo("randhir.kumar"); // v1 field
+
+        assertThat(v2.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(v2.getBody().getName()).isEqualTo("Randhir Kumar"); // v2 field
+    }
+}`,
+      followUp: [
+        { question: 'What is the most critical test to write for a versioned API?', answer: `The baseline/regression test — prove that old clients (no version header) still get exactly the same response they always did. This is the contract you cannot break. If this test fails after any change, you've broken backward compatibility. I always run these as part of CI with the exact JSON response structure captured as a snapshot — any change to the v1 response shape fails the build. The framework auto-configuring versioning in @WebMvcTest means these tests run fast without a full Spring context.` },
+        { question: 'How do you ensure version-specific API documentation with Spring Boot 4.0?', answer: `SpringDoc OpenAPI (springdoc-openapi) integrates with Spring Boot 4.0 versioning — it can generate separate API specs per version automatically. You get /v3/api-docs/v1 and /v3/api-docs/v2 showing only the endpoints available for each version, including which ones are deprecated. Configure it with springdoc.api-version.enabled=true. This means Swagger UI shows version-specific documentation, and API consumers can clearly see what changed between v1 and v2.` },
+      ],
+      tip: 'Always test three scenarios for versioned APIs: (1) correct version routes to correct handler, (2) deprecated version returns Deprecation/Sunset headers, (3) no version header (old client) routes to baseline — this last one is the regression test you can never break.',
     },
   ],
 }
