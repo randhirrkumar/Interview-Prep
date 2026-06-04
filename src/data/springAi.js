@@ -46,7 +46,7 @@ Setup:
 spring:
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: \${OPENAI_API_KEY}
       chat:
         options:
           model: gpt-4o

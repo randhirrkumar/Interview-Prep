@@ -51,7 +51,7 @@ public class S3Service {
     private final S3Client s3Client;
     private final String bucketName;
 
-    public S3Service(S3Client s3Client, @Value("${aws.s3.bucket}") String bucketName) {
+    public S3Service(S3Client s3Client, @Value("\${aws.s3.bucket}") String bucketName) {
         this.s3Client = s3Client;
         this.bucketName = bucketName;
     }
@@ -277,12 +277,12 @@ Secure configuration in Spring Boot:
 # application.yml — NEVER hardcode credentials
 spring:
   datasource:
-    url: jdbc:mysql://${RDS_ENDPOINT}:3306/${RDS_DB_NAME}
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    url: jdbc:mysql://\${RDS_ENDPOINT}:3306/\${RDS_DB_NAME}
+    username: \${RDS_USERNAME}
+    password: \${RDS_PASSWORD}
 
 # Use AWS Secrets Manager for credentials rotation
-# spring-cloud-aws-secrets-manager-config resolves ${/myapp/db/password} from Secrets Manager
+# spring-cloud-aws-secrets-manager-config resolves \${/myapp/db/password} from Secrets Manager
 
 Best practices:
 1. Store credentials in AWS Secrets Manager — never in application.yml or environment variables. Enable automatic rotation so RDS password rotates every 30 days without application restart.

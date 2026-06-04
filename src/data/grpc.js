@@ -146,9 +146,9 @@ Build plugin generates Java stubs from .proto files:
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-maven-plugin</artifactId>
     <configuration>
-        <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:${os.detected.classifier}</protocArtifact>
+        <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:\${os.detected.classifier}</protocArtifact>
         <pluginId>grpc-java</pluginId>
-        <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.62.0:exe:${os.detected.classifier}</pluginArtifact>
+        <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.62.0:exe:\${os.detected.classifier}</pluginArtifact>
     </configuration>
 </plugin>
 

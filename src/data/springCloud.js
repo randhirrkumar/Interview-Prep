@@ -77,7 +77,7 @@ spring:
     import: configserver:http://config-server:8888
   cloud:
     config:
-      profile: ${SPRING_PROFILES_ACTIVE:dev}
+      profile: \${SPRING_PROFILES_ACTIVE:dev}
 
 The client fetches: http://config-server:8888/order-service/prod
 Response merges: application.yml → order-service/application.yml → order-service/application-prod.yml
@@ -105,7 +105,7 @@ Setup:
 public class OrderServiceApplication { ... }
 
 // Feign client interface
-@FeignClient(name = "inventory-service", url = "${inventory.service.url}")
+@FeignClient(name = "inventory-service", url = "\${inventory.service.url}")
 public interface InventoryClient {
 
     @GetMapping("/api/inventory/{productId}")

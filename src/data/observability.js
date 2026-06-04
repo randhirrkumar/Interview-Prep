@@ -162,7 +162,7 @@ Setup with logstash-logback-encoder:
 <configuration>
   <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"service":"order-service","version":"${APP_VERSION}"}</customFields>
+      <customFields>{"service":"order-service","version":"\${APP_VERSION}"}</customFields>
       <includeMdcKeyName>traceId</includeMdcKeyName>
       <includeMdcKeyName>spanId</includeMdcKeyName>
       <includeMdcKeyName>userId</includeMdcKeyName>
