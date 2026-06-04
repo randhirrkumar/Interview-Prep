@@ -5,7 +5,8 @@ import {
   LayoutDashboard, Map, Code2, Server, Layers, Database, Cloud, Shield,
   FolderKanban, MessageSquare, HelpCircle, Building2, Cpu, BookOpen, Zap,
   GitBranch, X, Terminal, TestTube, Shapes, BarChart2, Star, CalendarClock,
-  FlaskConical, ChevronDown, Rocket
+  FlaskConical, ChevronDown, Rocket, Activity, BrainCircuit, Network,
+  Workflow, Radio, Globe, Bot, Box, Settings2
 } from 'lucide-react'
 
 const SECTIONS = [
@@ -32,26 +33,53 @@ const SECTIONS = [
     id: 'backend', label: 'Backend & Spring',
     items: [
       { label: 'Spring Boot',      icon: Server,    to: '/topics/spring-boot' },
+      { label: 'Spring Cloud',     icon: Network,   to: '/topics/spring-cloud' },
       { label: 'Microservices',    icon: Layers,    to: '/topics/microservices' },
       { label: 'Hibernate & JPA',  icon: Database,  to: '/topics/hibernate' },
-      { label: 'Kafka',            icon: GitBranch, to: '/topics/kafka' },
+      { label: 'Kafka',            icon: Radio,     to: '/topics/kafka' },
+      { label: 'RabbitMQ & AMQP',  icon: Workflow,  to: '/topics/rabbitmq' },
       { label: 'SQL & MySQL',      icon: Database,  to: '/topics/sql' },
+    ]
+  },
+  {
+    id: 'databases', label: 'Databases & Caching',
+    items: [
+      { label: 'MongoDB & NoSQL',   icon: Database,  to: '/topics/mongodb' },
+      { label: 'Redis & Caching',   icon: Zap,       to: '/topics/redis' },
+    ]
+  },
+  {
+    id: 'cloud', label: 'Cloud & DevOps',
+    items: [
+      { label: 'AWS Core',          icon: Cloud,    to: '/topics/aws' },
+      { label: 'Azure Basics',      icon: Cloud,    to: '/topics/azure' },
+      { label: 'Kubernetes (K8s)',  icon: Box,      to: '/topics/kubernetes' },
+      { label: 'Docker & Containers',icon: Terminal, to: '/topics/docker' },
+      { label: 'CI/CD Pipelines',  icon: Settings2, to: '/topics/cicd' },
+    ]
+  },
+  {
+    id: 'security', label: 'Security & Observability',
+    items: [
+      { label: 'Spring Security',      icon: Shield,    to: '/topics/security' },
+      { label: 'SSO / SAML',          icon: Shield,    to: '/topics/sso' },
+      { label: 'Observability',        icon: Activity,  to: '/topics/observability' },
     ]
   },
   {
     id: 'tools', label: 'Dev Tools & Practices',
     items: [
       { label: 'Design Patterns',          icon: Shapes,   to: '/topics/design-patterns' },
-      { label: 'Docker & Kubernetes',      icon: Terminal, to: '/topics/docker' },
       { label: 'Testing (JUnit & Mockito)',icon: TestTube, to: '/topics/testing' },
+      { label: 'System Design',           icon: Building2, to: '/topics/system-design' },
     ]
   },
   {
-    id: 'cloud', label: 'Cloud & Security',
+    id: 'modern', label: 'Modern & Emerging',
     items: [
-      { label: 'Azure Basics',     icon: Cloud,   to: '/topics/azure' },
-      { label: 'SSO / SAML',      icon: Shield,  to: '/topics/sso' },
-      { label: 'Spring Security',  icon: Shield,  to: '/topics/security' },
+      { label: 'Spring AI',   icon: Bot,        to: '/topics/spring-ai' },
+      { label: 'GraphQL',     icon: Globe,      to: '/topics/graphql' },
+      { label: 'gRPC',        icon: BrainCircuit, to: '/topics/grpc' },
     ]
   },
   {
@@ -60,7 +88,6 @@ const SECTIONS = [
       { label: 'DSA Problems',   icon: FlaskConical,  to: '/dsa' },
       { label: 'STAR Stories',   icon: Star,          to: '/star' },
       { label: 'Mock Interview', icon: MessageSquare, to: '/mock-interview' },
-      { label: 'System Design',  icon: Building2,     to: '/system-design' },
       { label: 'Flash Cards',    icon: BookOpen,      to: '/flashcards' },
     ]
   },

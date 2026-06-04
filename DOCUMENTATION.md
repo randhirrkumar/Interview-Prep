@@ -71,7 +71,7 @@ Update DOCUMENTATION.md — I added email/password login alongside Google. Updat
 - **Deployed** on GitHub Pages at: `https://randhirrkumar.github.io/Interview-Prep/`
 - **Backed** by Firebase (Google Auth + Firestore) for multi-device progress tracking
 - **Fully offline-capable** for unauthenticated users (LocalStorage fallback)
-- **Covers** 260+ Q&A across 17 topics, 5 project deep-dives, 4-week roadmap, mock interviews, DSA, system design, HR prep, flashcards, and company-specific prep
+- **Covers** 500+ Q&A across 28 topics, 5 project deep-dives, 7-week 42-day roadmap, mock interviews, DSA, system design, HR prep, flashcards, and company-specific prep
 
 **Target user:** Randhir Kumar — Java Backend Developer, 4+ years experience at Adani Groups, preparing for 2026 placements.
 
@@ -169,10 +169,22 @@ interview-prep/
 │   │   ├── testing.js            # JUnit 5, Mockito, @SpringBootTest, assertions, TDD
 │   │   ├── azure.js              # App Service, deployment slots, env variables, Key Vault, CI/CD
 │   │   ├── sso.js                # SAML flow, assertions, identity providers, OAuth2 vs SAML
+│   │   ├── redis.js              # 12 Q&A: Redis data structures, TTL, eviction, Spring Cache, distributed locking, rate limiting
+│   │   ├── mongodb.js            # 10 Q&A: document modeling, aggregation pipeline, Spring Data MongoDB, indexing, sharding
+│   │   ├── aws.js                # 10 Q&A: EC2, S3, RDS, SQS/SNS, Lambda, ECS, IAM, VPC, CloudWatch, Auto Scaling
+│   │   ├── kubernetes.js         # 10 Q&A: Pods, Deployments, Services, ConfigMaps, health probes, HPA, Helm, zero-downtime
+│   │   ├── cicd.js               # 7 Q&A: GitHub Actions, Jenkins, GitOps/ArgoCD, SonarQube, deployment strategies
+│   │   ├── springCloud.js        # 6 Q&A: Config Server, Feign Client, Resilience4j, Spring Cloud Gateway, distributed tracing
+│   │   ├── observability.js      # 6 Q&A: Actuator, Micrometer, Prometheus+Grafana, ELK, structured logging, alerting
+│   │   ├── rabbitmq.js           # 6 Q&A: exchange types, Spring AMQP, DLQ, request-reply, durability, quorum queues
+│   │   ├── springAi.js           # 5 Q&A: ChatClient, RAG pattern, vector stores, prompt engineering, token cost management
+│   │   ├── graphql.js            # 5 Q&A: schema, Spring for GraphQL, DataLoader/BatchMapping, subscriptions, error handling
+│   │   ├── grpc.js               # 5 Q&A: Protocol Buffers, 4 streaming types, Spring Boot integration, TLS, interceptors
+│   │   ├── systemDesign.js       # 10 Q&A: HLD/LLD framework, URL Shortener, Notification Service, Chat System, CAP, CQRS, Rate Limiter
 │   │   ├── dsaProblems.js        # 100+ LeetCode-style problems with approach + solution code
 │   │   ├── hrQuestions.js        # Tell me about yourself, switch reason, gap handling, salary negotiation
 │   │   ├── projects.js           # EPLMS, MetLife, E-commerce, URL Shortener, Banking — deep-dive data
-│   │   └── roadmap.js            # 4-week daily structured prep plan
+│   │   └── roadmap.js            # 7-week 42-day daily structured prep plan
 │   │
 │   └── components/               # UI components, one folder per feature
 │       ├── Layout/
@@ -570,7 +582,7 @@ Defined in `src/App.jsx`:
 
 ### Parameterized Routes
 
-**`/topics/:topicId`** — `TopicPage.jsx` reads `topicId` via `useParams()` and looks it up in the `TOPICS` map inside the component. Valid values: `java-core`, `java-versions`, `java8` (Stream API Coding), `multithreading`, `collections`, `spring-boot`, `microservices`, `kafka`, `hibernate`, `sql`, `security`, `design-patterns`, `docker`, `testing`, `azure`, `sso`.
+**`/topics/:topicId`** — `TopicPage.jsx` reads `topicId` via `useParams()` and looks it up in the `TOPICS` map inside the component. Valid values: `java-core`, `java-versions`, `java8` (Stream API Coding), `multithreading`, `collections`, `spring-boot`, `spring-cloud`, `microservices`, `kafka`, `rabbitmq`, `hibernate`, `sql`, `security`, `design-patterns`, `docker`, `testing`, `azure`, `sso`, `redis`, `mongodb`, `aws`, `kubernetes`, `cicd`, `observability`, `spring-ai`, `graphql`, `grpc`, `system-design`.
 
 **`/projects/:projectId`** — `ProjectPage.jsx` reads `projectId` via `useParams()` and looks it up in `data/projects.js`. Valid values: `eplms`, `metlife`, `ecommerce`, `urlshortener`, `banking`.
 
@@ -757,11 +769,14 @@ The user's display name comes from `user.displayName` (Google account name).
 #### `Sidebar.jsx`
 Left navigation. Contains collapsible sections:
 - Dashboard, 30-Day Roadmap, Analytics, Revision Scheduler
-- **Java Topics** (Java Core & OOP → `/topics/java-core`, Java Versions 8–21 → `/topics/java-versions`, Stream API Coding → `/topics/java8`, Multithreading, Collections & DS)
-- **Backend & Spring** (Spring Boot, Microservices, Hibernate & JPA, Kafka, SQL & MySQL)
-- **Dev Tools & Practices** (Design Patterns, Docker & Kubernetes, Testing)
-- **Cloud & Security** (Azure Basics, SSO/SAML, Spring Security)
-- **Practice** (DSA Problems, STAR Stories, Mock Interview, System Design, Flash Cards)
+- **Java Topics** (Java Core & OOP, Java Versions 8–21, Stream API Coding, Multithreading, Collections & DS)
+- **Backend & Spring** (Spring Boot, Spring Cloud, Microservices, Hibernate & JPA, Kafka, RabbitMQ & AMQP, SQL & MySQL)
+- **Databases & Caching** (MongoDB & NoSQL, Redis & Caching)
+- **Cloud & DevOps** (AWS Core, Azure Basics, Kubernetes (K8s), Docker & Containers, CI/CD Pipelines)
+- **Security & Observability** (Spring Security, SSO/SAML, Observability)
+- **Dev Tools & Practices** (Design Patterns, Testing, System Design)
+- **Modern & Emerging** (Spring AI, GraphQL, gRPC)
+- **Practice** (DSA Problems, STAR Stories, Mock Interview, Flash Cards)
 - **My Projects** (EPLMS, MetLife)
 - **Sample Projects** (E-Commerce Platform, URL Shortener, Banking System)
 - **Interview** (HR Questions, Company Prep)
@@ -798,9 +813,9 @@ Home page. Uses `useProgress()` to get `streak`, `completed`, `getCompletionPerc
 ---
 
 #### `TopicPage.jsx`
-Generic page for all 17 topic routes. Reads `:topicId` from URL params.
+Generic page for all 28 topic routes. Reads `:topicId` from URL params.
 
-**Internal TOPICS map:** maps `topicId` string → imported data object. Registered topics: `java-core`, `java-versions`, `java8` (streamCoding), `spring-boot`, `microservices`, `kafka`, `sql`, `azure`, `sso`, `multithreading`, `collections`, `hibernate`, `security`, `design-patterns`, `docker`, `testing`.
+**Internal TOPICS map:** maps `topicId` string → imported data object. Registered topics: `java-core`, `java-versions`, `java8` (streamCoding), `spring-boot`, `spring-cloud`, `microservices`, `kafka`, `rabbitmq`, `hibernate`, `sql`, `security`, `design-patterns`, `docker`, `testing`, `azure`, `sso`, `redis`, `mongodb`, `aws`, `kubernetes`, `cicd`, `observability`, `spring-ai`, `graphql`, `grpc`, `system-design`, `multithreading`, `collections`.
 
 **Features:**
 - Search bar filters questions by text
@@ -1468,33 +1483,43 @@ LF will be replaced by CRLF the next time Git touches it
 
 ---
 
-*Document last updated: 2026-06-04. Covers the project as of commit `c0da415` (roadmap update) and subsequent commits for scroll fix, tag filter, Spring Boot API Versioning questions, and Java topic split.*
+*Document last updated: 2026-06-04. Covers the project as of the market-demand expansion — 28 topics, 500+ Q&A, 7-week 42-day roadmap.*
 
 ---
 
-## 19. Changelog — Session Updates (2026-06-04)
+## 19. Changelog
 
-### New Data Files
-| File | Description |
+### Session 2026-06-04 (Previous) — Java/Spring Enhancements
+| Change | Details |
 |---|---|
-| `src/data/javaVersions.js` | 25 Q&A covering Java 8, 11, 17, 21 features — first-person interview-ready spoken answers |
-| `src/data/streamCoding.js` | 30 Stream API coding problems — split from the original `java8Streams.js` |
+| New: `javaVersions.js` | 25 Q&A — Java 8→21 features, interview-ready spoken answers |
+| New: `streamCoding.js` | 30 Stream API coding problems (split from `java8Streams.js`) |
+| Modified: `springBoot.js` | Q15–Q20: Spring Boot 4.0 API Versioning, @ApiVersion, RFC 8594 Deprecation hints |
+| Fixed: scroll position | `useRef` + `useEffect` scrollTop=0 in `Layout.jsx` on route change |
+| Fixed: tag filter | Topic tags converted from decorative spans to interactive filter buttons in `TopicPage.jsx` |
+| Updated: `roadmap.js` | Week 1 updated; Testing/Docker/CI topics added; API Versioning on Day 9 |
 
-> `src/data/java8Streams.js` is no longer used in any route. It remains in the repo but is superseded by the two files above.
+### Session 2026-06-04 (This) — Market-Demand Expansion (28 topics)
 
-### Modified Files
+#### New Data Files (12 topics)
+| File | Q&A Count | Topics Covered |
+|---|---|---|
+| `src/data/redis.js` | 12 | Redis data structures, TTL, eviction, Spring Cache, distributed locking, rate limiting, Sentinel vs Cluster |
+| `src/data/mongodb.js` | 10 | Document modeling, aggregation pipeline, Spring Data MongoDB, indexing, N+1, sharding, change streams |
+| `src/data/aws.js` | 10 | EC2, S3, SQS/SNS, Lambda, IAM, VPC, RDS, ECS, CloudWatch, Auto Scaling |
+| `src/data/kubernetes.js` | 10 | Pods, Deployments, Services, health probes, HPA, ConfigMaps, Helm, zero-downtime, RBAC |
+| `src/data/cicd.js` | 7 | GitHub Actions, Jenkins, GitOps/ArgoCD, SonarQube, blue-green/canary/rolling deployments, feature flags |
+| `src/data/springCloud.js` | 6 | Config Server, Feign Client, Resilience4j (CB/Retry/Bulkhead), Spring Cloud Gateway, distributed tracing |
+| `src/data/observability.js` | 6 | Actuator, Micrometer, Prometheus+Grafana, ELK, structured logging, SLO alerting, memory leak diagnosis |
+| `src/data/rabbitmq.js` | 6 | Exchange types, Spring AMQP, DLQ retry pattern, request-reply RPC, durability, quorum queues |
+| `src/data/springAi.js` | 5 | ChatClient, RAG pattern, vector stores, prompt engineering, function calling, token cost optimization |
+| `src/data/graphql.js` | 5 | Schema, Spring for GraphQL, @BatchMapping/DataLoader, subscriptions, error handling, auth |
+| `src/data/grpc.js` | 5 | Protocol Buffers, 4 streaming types, Spring Boot integration, interceptors, TLS/mTLS, gRPC-Web |
+| `src/data/systemDesign.js` | 10 | Interview framework, URL Shortener, Notification Service, Rate Limiter, Chat System, CAP, CQRS, Event Sourcing, HA/DR |
+
+#### Modified Files
 | File | What changed |
 |---|---|
-| `src/data/springBoot.js` | Added 6 new questions (Q15–Q20): Spring Boot 4.0 API Versioning — why it matters, pre-4.0 approaches, server config, `@ApiVersion` + baseline versions, client-side + deprecation hints (RFC 8594), test support |
-| `src/data/roadmap.js` | Week 1 title fixed; Days 3–6 updated for Java Versions + Stream API Coding split; Testing added to Day 13; Docker added to Day 18; Docker & K8s added to Day 22; API Versioning added to Day 9 |
-| `src/components/Topics/TopicPage.jsx` | Added `tagFilter` state; topic tags are now clickable buttons that filter questions; all filters reset on topic change via `useRef` |
-| `src/components/Layout/Layout.jsx` | Added `useRef` on `<main>` + `useEffect` to reset `scrollTop = 0` on `location.pathname` change (scroll-to-top on navigation) |
-| `src/components/Layout/Sidebar.jsx` | Added "Java Versions 8–21" (`/topics/java-versions`); renamed "Java 8 & Streams" → "Stream API Coding" (`/topics/java8`) |
-
-### Bug Fixes
-| Issue | Fix |
-|---|---|
-| Page opened mid-scroll when navigating between topics | `useEffect` + `mainRef.current.scrollTop = 0` in `Layout.jsx` |
-| Layout shake (content width shift) on page changes | `overflow-y-scroll` + `scrollbarGutter: 'stable'` on `<main>`; `scrollbar-gutter: stable` on `html` in `index.css` |
-| Page transition wobble | Changed `@keyframes pageIn` to pure opacity (`from{opacity:0} to{opacity:1}`) — removed `translateY` which conflicted with scroll reset |
-| Topic tags were decorative only | Tags converted from `<span>` to `<button>` with `tagFilter` state in `TopicPage.jsx` |
+| `src/components/Topics/TopicPage.jsx` | Imports all 12 new data files; TOPICS map extended from 16 → 28 entries |
+| `src/components/Layout/Sidebar.jsx` | Restructured from 5 sections → 9 sections: added Databases & Caching, Cloud & DevOps (split from Cloud & Security), Security & Observability, Modern & Emerging; System Design moved from Practice to Dev Tools |
+| `src/data/roadmap.js` | Extended from 4 weeks/28 days → 7 weeks/42 days; all 12 new topics scheduled in Weeks 3–6; Week 7 = full mock interviews |

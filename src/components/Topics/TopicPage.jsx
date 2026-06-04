@@ -20,6 +20,18 @@ import security from '../../data/security'
 import designPatterns from '../../data/designPatterns'
 import docker from '../../data/docker'
 import testing from '../../data/testing'
+import redis from '../../data/redis'
+import mongodb from '../../data/mongodb'
+import aws from '../../data/aws'
+import kubernetes from '../../data/kubernetes'
+import cicd from '../../data/cicd'
+import springCloud from '../../data/springCloud'
+import observability from '../../data/observability'
+import rabbitmq from '../../data/rabbitmq'
+import springAi from '../../data/springAi'
+import graphql from '../../data/graphql'
+import grpc from '../../data/grpc'
+import systemDesign from '../../data/systemDesign'
 
 const TOPICS = {
   'java-core': javaCore,
@@ -38,6 +50,18 @@ const TOPICS = {
   'design-patterns': designPatterns,
   'docker': docker,
   'testing': testing,
+  'redis': redis,
+  'mongodb': mongodb,
+  'aws': aws,
+  'kubernetes': kubernetes,
+  'cicd': cicd,
+  'spring-cloud': springCloud,
+  'observability': observability,
+  'rabbitmq': rabbitmq,
+  'spring-ai': springAi,
+  'graphql': graphql,
+  'grpc': grpc,
+  'system-design': systemDesign,
 }
 
 export default function TopicPage() {
