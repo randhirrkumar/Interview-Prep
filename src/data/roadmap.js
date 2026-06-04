@@ -20,7 +20,7 @@ const roadmap = {
       theme: 'Core Framework Mastery',
       days: [
         { day: 8, date: 'Day 8', topics: ['Spring Boot: auto-configuration', 'DI types (Constructor/Setter/Field)', 'Bean lifecycle'], revision: ['Java fundamentals'], mock: false, duration: '2.5h' },
-        { day: 9, date: 'Day 9', topics: ['Spring MVC: REST API best practices', 'Exception handling (@ControllerAdvice)', '@Transactional internals'], revision: ['Spring Boot basics'], mock: false, duration: '3h' },
+        { day: 9, date: 'Day 9', topics: ['Spring MVC: REST API best practices', 'Exception handling (@ControllerAdvice)', '@Transactional internals', 'API Versioning: strategies + Spring Boot 4.0 @ApiVersion, Deprecation Hints'], revision: ['Spring Boot basics'], mock: false, duration: '3.5h' },
         { day: 10, date: 'Day 10', topics: ['Hibernate: JPA annotations', 'N+1 problem & fix', 'Query optimization, Caching'], revision: ['Spring MVC'], mock: false, duration: '3h' },
         { day: 11, date: 'Day 11', topics: ['SQL: Joins, subqueries', 'Window functions (ROW_NUMBER, RANK)', 'Indexing & query plan'], revision: ['Hibernate'], mock: false, duration: '2.5h' },
         { day: 12, date: 'Day 12', topics: ['Spring Security: JWT implementation', 'Filter chain', 'RBAC, SSO/SAML vs OAuth2'], revision: ['SQL'], mock: false, duration: '2.5h' },
