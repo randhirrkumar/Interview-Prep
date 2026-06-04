@@ -71,7 +71,7 @@ Update DOCUMENTATION.md — I added email/password login alongside Google. Updat
 - **Deployed** on GitHub Pages at: `https://randhirrkumar.github.io/Interview-Prep/`
 - **Backed** by Firebase (Google Auth + Firestore) for multi-device progress tracking
 - **Fully offline-capable** for unauthenticated users (LocalStorage fallback)
-- **Covers** 215+ Q&A, 5 project deep-dives, 4-week roadmap, mock interviews, DSA, system design, HR prep, flashcards, and company-specific prep
+- **Covers** 260+ Q&A across 17 topics, 5 project deep-dives, 4-week roadmap, mock interviews, DSA, system design, HR prep, flashcards, and company-specific prep
 
 **Target user:** Randhir Kumar — Java Backend Developer, 4+ years experience at Adani Groups, preparing for 2026 placements.
 
@@ -149,14 +149,16 @@ interview-prep/
 │   │   └── useProgress.js        # Re-exports useProgress from ProgressContext (convenience import)
 │   │
 │   ├── utils/
-│   │   └── storage.js            # localStorage abstraction: STORAGE_KEYS, getItem, setItem, markCompleted, toggleBookmark
+│   │   ├── storage.js            # localStorage abstraction: STORAGE_KEYS, getItem, setItem, markCompleted, unmarkCompleted, toggleBookmark
+│   │   └── searchIndex.js        # Flattened search index built from all data files; exports searchAll(query)
 │   │
 │   ├── data/                     # All interview content as JS objects (no API calls)
 │   │   ├── javaCore.js           # 40 Q&A: OOP pillars, exceptions, JVM, memory, generics
-│   │   ├── java8Streams.js       # 30 Q&A: lambdas, streams, Optional, functional interfaces
+│   │   ├── javaVersions.js       # 25 Q&A: Java 8→21 features (Lambda, Records, Virtual Threads, Sealed Classes) — interview-ready spoken answers
+│   │   ├── streamCoding.js       # 30 coding Q&A: Stream API practical problems (filter/map/reduce/collect)
 │   │   ├── multithreading.js     # Thread creation, synchronized, locks, ExecutorService, deadlocks
 │   │   ├── collections.js        # HashMap internals, ArrayList, LinkedList, ConcurrentHashMap, TreeMap
-│   │   ├── springBoot.js         # 35 Q&A: auto-config, DI, REST, AOP, bean lifecycle, profiles
+│   │   ├── springBoot.js         # 20 Q&A: auto-config, DI, REST, AOP, bean lifecycle + 6 Q&A: Spring Boot 4.0 API Versioning
 │   │   ├── microservices.js      # 30 Q&A: patterns, CAP theorem, API gateway, service discovery, saga
 │   │   ├── kafka.js              # 20 Q&A: producers, consumers, partitions, consumer groups, replication
 │   │   ├── hibernate.js          # JPA, N+1 problem, lazy/eager loading, query optimization, transactions
@@ -505,6 +507,7 @@ There are two global contexts. Both are initialized in `App.jsx` wrapping the en
   loading,          // boolean: true while loading from Firestore/localStorage
   startDate,        // string | null: date of first study activity
   complete(id),     // async fn: marks item done, updates streak, saves to Firestore or localStorage
+  uncomplete(id),   // async fn: removes item from completed array (streak NOT reverted), saves
   bookmark(id),     // async fn: toggles bookmark, saves
   isCompleted(id),  // fn: returns boolean
   isBookmarked(id), // fn: returns boolean
@@ -520,7 +523,7 @@ When user is **signed in** → all reads/writes go to Firestore (`/users/{uid}`)
 
 When user is **not signed in** → all reads/writes go to localStorage (keys prefixed with `prep_`)
 
-This is handled entirely inside `ProgressContext.jsx`. All other components just call `complete()` and `bookmark()` — they never know which storage is being used.
+This is handled entirely inside `ProgressContext.jsx`. All other components just call `complete()`, `uncomplete()`, and `bookmark()` — they never know which storage is being used.
 
 ### Streak Logic
 
@@ -567,7 +570,7 @@ Defined in `src/App.jsx`:
 
 ### Parameterized Routes
 
-**`/topics/:topicId`** — `TopicPage.jsx` reads `topicId` via `useParams()` and looks it up in the `TOPICS` map inside the component. Valid values: `java-core`, `java8`, `multithreading`, `collections`, `spring-boot`, `microservices`, `kafka`, `hibernate`, `sql`, `security`, `design-patterns`, `docker`, `testing`, `azure`, `sso`.
+**`/topics/:topicId`** — `TopicPage.jsx` reads `topicId` via `useParams()` and looks it up in the `TOPICS` map inside the component. Valid values: `java-core`, `java-versions`, `java8` (Stream API Coding), `multithreading`, `collections`, `spring-boot`, `microservices`, `kafka`, `hibernate`, `sql`, `security`, `design-patterns`, `docker`, `testing`, `azure`, `sso`.
 
 **`/projects/:projectId`** — `ProjectPage.jsx` reads `projectId` via `useParams()` and looks it up in `data/projects.js`. Valid values: `eplms`, `metlife`, `ecommerce`, `urlshortener`, `banking`.
 
@@ -677,19 +680,19 @@ export const projects = {
 
 ```javascript
 // src/data/roadmap.js
-export const roadmap = {
+const roadmap = {
   weeks: [
     {
       week: 1,
-      title: "Java Foundations",
-      theme: "Get the basics solid",
+      title: "Java Core + Java Versions 8–21 + Stream API",
+      theme: "Solidify the Basics",
       days: [
         {
           day: 1,
           date: "Day 1",
-          topics: ["Java Core OOP", "JVM Memory"],
-          revision: [],
-          mock: false,
+          topics: ["Java OOP: 4 Pillars", "Abstract vs Interface"],
+          revision: ["String, StringBuilder"],
+          mock: false,      // true = purple "Mock Interview" badge shown on the day card
           duration: "2.5h"
         }
       ]
@@ -697,6 +700,12 @@ export const roadmap = {
   ]
 }
 ```
+
+**Current 4-week structure (as of 2026-06-04):**
+- **Week 1** — Java Core + Java Versions 8–21 + Stream API Coding + Multithreading
+- **Week 2** — Spring Boot + Hibernate + SQL + Testing (JUnit/Mockito) + API Versioning (Day 9)
+- **Week 3** — Microservices + Kafka + Docker + System Design
+- **Week 4** — Azure + Docker/K8s + SSO + Projects deep-dive + HR + Full Mock Interviews
 
 ---
 
@@ -712,27 +721,50 @@ The master wrapper rendered for every route. Contains:
 
 Mobile sidebar: controlled by `sidebarOpen` state. Toggled by hamburger button in Header.
 
+**Page transition animation:** The `<Outlet />` is wrapped in a `<div key={location.pathname}>` — React remounts this div on every route change, replaying the `animate-page-in` CSS animation (pure opacity fade, 0.2s). Using `key` on the wrapper is the correct React pattern for replaying animations on navigation without an animation library.
+
+**Scroll-to-top on navigation:** A `useRef` is attached to `<main>`. A `useEffect` watching `location.pathname` resets `mainRef.current.scrollTop = 0` on every route change. This ensures every new page opens from the top regardless of scroll position on the previous page.
+
+**Scrollbar gutter fix:** `<main>` uses `overflow-y-scroll` (always shows scrollbar lane) + `scrollbarGutter: 'stable'` style prop. This permanently reserves the scrollbar lane so content width never shifts when navigating between pages with different content heights — eliminating layout shake.
+
 #### `Header.jsx`
 Top bar. Contains:
 - Hamburger button (mobile only, toggles sidebar)
-- App logo / title
-- Search bar (hidden on xs, visible sm+) — searches across all topics; not yet wired to navigate
+- **Search** — live global search wired to `searchAll()` from `src/utils/searchIndex.js`
 - Streak counter (flame icon + number, from `useProgress()`)
 - Date display
 - Auth button: "Sign In" or user avatar + "Sign Out"
+
+**Global search behaviour:**
+- Type 2+ characters → dropdown appears instantly (up to 15 results), no page navigation needed
+- Searches across all 15 topic pages (every question), DSA Problems (title/category/tags), and HR Questions
+- Each result shows: a colored topic badge (indigo = tech, teal = DSA, pink = HR), question text, difficulty, up to 3 tags
+- Keyboard shortcuts: `Enter` opens the first result, `Esc` clears and closes, `×` button clears input
+- Clicking any result navigates to that topic page and closes the dropdown
+
+**Mobile search:**
+- The desktop search bar (`hidden sm:block`) is not shown on small screens
+- Instead a 🔍 icon button sits next to the hamburger; tapping it replaces the entire header with a full-width search bar
+- The keyboard opens automatically; `X` button, `Esc`, or tapping outside closes it
+- On mobile the streak badge shows only the number (not "day streak" text); sign-in button shows "Sign in" (abbreviated)
+
+**Stacking context fix:** The `<header>` element has `position: relative; zIndex: 100`. Without this, the `<main>` element (rendered after header in DOM order) paints over the dropdown even if the dropdown has `zIndex: 9999` — because z-index comparisons are scoped to stacking contexts. Setting `zIndex: 100` on the header creates its own stacking context, ensuring the dropdown always renders above page content.
+
+**Dropdown background:** Solid `#0b0e1f` (no `backdropFilter`). Using `rgba` + `backdropFilter: blur` caused the dashboard content to bleed through the 2% transparency.
 
 The user's display name comes from `user.displayName` (Google account name).
 
 #### `Sidebar.jsx`
 Left navigation. Contains collapsible sections:
 - Dashboard, 30-Day Roadmap, Analytics, Revision Scheduler
-- **Java Topics** (Java Core, Java 8, Multithreading, Collections)
-- **Backend & Spring** (Spring Boot, Microservices, Kafka, Hibernate, SQL)
-- **Security & Patterns** (Spring Security, Design Patterns, SSO/SAML)
-- **Tools & Infrastructure** (Docker, Testing, Azure)
-- **Practice** (Mock Interview, System Design, DSA, Flash Cards)
-- **Projects** (EPLMS, MetLife, and sample projects)
-- **Interview Prep** (HR Questions, Company Prep, STAR Builder)
+- **Java Topics** (Java Core & OOP → `/topics/java-core`, Java Versions 8–21 → `/topics/java-versions`, Stream API Coding → `/topics/java8`, Multithreading, Collections & DS)
+- **Backend & Spring** (Spring Boot, Microservices, Hibernate & JPA, Kafka, SQL & MySQL)
+- **Dev Tools & Practices** (Design Patterns, Docker & Kubernetes, Testing)
+- **Cloud & Security** (Azure Basics, SSO/SAML, Spring Security)
+- **Practice** (DSA Problems, STAR Stories, Mock Interview, System Design, Flash Cards)
+- **My Projects** (EPLMS, MetLife)
+- **Sample Projects** (E-Commerce Platform, URL Shortener, Banking System)
+- **Interview** (HR Questions, Company Prep)
 
 Section expand/collapse controlled by `openSections` state (object, key = section name, value = boolean).
 
@@ -746,23 +778,35 @@ Active link: uses `NavLink` from React Router; `isActive` prop applies `border-l
 Home page. Uses `useProgress()` to get `streak`, `completed`, `getCompletionPercent`.
 
 **Sections:**
-1. **Greeting** — "Good Morning/Afternoon/Evening, Randhir"
-2. **Stat cards** — Streak, Total Completed, Days in Prep, Readiness %
-3. **Readiness bar** — average completion % across all topics
-4. **Topic cards** — 8 topic cards with completion % and link
-5. **Weak Areas** — topics with < 40% completion
-6. **Today's Focus** — curated daily task list
+1. **Hero banner** — gradient background, greeting pill ("Good morning/afternoon/evening, Randhir"), tagline
+2. **Stat cards** — Streak, Total Completed, Days Left, Readiness % — all four are clickable `<Link>` components with `card-hover` lift effect and a `›` arrow on hover:
+   - Day Streak → `/analytics`
+   - Completed → `/analytics`
+   - Days Left → `/roadmap`
+   - Readiness → `/analytics`
+3. **Readiness meter** — progress bar, 0 → 50 → 100% milestones
+4. **Today's Focus + Weak Areas** — side-by-side grid. Each Focus item is a `<Link>` that navigates directly to its target; on hover it brightens and slides 3px right with a `›` arrow:
+   - Java 8 Streams → `/topics/java8`
+   - EPLMS project → `/projects/eplms`
+   - Mock Interview → `/mock-interview`
+   - HR practice → `/hr-questions`
+   - Spring Boot revision → `/topics/spring-boot`
+5. **Quick Access** — emoji grid of 6 shortcut links (already clickable)
+6. **Topics Progress** — 8 per-topic cards with gradient icons and progress bars, each links to its topic page
+7. **Daily Motivation** — static quote card
 
 ---
 
 #### `TopicPage.jsx`
-Generic page for all 15 topic routes. Reads `:topicId` from URL params.
+Generic page for all 17 topic routes. Reads `:topicId` from URL params.
 
-**Internal TOPICS map:** maps `topicId` string → `{ data, questionIds }`. `questionIds` is an array of strings like `"java-core_1"` used for completion tracking.
+**Internal TOPICS map:** maps `topicId` string → imported data object. Registered topics: `java-core`, `java-versions`, `java8` (streamCoding), `spring-boot`, `microservices`, `kafka`, `sql`, `azure`, `sso`, `multithreading`, `collections`, `hibernate`, `security`, `design-patterns`, `docker`, `testing`.
 
 **Features:**
 - Search bar filters questions by text
-- Difficulty filter dropdown (All, Beginner, Intermediate, Advanced)
+- Difficulty filter (All, Beginner, Intermediate, Advanced)
+- **Tag filter:** topic-level tags shown at the top are clickable buttons. Clicking a tag filters questions to only those tagged with it (active tag turns solid blue). Clicking again deselects. All three filters (search + difficulty + tag) stack together.
+- All filters reset automatically when switching to a different topic (via `useRef` comparison of `topicId`)
 - Completion progress bar for that topic
 - Renders `<QuestionCard />` for each matching question
 
@@ -785,7 +829,8 @@ The most-used component. Used in TopicPage.
 - 3 tabs: **Answer**, **Code** (hidden if `q.code` not set), **Follow-ups** (hidden if `q.followUp` not set)
 - **Bookmark** icon (top-right) → calls `bookmark(id)` from ProgressContext
 - **Mark Done** button → calls `complete(id)` from ProgressContext
-- Green left border + checkmark when completed
+- When completed: green left border + checkmark. The "Completed" badge in the footer is a button — hovering turns it red and shows "Undo". Clicking calls `uncomplete(id)` to revert (streak is not affected)
+- Difficulty-colored left border (green/amber/red) when not yet completed
 
 ---
 
@@ -870,7 +915,7 @@ Form to create STAR stories (Situation, Task, Action, Result). All stories saved
 ---
 
 #### `Roadmap.jsx`
-Reads from `data/roadmap.js`. Week tabs at top. Each week shows days. Each day is a card: topics, revision items, duration, mock flag. Checkbox marks day done (stored in localStorage).
+Reads from `data/roadmap.js`. Week tabs at top. Each week shows days. Each day is a card: topics, revision items, duration, mock flag. The day checkbox is a **toggle**: clicking the empty circle calls `complete(id)` to mark done; clicking the green checkmark calls `uncomplete(id)` to revert it. This lets users fix accidental clicks without permanent consequences.
 
 ---
 
@@ -891,9 +936,13 @@ Progress visualization. Uses `getCompletionPercent()` from ProgressContext for e
 
 ## 12. Styling Guide
 
-### Dark Mode
+### Dark / Light Mode Toggle
 
-Dark mode is always on. `index.html` has `class="dark"` on the `<html>` tag. Tailwind's `darkMode: 'class'` in `tailwind.config.js` enables this. To add a light mode toggle, you'd remove the `dark` class from `<html>` and add a button that toggles it.
+The app supports both dark mode (default) and light mode. Tailwind's `darkMode: 'class'` is configured in `tailwind.config.js`. The `<html>` element gets either no extra class (dark mode, using `:root` CSS variables) or `class="light"` (light mode, using `html.light` CSS variables).
+
+The toggle button lives in `Header.jsx`. On click it toggles `document.documentElement.classList.toggle('light')` and persists the preference to `localStorage` under `prep_theme`. On load, `Layout.jsx` or `App.jsx` reads `prep_theme` and applies the class.
+
+All color tokens are CSS custom properties defined in `src/index.css` under `:root` (dark defaults) and `html.light` (light overrides). To change any color for both themes, update both rule sets.
 
 ### Color Palette in Use
 
@@ -925,15 +974,23 @@ Dark mode is always on. `index.html` has `class="dark"` on the `<html>` tag. Tai
 
 ### Custom Animations
 
-```javascript
-// tailwind.config.js
-animation: {
-  'fade-in': 'fadeIn 0.3s ease-in-out',
-  'slide-in': 'slideIn 0.3s ease-in-out',
-}
+Defined in `src/index.css` (not in tailwind.config.js — they use plain `@keyframes` + class definitions):
+
+```css
+@keyframes fadeIn  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pageIn  { from{opacity:0} to{opacity:1} }   /* pure opacity — no positional component */
+@keyframes slideIn { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+.animate-fade-in   { animation: fadeIn  0.4s ease-out; }
+.animate-page-in   { animation: pageIn  0.2s ease-out; }   /* used on route change in Layout.jsx */
+.animate-slide-in  { animation: slideIn 0.3s ease-out; }
+.animate-slide-up  { animation: slideUp 0.4s ease-out; }
+.animate-float     { animation: float   6s ease-in-out infinite; }
 ```
 
-Use as: `className="animate-fade-in"` or `className="animate-slide-in"`.
+**Why `pageIn` uses only opacity (no translateY):** A `translateY` in the page animation conflicts with the scroll position reset that happens on navigation — the position component causes a visible wobble. Pure opacity fade avoids this entirely.
 
 ---
 
@@ -1109,6 +1166,7 @@ getItem(STORAGE_KEYS.COMPLETED, [])  // returns [] if key missing or JSON invali
 setItem(STORAGE_KEYS.STREAK, 5)      // JSON.stringify before storing
 
 markCompleted('java-core_1')         // adds to COMPLETED array
+unmarkCompleted('java-core_1')       // removes from COMPLETED array (used by uncomplete() in ProgressContext)
 isCompleted('java-core_1')           // returns boolean
 toggleBookmark('kafka_3')            // adds or removes from BOOKMARKS, returns new array
 isBookmarked('kafka_3')              // returns boolean
@@ -1117,6 +1175,30 @@ saveNote('java-core_1', 'my note')   // merges into NOTES object
 ```
 
 All functions have try-catch — localStorage errors (quota exceeded, private browsing) are silently swallowed and return the default value.
+
+### Search Index (`src/utils/searchIndex.js`)
+
+Built once at module load time by importing all 15 topic data files, DSA problems, and HR questions and flattening them into a single array of searchable entries. Each entry has:
+
+```javascript
+{
+  type: 'topic' | 'dsa' | 'hr',
+  topicId: 'java-core',           // matches URL slug
+  topicTitle: 'Java Core & OOP',  // display label
+  route: '/topics/java-core',     // where to navigate on click
+  text: 'Explain the 4 pillars…', // the question / problem title
+  difficulty: 'beginner',         // or null
+  tags: ['OOP'],
+}
+```
+
+```javascript
+import { searchAll } from '../utils/searchIndex'
+searchAll('stream')   // returns up to 15 matching entries (min 2 chars)
+searchAll('kafka')    // matches topicTitle, text, or any tag
+```
+
+The index is static — if you add a new data file, import it in `searchIndex.js` and add it to the relevant loop. DSA uses the flat array shape; topic data uses `{ title, questions[] }`; HR uses `{ sections: [{ questions[] }] }`.
 
 ---
 
@@ -1144,20 +1226,23 @@ All functions have try-catch — localStorage errors (quota exceeded, private br
 
 ### Add a new topic (e.g., "GraphQL")
 
-1. Create `src/data/graphql.js` with the topic object (follow the format above)
-2. In `src/components/Topics/TopicPage.jsx`, add to the `TOPICS` map:
+1. Create `src/data/graphql.js` with the topic object (follow the format in Section 10)
+2. In `src/components/Topics/TopicPage.jsx`, add the import and register in `TOPICS`:
 ```javascript
-'graphql': {
-  data: graphQL,
-  questionIds: graphQL.questions.map(q => `graphql_${q.id}`)
+import graphQL from '../../data/graphql'
+
+const TOPICS = {
+  // ... existing entries
+  'graphql': graphQL,   // key = URL slug, value = imported data object
 }
 ```
-3. Add import: `import graphQL from '../../data/graphql'`
-4. In `Sidebar.jsx`, add a `<NavLink>` under the appropriate section:
-```jsx
-<NavLink to="/topics/graphql">GraphQL</NavLink>
+3. In `Sidebar.jsx`, add an entry to the appropriate section's `items` array:
+```javascript
+{ label: 'GraphQL', icon: SomeIcon, to: '/topics/graphql' }
 ```
-5. Optionally add it to Dashboard's topic card grid.
+4. Optionally add it to Dashboard's topic card grid.
+
+**Note:** The TOPICS map value is the raw imported data object (not a wrapper object). The `topicId` URL param is the key used for progress tracking IDs (`graphql_1`, `graphql_2`, etc.).
 
 ---
 
@@ -1383,4 +1468,33 @@ LF will be replaced by CRLF the next time Git touches it
 
 ---
 
-*Document last updated: 2026-05-30. Covers the project as of commit `62b7e7d`.*
+*Document last updated: 2026-06-04. Covers the project as of commit `c0da415` (roadmap update) and subsequent commits for scroll fix, tag filter, Spring Boot API Versioning questions, and Java topic split.*
+
+---
+
+## 19. Changelog — Session Updates (2026-06-04)
+
+### New Data Files
+| File | Description |
+|---|---|
+| `src/data/javaVersions.js` | 25 Q&A covering Java 8, 11, 17, 21 features — first-person interview-ready spoken answers |
+| `src/data/streamCoding.js` | 30 Stream API coding problems — split from the original `java8Streams.js` |
+
+> `src/data/java8Streams.js` is no longer used in any route. It remains in the repo but is superseded by the two files above.
+
+### Modified Files
+| File | What changed |
+|---|---|
+| `src/data/springBoot.js` | Added 6 new questions (Q15–Q20): Spring Boot 4.0 API Versioning — why it matters, pre-4.0 approaches, server config, `@ApiVersion` + baseline versions, client-side + deprecation hints (RFC 8594), test support |
+| `src/data/roadmap.js` | Week 1 title fixed; Days 3–6 updated for Java Versions + Stream API Coding split; Testing added to Day 13; Docker added to Day 18; Docker & K8s added to Day 22; API Versioning added to Day 9 |
+| `src/components/Topics/TopicPage.jsx` | Added `tagFilter` state; topic tags are now clickable buttons that filter questions; all filters reset on topic change via `useRef` |
+| `src/components/Layout/Layout.jsx` | Added `useRef` on `<main>` + `useEffect` to reset `scrollTop = 0` on `location.pathname` change (scroll-to-top on navigation) |
+| `src/components/Layout/Sidebar.jsx` | Added "Java Versions 8–21" (`/topics/java-versions`); renamed "Java 8 & Streams" → "Stream API Coding" (`/topics/java8`) |
+
+### Bug Fixes
+| Issue | Fix |
+|---|---|
+| Page opened mid-scroll when navigating between topics | `useEffect` + `mainRef.current.scrollTop = 0` in `Layout.jsx` |
+| Layout shake (content width shift) on page changes | `overflow-y-scroll` + `scrollbarGutter: 'stable'` on `<main>`; `scrollbar-gutter: stable` on `html` in `index.css` |
+| Page transition wobble | Changed `@keyframes pageIn` to pure opacity (`from{opacity:0} to{opacity:1}`) — removed `translateY` which conflicted with scroll reset |
+| Topic tags were decorative only | Tags converted from `<span>` to `<button>` with `tagFilter` state in `TopicPage.jsx` |
